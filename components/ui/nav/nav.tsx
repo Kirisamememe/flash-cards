@@ -1,8 +1,7 @@
-'use client'
-
 import GithubLink from "@/components/ui/nav/githubLink";
 import {ModeToggle} from "@/components/ui/nav/modeToggle";
 import Logo from "@/components/ui/nav/logo";
+import LocaleSwitcher from "@/components/ui/localeSwitcher";
 
 export default function Nav({children}: {children?: React.ReactNode}) {
     return (
@@ -10,6 +9,7 @@ export default function Nav({children}: {children?: React.ReactNode}) {
             <Logo/>
             <div className={"flex gap-4 items-center"}>
                 <GithubLink/>
+                <LocaleSwitcher/>
                 <ModeToggle/>
                 {children}
             </div>

@@ -16,5 +16,12 @@
         "definition_placeholder": "定義を入力",
         "example_placeholder": "例文を入力",
         "notes_placeholder": "例文の翻訳や、単語の記憶法など"
+    },
+    "LocaleSwitcher": {
+        "label": "Change language",
+        "en": "English",
+        "ja": "日本語",
+        "zh-cn": "简体中文",
+        "zh-tw": "繁體中文"
     }
 }

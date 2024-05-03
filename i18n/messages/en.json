@@ -16,5 +16,12 @@
         "definition_placeholder": "Enter a definition",
         "example_placeholder": "Enter an example",
         "notes_placeholder": "A translation or how to remember this word"
+    },
+    "LocaleSwitcher": {
+        "label": "Change language",
+        "en": "English",
+        "ja": "日本語",
+        "zh-cn": "简体中文",
+        "zh-tw": "繁體中文"
     }
 }

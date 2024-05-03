@@ -2,7 +2,7 @@ import Link from "next/link";
 
 const GithubLink = () => {
     return (
-        <Link href={"https://github.com/Kirisamememe/AI-English"}
+        <Link href={"https://github.com/Kirisamememe/flash-cards"}
               target={"_blank"}
               className={"group flex justify-center items-center size-10 hover:bg-accent rounded-md"}>
             <svg className={"fill-foreground group-hover:fill-Brand-950"} width="24" height="24" viewBox="0 0 24 24" fill="none"
