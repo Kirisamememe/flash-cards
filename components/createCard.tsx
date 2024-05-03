@@ -35,7 +35,7 @@
 //             const result = await addCard(values)
 //
 //             if (!result.isSuccess) {
-//                 setError(result.error.message);
+//                 setError(result.error.messages);
 //                 return;
 //             }
 //             else {
@@ -51,7 +51,7 @@
 //                 })
 //             }
 //
-//             toast.success(result.message);
+//             toast.success(result.messages);
 //         })
 //
 //         console.log(values)
@@ -59,7 +59,7 @@
 //
 //     return (
 //         <WordForm form={form} onSubmit={onSubmit}>
-//             <FormError message={error} />
+//             <FormError messages={error} />
 //             <Button className={"mr-3"} type="submit" disabled={isPending}>Submit</Button>
 //             {children}
 //         </WordForm>

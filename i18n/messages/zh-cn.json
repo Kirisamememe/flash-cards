@@ -1,0 +1,20 @@
+{
+    "Index": {
+        "createBtn": "创建单词卡",
+        "editBtn": "编辑",
+        "cancel": "取消"
+    },
+    "WordSubmitForm": {
+        "submit": "提交",
+        "word": "单词",
+        "phonetics": "发音",
+        "definition": "释义",
+        "example": "例句",
+        "notes": "笔记",
+        "word_placeholder": "请输入单词",
+        "phonetics_placeholder": "请输入发音",
+        "definition_placeholder": "请输入释义",
+        "example_placeholder": "请输入例句",
+        "notes_placeholder": "这里可以输入例句的翻译，或者此单词的记忆法"
+    }
+}

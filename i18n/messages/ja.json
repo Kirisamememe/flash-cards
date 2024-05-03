@@ -1,0 +1,20 @@
+{
+    "Index": {
+        "createBtn": "カードを追加",
+        "editBtn": "編集",
+        "cancel": "キャンセル"
+    },
+    "WordSubmitForm": {
+        "submit": "送信",
+        "word": "単語",
+        "phonetics": "発音記号",
+        "definition": "定義",
+        "example": "例文",
+        "notes": "メモ",
+        "word_placeholder": "単語を入力",
+        "phonetics_placeholder": "発音記号を入力",
+        "definition_placeholder": "定義を入力",
+        "example_placeholder": "例文を入力",
+        "notes_placeholder": "例文の翻訳や、単語の記憶法など"
+    }
+}

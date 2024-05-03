@@ -171,7 +171,7 @@ export function deleteById(id: number): Promise<DeleteResult> {
 //         return {
 //             isSuccess: false,
 //             error: {
-//                 message: validatedFields.error.message,
+//                 messages: validatedFields.error.messages,
 //             },
 //         };
 //     }
@@ -193,7 +193,7 @@ export function deleteById(id: number): Promise<DeleteResult> {
 //                     console.log("追加した", addedObjectRequest.result);
 //                     resolve({
 //                         isSuccess: true,
-//                         message: 'カードが成功的に追加されました。',
+//                         messages: 'カードが成功的に追加されました。',
 //                         data: addedObjectRequest.result
 //                     });
 //                 };
@@ -203,7 +203,7 @@ export function deleteById(id: number): Promise<DeleteResult> {
 //                 resolve({
 //                     isSuccess: false,
 //                     error: {
-//                         message: `Error adding card: ${(event.target as IDBRequest).error?.message}`
+//                         messages: `Error adding card: ${(event.target as IDBRequest).error?.messages}`
 //                     }
 //                 });
 //             };
@@ -213,7 +213,7 @@ export function deleteById(id: number): Promise<DeleteResult> {
 //             resolve({
 //                 isSuccess: false,
 //                 error: {
-//                     message: `データベース操作中にエラーが発生しました'}`
+//                     messages: `データベース操作中にエラーが発生しました'}`
 //                 }
 //             });
 //         }

@@ -1,0 +1,20 @@
+{
+    "Index": {
+        "createBtn": "Create a card",
+        "editBtn": "Edit",
+        "cancel": "Cancel"
+    },
+    "WordSubmitForm": {
+        "submit": "Submit",
+        "word": "Word",
+        "phonetics": "Phonetics",
+        "definition": "Definition",
+        "example": "Example",
+        "notes": "Notes",
+        "word_placeholder": "Enter a word",
+        "phonetics_placeholder": "Enter phonetics",
+        "definition_placeholder": "Enter a definition",
+        "example_placeholder": "Enter an example",
+        "notes_placeholder": "A translation or how to remember this word"
+    }
+}

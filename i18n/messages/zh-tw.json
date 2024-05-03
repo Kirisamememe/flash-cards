@@ -1,0 +1,20 @@
+{
+    "Index": {
+        "createBtn": "創建單字卡",
+        "editBtn": "編輯",
+        "cancel": "取消"
+    },
+    "WordSubmitForm": {
+        "submit": "提交",
+        "word": "單字",
+        "phonetics": "發音",
+        "definition": "釋義",
+        "example": "例句",
+        "notes": "筆記",
+        "word_placeholder": "請輸入單字",
+        "phonetics_placeholder": "請輸入發音",
+        "definition_placeholder": "請輸入釋義",
+        "example_placeholder": "請輸入例句",
+        "notes_placeholder": "這裡可以輸入例句的翻譯，或該單詞的記憶法"
+    }
+}

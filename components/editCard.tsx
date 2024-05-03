@@ -11,13 +11,28 @@ import WordForm from "@/components/wordForm";
 import { WordCard } from "@/components/wordCard";
 import { TrashIcon } from "@radix-ui/react-icons";
 
-export function EditWordCard({ children, wordData, setIsEditing, setReload, setInterval, setCurrentIndex }: {
+export type SubmitForm = {
+    submit: string
+    word: string
+    phonetics: string
+    definition: string
+    example: string
+    notes: string
+    word_placeholder: string
+    phonetics_placeholder: string
+    definition_placeholder: string
+    example_placeholder: string
+    notes_placeholder: string
+}
+
+export function EditWordCard({ children, submitFormText, wordData, setIsEditing, setReload, setInterval, setCurrentIndex }: {
     children?: React.ReactNode,
+    submitFormText: SubmitForm,
     wordData?: WordCard,
     setIsEditing: React.Dispatch<SetStateAction<boolean>>,
     setReload: React.Dispatch<SetStateAction<boolean>>,
-    setInterval: React.Dispatch<SetStateAction<number>>
-    setCurrentIndex: React.Dispatch<SetStateAction<number>>,
+    setInterval: React.Dispatch<SetStateAction<number>>,
+    setCurrentIndex: React.Dispatch<SetStateAction<number>>
 }) {
     const [error, setError] = useState<string | undefined>('');
     const [isPending, startTransition] = useTransition();
@@ -97,11 +112,11 @@ export function EditWordCard({ children, wordData, setIsEditing, setReload, setI
     }
 
     return (
-        <WordForm form={form} onSubmit={onSubmit}>
+        <WordForm submitFormText={submitFormText} form={form} onSubmit={onSubmit}>
             <FormError message={error} />
-            <Button className={"mr-3"} type="submit" disabled={isPending}>Submit</Button>
+            <Button className={"mr-3"} type="submit" disabled={isPending}>{submitFormText.submit}</Button>
             {children}
-            {wordData &&
+            {form.getValues().id &&
                 <Button
                     className={"fixed right-10 group hover:bg-destructive/10 px-2"}
                     variant={"ghost"}
