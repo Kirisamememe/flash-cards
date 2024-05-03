@@ -5,12 +5,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider"
 import Nav from "@/components/ui/nav/nav";
 import React, {ReactNode} from "react";
-// import {locales} from '@/config';
-
-type Props = {
-    children: ReactNode;
-    params: {locale: string};
-};
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,13 +21,13 @@ export default function LocaleLayout({ children, params: {locale} }: Readonly<{
         <html lang={locale}>
             <body className={`${inter.className} h-svh`}>
                 <Toaster/>
-                <Nav/>
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="system"
                     enableSystem
                     disableTransitionOnChange
                 >
+                    <Nav/>
                     {children}
                 </ThemeProvider>
             </body>

@@ -31,8 +31,6 @@ export default function Index() {
     }
 
     return (
-        <>
-            <CardContainer ti={ti}/>
-        </>
+        <CardContainer ti={ti}/>
     )
 }
