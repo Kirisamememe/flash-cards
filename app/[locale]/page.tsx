@@ -4,6 +4,7 @@ import {useTranslations} from 'next-intl';
 export default function Index() {
     const t = useTranslations('Index');
     const t2 = useTranslations('WordSubmitForm');
+    const t3 = useTranslations("IndexDB")
     const ti = {
         index: {
             create: t('createBtn'),
@@ -22,6 +23,10 @@ export default function Index() {
             definition_placeholder: t2('definition_placeholder'),
             example_placeholder: t2('example_placeholder'),
             notes_placeholder: t2('notes_placeholder')
+        },
+        db: {
+            saved: t3('saved'),
+            deleteCard: t3('deleteCard')
         }
     }
 

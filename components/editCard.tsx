@@ -25,8 +25,23 @@ export type SubmitForm = {
     notes_placeholder: string
 }
 
-export function EditWordCard({ children, submitFormText, wordData, setIsEditing, setReload, setInterval, setCurrentIndex }: {
+export type DBMessage = {
+    saved: string
+    deleteCard: string
+}
+
+export function EditWordCard({
+    children,
+    dbMessage,
+    submitFormText,
+    wordData,
+    setIsEditing,
+    setReload,
+    setInterval,
+    setCurrentIndex
+}: {
     children?: React.ReactNode,
+    dbMessage: DBMessage
     submitFormText: SubmitForm,
     wordData?: WordCard,
     setIsEditing: React.Dispatch<SetStateAction<boolean>>,
@@ -80,7 +95,7 @@ export function EditWordCard({ children, submitFormText, wordData, setIsEditing,
                 })
             }
 
-            toast.success(result.message);
+            toast.success(dbMessage.saved);
         })
 
         console.log(values)
@@ -106,7 +121,7 @@ export function EditWordCard({ children, submitFormText, wordData, setIsEditing,
                 setIsEditing && setIsEditing(false)
             }
 
-            toast.success(result.message);
+            toast.success(dbMessage.deleteCard);
             console.log("削除できたぜ")
         })
     }

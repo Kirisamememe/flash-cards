@@ -6,7 +6,7 @@ import { getCards } from "@/app/lib/indexDB";
 import Loading from "@/components/ui/loading";
 import { PlusIcon } from '@radix-ui/react-icons'
 import {Button} from "@/components/ui/button";
-import { EditWordCard } from "@/components/editCard";
+import {DBMessage, EditWordCard} from "@/components/editCard";
 import { Slider } from "@/components/ui/slider";
 import { SubmitForm } from "@/components/editCard";
 
@@ -16,7 +16,8 @@ type IndexPageTranslation = {
         edit: string
         cancel: string
     },
-    submitForm: SubmitForm
+    submitForm: SubmitForm,
+    db: DBMessage
 }
 
 export default function CardContainer({ ti }: { ti: IndexPageTranslation}) {
@@ -76,6 +77,7 @@ export default function CardContainer({ ti }: { ti: IndexPageTranslation}) {
             </Button>
             {isEditing &&
                 <EditWordCard
+                    dbMessage={ti.db}
                     submitFormText={ti.submitForm}
                     setIsEditing={setIsEditing}
                     setReload={setReload}

@@ -11,6 +11,8 @@ export interface RawWordInfo {
     notes?: string
 }
 
+
+
 const dbName = 'flashcardsDB';
 const storeName = 'cards';
 
@@ -59,12 +61,10 @@ export async function saveCard(values: z.infer<typeof wordCardSchema>): Promise<
 
             request.onsuccess = () => {
                 const id = parseInt(request.result.toString());
-                const actionType = values.id ? '編集' : '追加';
-                console.log(`${actionType}された`, values);
 
                 resolve({
                     isSuccess: true,
-                    message: `カードが${actionType}されました。`,
+                    message: "The changes have been saved.",
                     data: {id, ...values}
                 });
             };

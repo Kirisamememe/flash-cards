@@ -23,5 +23,14 @@
         "ja": "日本語",
         "zh-cn": "简体中文",
         "zh-tw": "繁體中文"
+    },
+    "IndexDB": {
+        "dbErr": "数据库发生错误：",
+        "saved": "更改已保存。",
+        "cardSaveErr": "更改未能保存：",
+        "TransErr": "数据库事务出现错误：",
+        "fetchCardErr": "未能取得数据：",
+        "deleteCard": "卡片成功删除。",
+        "deleteCardErr:": "卡片删除失败："
     }
 }

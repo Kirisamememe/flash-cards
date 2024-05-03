@@ -23,5 +23,14 @@
         "ja": "日本語",
         "zh-cn": "简体中文",
         "zh-tw": "繁體中文"
+    },
+    "IndexDB": {
+        "dbErr": "Database error:",
+        "saved": "The changes have been saved.",
+        "cardSaveErr": "Error editing card:",
+        "TransErr": "Transaction error:",
+        "fetchCardErr": "Error fetching card:",
+        "deleteCard": "The card is deleted.",
+        "deleteCardErr:": "Error deleting card:"
     }
 }
