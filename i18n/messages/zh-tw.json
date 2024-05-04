@@ -2,7 +2,8 @@
     "Index": {
         "createBtn": "創建單字卡",
         "editBtn": "編輯",
-        "cancel": "取消"
+        "cancel": "取消",
+        "description": "用你閒置的螢幕\n來記單字吧！"
     },
     "WordSubmitForm": {
         "submit": "提交",

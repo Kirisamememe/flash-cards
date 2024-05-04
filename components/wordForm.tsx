@@ -1,4 +1,4 @@
-import {Form, FormLabel, FormControl, FormDescription, FormField, FormItem, FormMessage} from "@/components/ui/form";
+import {Form, FormLabel, FormControl, FormField, FormItem, FormMessage} from "@/components/ui/form";
 import {Input} from "@/components/ui/input";
 import {Textarea} from "@/components/ui/textarea";
 import React from "react";
@@ -6,8 +6,10 @@ import {UseFormReturn} from "react-hook-form";
 import { z } from "zod"
 import {wordCardSchema} from "@/schemas";
 import {SubmitForm} from "@/components/editCard";
+import { cn } from "@/lib/utils"
 
-export default function WordForm({submitFormText, children, form, onSubmit}: {
+export default function WordForm({className, submitFormText, children, form, onSubmit}: {
+    className?: string
     submitFormText: SubmitForm
     children: React.ReactNode,
     form: UseFormReturn<z.infer<typeof wordCardSchema>>,
@@ -15,7 +17,7 @@ export default function WordForm({submitFormText, children, form, onSubmit}: {
 }) {
     return (
         <div
-            className={"fixed max-w-96 w-full h-fit p-6 bottom-32 right-6 bg-background rounded-4 dark:shadow-primary/[0.05] dark:ring-primary/10 shadow-2xl ring-1 ring-foreground/[0.05]"}>
+            className={cn(className, "p-6 bg-background rounded-4 dark:shadow-primary/10 dark:ring-primary/20 shadow-2xl ring-1 ring-foreground/[0.05]")}>
             <Form {...form}>
                 <form autoComplete={"off"}
                       onSubmit={form.handleSubmit(onSubmit)}

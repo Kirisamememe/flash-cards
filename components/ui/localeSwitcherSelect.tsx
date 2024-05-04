@@ -1,13 +1,11 @@
 'use client';
 
-import clsx from 'clsx';
 import {useParams} from 'next/navigation';
-import {ChangeEvent, ReactNode, useTransition} from 'react';
+import {ChangeEvent, ReactNode, useState, useTransition} from 'react';
 import {useRouter, usePathname} from '../navigation';
 import {
     Select,
     SelectContent,
-    SelectItem,
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
@@ -29,6 +27,8 @@ export default function LocaleSwitcherSelect({
     const pathname = usePathname();
     const params = useParams();
 
+    const [open, setOpen] = useState(false)
+
     function onSelectChange(value: string) {
         const nextLocale = value;
         startTransition(() => {
@@ -45,14 +45,23 @@ export default function LocaleSwitcherSelect({
     return (
         <>
             <Select
+                open={open}
+                onOpenChange={setOpen}
                 defaultValue={defaultValue}
                 disabled={isPending}
                 onValueChange={onSelectChange}
             >
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger
+                    onMouseEnter={() => setTimeout(() => setOpen(true), 100)}
+                    className="w-[140px]"
+                >
                     <SelectValue placeholder="Theme" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent
+
+                    onMouseEnter={() => setOpen(true)}
+                    onMouseLeave={() => setOpen(false)}
+                >
                     {children}
                 </SelectContent>
             </Select>

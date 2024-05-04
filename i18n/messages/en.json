@@ -2,7 +2,8 @@
     "Index": {
         "createBtn": "Create a card",
         "editBtn": "Edit",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "description": "Utilize Your Extra Displays\n For Language Learning!"
     },
     "WordSubmitForm": {
         "submit": "Submit",

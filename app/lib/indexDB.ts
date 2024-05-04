@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { wordCardSchema } from "@/schemas";
 import {DeleteResult, SaveResult} from '@/types/ActionsResult';
-import { handleError } from '@/lib/utils';
+// import { handleError } from '@/lib/utils';
 
 export interface RawWordInfo {
     word: string
@@ -10,8 +10,6 @@ export interface RawWordInfo {
     example: string
     notes?: string
 }
-
-
 
 const dbName = 'flashcardsDB';
 const storeName = 'cards';
@@ -50,7 +48,7 @@ export async function saveCard(values: z.infer<typeof wordCardSchema>): Promise<
         };
     }
 
-    return new Promise<SaveResult>(async (resolve, reject) => {
+    return new Promise<SaveResult>(async (resolve) => {
         try {
             const db = await openDB();
             const transaction = db.transaction([storeName], 'readwrite');
@@ -121,22 +119,22 @@ export function getCards() {
     });
 }
 
-export function getCardById(id: number) {
-    return new Promise(async (resolve, reject) => {
-        const db = await openDB();
-        const transaction = db.transaction([storeName], 'readonly');
-        const store = transaction.objectStore(storeName);
-        const request = store.get(id);
-
-        request.onsuccess = () => {
-            resolve(request.result)
-        }
-
-        request.onerror = (event) => {
-            reject(`Error fetching card: ${(event.target as IDBRequest).error?.message}`);
-        }
-    })
-}
+// export function getCardById(id: number) {
+//     return new Promise(async (resolve, reject) => {
+//         const db = await openDB();
+//         const transaction = db.transaction([storeName], 'readonly');
+//         const store = transaction.objectStore(storeName);
+//         const request = store.get(id);
+//
+//         request.onsuccess = () => {
+//             resolve(request.result)
+//         }
+//
+//         request.onerror = (event) => {
+//             reject(`Error fetching card: ${(event.target as IDBRequest).error?.message}`);
+//         }
+//     })
+// }
 
 export function deleteById(id: number): Promise<DeleteResult> {
     return new Promise(async (resolve, reject) => {

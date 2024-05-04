@@ -15,6 +15,7 @@ type IndexPageTranslation = {
         create: string
         edit: string
         cancel: string
+        description: string
     },
     submitForm: SubmitForm,
     db: DBMessage
@@ -70,11 +71,14 @@ export default function CardContainer({ ti }: { ti: IndexPageTranslation}) {
 
     return (
         <>
-            <Button
+            {words.length > 0 &&<Button
                 className={"fixed right-10 bottom-10 w-16 h-16 z-10 rounded-full"}
-                onClick={() => { setIsAdding(true); setIsEditing(true) }}>
+                onClick={() => {
+                    setIsAdding(true);
+                    setIsEditing(true)
+                }}>
                 <PlusIcon className={""} width={32} height={32}/>
-            </Button>
+            </Button>}
             {isEditing &&
                 <EditWordCard
                     dbMessage={ti.db}
@@ -97,6 +101,15 @@ export default function CardContainer({ ti }: { ti: IndexPageTranslation}) {
                 <>
                     <div className="flex flex-col items-center justify-center h-full">
                         <Card wordInfo={words[currentIndex]}>
+                            {words.length <= 0 &&
+                                <h1 className={"text-5xl font-bold text-center leading-normal mb-10"}>
+                                    {ti.index.description.split('\n').map((line, index) => (
+                                        <React.Fragment key={index}>
+                                            {line}
+                                            <br/>
+                                        </React.Fragment>
+                                    ))}
+                                </h1>}
                             <Button
                                 className={"text-base"} variant={"coloredOutline"}
                                 onClick={() => {

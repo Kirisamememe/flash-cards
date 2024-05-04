@@ -10,6 +10,7 @@ import { wordCardSchema } from "@/schemas";
 import WordForm from "@/components/wordForm";
 import { WordCard } from "@/components/wordCard";
 import { TrashIcon } from "@radix-ui/react-icons";
+import { cn } from "@/lib/utils"
 
 export type SubmitForm = {
     submit: string
@@ -127,19 +128,26 @@ export function EditWordCard({
     }
 
     return (
-        <WordForm submitFormText={submitFormText} form={form} onSubmit={onSubmit}>
-            <FormError message={error} />
-            <Button className={"mr-3"} type="submit" disabled={isPending}>{submitFormText.submit}</Button>
-            {children}
-            {form.getValues().id &&
-                <Button
-                    className={"fixed right-10 group hover:bg-destructive/10 px-2"}
-                    variant={"ghost"}
-                    type={"button"}
-                    onClick={handleDelete}
-                >
-                <TrashIcon className={"group-hover:text-destructive"} width={20} height={20}/>
-            </Button>}
-        </WordForm>
+        <div className={"fixed bg-black/50 w-svw h-svh bottom-6 flex justify-center items-center z-10"}>
+            <WordForm
+                className={cn("relative max-w-[30rem] w-full h-fit")}
+                submitFormText={submitFormText}
+                form={form}
+                onSubmit={onSubmit}
+            >
+                <FormError message={error} />
+                <Button className={"mr-3"} type="submit" disabled={isPending}>{submitFormText.submit}</Button>
+                {children}
+                {form.getValues().id &&
+                    <Button
+                        className={"absolute right-6 group hover:bg-destructive/10 px-2"}
+                        variant={"ghost"}
+                        type={"button"}
+                        onClick={handleDelete}
+                    >
+                        <TrashIcon className={"group-hover:text-destructive"} width={20} height={20}/>
+                    </Button>}
+            </WordForm>
+        </div>
     )
 }

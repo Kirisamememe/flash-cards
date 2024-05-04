@@ -2,7 +2,8 @@
     "Index": {
         "createBtn": "创建单词卡",
         "editBtn": "编辑",
-        "cancel": "取消"
+        "cancel": "取消",
+        "description": "　副屏不常用？\n　用来记单词吧！"
     },
     "WordSubmitForm": {
         "submit": "提交",

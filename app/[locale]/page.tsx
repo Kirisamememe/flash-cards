@@ -9,7 +9,8 @@ export default function Index() {
         index: {
             create: t('createBtn'),
             edit: t('editBtn'),
-            cancel: t('cancel')
+            cancel: t('cancel'),
+            description: t('description')
         },
         submitForm: {
             submit: t2('submit'),

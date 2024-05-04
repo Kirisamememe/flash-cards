@@ -2,7 +2,8 @@
     "Index": {
         "createBtn": "カードを追加",
         "editBtn": "編集",
-        "cancel": "キャンセル"
+        "cancel": "キャンセル",
+        "description": "あまり使わないディスプレイを\n言語学習に役立てよう！"
     },
     "WordSubmitForm": {
         "submit": "送信",
