@@ -25,13 +25,21 @@ import {
     // CardFooter,
 } from "@/components/ui/card"
 import { useTranslations } from "next-intl";
-import { getCardCount, getCards, getPartOfSpeeches, saveCards, savePartOfSpeech } from "@/app/lib/indexDB";
-import { getSyncAt, updateSyncAt, upsertCard, upsertPartOfSpeech } from "@/app/lib/remoteDB";
+import {getCardCount, getCards, getPartOfSpeeches, saveCards, savePartOfSpeech} from "@/app/lib/indexDB";
+import {
+    getCardsFromRemote,
+    getPartOfSpeechesFromRemote,
+    getSyncAt,
+    updateSyncAt,
+    upsertCard,
+    upsertPartOfSpeech
+} from "@/app/lib/remoteDB";
 import { PartOfSpeech, WordCard, WordCardToRemote } from "@/types/WordCard";
 import { Progress } from "@/components/ui/progress"
 import { useToast } from "@/components/ui/use-toast"
 import { useLocale } from 'next-intl';
 import {Word} from "@prisma/client";
+import {GetCardsResult, GetPartOfSpeechesResult} from "@/types/ActionsResult";
 
 
 export default function AvatarMenu({
@@ -62,6 +70,8 @@ export default function AvatarMenu({
             }
         }
 
+        // TODO 自動同期
+
         const fetchCardsCount = async () => {
             if (userId) {
                 const result = await getCardCount(userId)
@@ -76,11 +86,66 @@ export default function AvatarMenu({
     const handleSync = () => {
         if (userId) {
             startTransition(async () => {
+                // 同期開始 ========================================================================================
+                let progress = 0;
+                setProgressMessage(t('sync_parOfSpeech'))
+
+                //ローカルから品詞を取得
                 const partOfSpeeches: PartOfSpeech[] = await getPartOfSpeeches().then()
                 const partOfSpeechesToRemote: PartOfSpeech[] = [...partOfSpeeches.map(value => {
                     value.author = userId
                     return value
                 })]
+
+                if (partOfSpeeches.length > 0) {
+                    await Promise.all(partOfSpeechesToRemote.map( async (value, index) => {
+                        const result = await upsertPartOfSpeech(value)
+
+                        if (result.error) {
+                            toast({
+                                variant: "destructive",
+                                title: t('sync_error_occurred'),
+                                description: result.detail
+                            });
+
+                            return value
+                        } else {
+                            progress = Math.floor((index + 1) / words.length * 10)
+                            setProgressVal(progress);
+
+                            console.log(result)
+                            return result
+                        }
+                    }))
+                }
+
+                // データベースから品詞を取得
+                const parOfSpeechFromRemote: GetPartOfSpeechesResult = await getPartOfSpeechesFromRemote()
+                if (!parOfSpeechFromRemote.isSuccess) {
+                    console.error(parOfSpeechFromRemote.detail)
+                    toast({
+                        variant: "destructive",
+                        title: t('sync_local_error'),
+                        description: t('sync_local_error')
+                    });
+                    return
+                }
+
+                parOfSpeechFromRemote.data.map(async (value) => {
+                    const data: PartOfSpeech = {
+                        id: value.id,
+                        partOfSpeech: value.part_of_speech,
+                        author: value.authorId,
+                        is_deleted: value.is_deleted
+                    }
+                    await savePartOfSpeech(data)
+                })
+
+
+                progress += 10;
+                setProgressVal(progress)
+                setProgressMessage(t('sync_words'))
+
                 const wordData: WordCard[] = await getCards().then()
                 const words: WordCardToRemote[] = wordData.map(word => {
                     // WordCardのpartOfSpeechに対応するPartOfSpeechオブジェクトを取得
@@ -96,92 +161,70 @@ export default function AvatarMenu({
                     return mergedData;
                 })
 
-                let progress = 0;
-                setProgressMessage(t('sync_parOfSpeech'))
+                if (wordData.length > 0){
+                    await Promise.all(words.map(async (word, index) => {
+                        //Promise.allを使うことによって、words.mapの処理が全部終わってから次へ進むことを約束(Promise)してくれる
+                        const result = await upsertCard(word)
 
-                await Promise.all(partOfSpeechesToRemote.map( async (value, index) => {
-                    const result = await upsertPartOfSpeech(value)
+                        if (result.error) {
+                            toast({
+                                variant: "destructive",
+                                title: t('sync_error_occurred'),
+                                description: result.detail
+                            });
 
-                    if (result.error) {
-                        toast({
-                            variant: "destructive",
-                            title: t('sync_error_occurred'),
-                            description: result.detail
-                        });
+                            console.error(result.detail);
+                            return word;
+                        } else {
+                            progress += Math.floor((index + 1) / words.length * 30);
+                            setProgressVal(progress);
 
-                        return value
-                    } else {
-                        progress = Math.floor((index + 1) / words.length * 10)
-                        setProgressVal(progress);
-
-                        console.log(result)
-                        return result
-                    }
-                }))
-
-                progress = 10;
-                setProgressMessage(t('sync_words'))
-
-                await Promise.all(words.map(async (word, index) => {
-                    //Promise.allを使うことによって、words.mapの処理が全部終わってから次へ進むことを約束(Promise)してくれる
-                    const result = await upsertCard(word)
-
-                    if (result.error) {
-                        toast({
-                            variant: "destructive",
-                            title: t('sync_error_occurred'),
-                            description: result.detail
-                        });
-
-                        console.error(result.detail);
-                        return word;
-                    } else {
-                        progress = Math.floor((index + 1) / words.length * 90) + 10;
-                        setProgressVal(progress);
-
-                        console.log(result);
-                        return result;
-                    }
-                }))
-
-                await updateSyncAt(userId)
-
-                if (progress < 100) {
-                    toast({
-                        variant: "destructive",
-                        title: t('sync_error'),
-                        description: t('sync_error')
-                    });
-
-                    return
+                            console.log(result);
+                            return result;
+                        }
+                    }))
+                } else {
+                    progress += 30
+                    setProgressVal(progress)
                 }
 
-                console.log("======================================================");
+                // データベースから単語を取得
+                const cardsFromRemote: GetCardsResult = await getCardsFromRemote()
+                if (!cardsFromRemote.isSuccess) {
+                    console.error(cardsFromRemote.detail)
+                    toast({
+                        variant: "destructive",
+                        title: t('sync_local_error'),
+                        description: t('sync_local_error')
+                    });
+                    return
+                }
+                progress += 30
+                setProgressVal(progress)
 
-                const values: Word[] = [...words.map(word => {
-                    return {
-                        id: word.id,
-                        phonetics: word.phonetics || null,
-                        word: word.word,
-                        partOfSpeechId: word.partOfSpeech?.id || null,
-                        definition: word.definition,
-                        example: word.example || null,
-                        notes: word.notes || null,
-                        is_learned: word.is_learned,
-                        created_at: word.created_at,
-                        updated_at: word.updated_at,
-                        synced_at: word.synced_at || null,
-                        learned_at: word.learned_at || null,
-                        retention_rate: word.retention_rate,
-                        authorId: word.author || "",
-                        is_deleted: word.is_deleted
+                const cardsToIndexDB: Word[] = cardsFromRemote.data.map(value => {
+                    const data: Word = {
+                        id: value.id,
+                        word: value.word,
+                        phonetics: value.phonetics,
+                        partOfSpeechId: value.partOfSpeechId,
+                        definition: value.definition,
+                        example: value.example,
+                        notes: value.notes,
+                        is_learned: value.is_learned,
+                        created_at: value.created_at,
+                        updated_at: value.updated_at,
+                        synced_at: value.synced_at,
+                        learned_at: value.learned_at,
+                        retention_rate: value.retention_rate,
+                        authorId: value.authorId,
+                        is_deleted: value.is_deleted
                     }
-                })]
 
-                const results = await saveCards(values)
-                partOfSpeechesToRemote.map(async (value) => {
-                    await savePartOfSpeech(value)
+                    return data
                 })
+
+                const results = await saveCards(cardsToIndexDB)
 
                 if (!results.isSuccess) {
                     console.error(results.message)
@@ -194,6 +237,26 @@ export default function AvatarMenu({
 
                     return
                 }
+
+                progress += 20
+                setProgressVal(progress)
+
+                await updateSyncAt(userId)
+
+                progress += 10
+                setProgressVal(progress)
+
+                if (progress < 100) {
+                    toast({
+                        variant: "destructive",
+                        title: t('sync_error'),
+                        description: t('sync_error')
+                    });
+
+                    return
+                }
+
+                console.log("======================================================");
 
                 setProgressVal(0)
                 setReload(prev => !prev)

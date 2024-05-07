@@ -1,4 +1,5 @@
-import { WordCard } from "@/types/WordCard"
+import { PartOfSpeechRemote, WordCard } from "@/types/WordCard"
+import { Word } from "@prisma/client";
 
 export type UpsertCardResult = any | {
     error: string,
@@ -64,3 +65,21 @@ export type SignResult =   | {
         message: string;
     };
 };
+
+export type GetPartOfSpeechesResult = {
+    isSuccess: true
+    data: PartOfSpeechRemote[]
+} | {
+    isSuccess: false
+    error: string
+    detail: any
+}
+
+export type GetCardsResult = {
+    isSuccess: true
+    data: Word[]
+} | {
+    isSuccess: false
+    error: string
+    detail: any
+}

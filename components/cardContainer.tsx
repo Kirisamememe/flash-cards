@@ -94,7 +94,7 @@ export default function CardContainer({userId}: {userId: string | undefined}) {
             </Button>}
             {isLoading ? <Loading className={"flex h-svh"}/> :
                 <>
-                    <div className="flex flex-col items-center justify-center h-full pb-6">
+                    <div className="flex flex-col items-center justify-center h-full pb-10">
                         <Card wordInfo={words[currentIndex]}>
                             {words.length <= 0 &&
                                 <h1 className={"text-5xl font-bold text-center leading-normal mb-12"}>

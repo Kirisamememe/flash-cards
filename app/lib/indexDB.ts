@@ -308,12 +308,16 @@ export function getPartOfSpeeches() {
 
         request.onsuccess = () => {
             resolve(request.result)
-            console.log("取得した")
+            console.log("＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝")
             console.log(request.result)
+            console.log("＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝")
         }
 
         request.onerror = (event) => {
+            console.log("＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋")
+            console.error(event)
             reject(`Error fetching card: ${(event.target as IDBRequest).error?.message}`)
+            console.log("＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋＋")
         };
     });
 }

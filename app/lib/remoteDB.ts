@@ -1,9 +1,10 @@
 'use server';
 
 import { PrismaClient } from '@prisma/client/edge'
-import {PartOfSpeech, WordCardToRemote} from "@/types/WordCard";
+import {PartOfSpeech, PartOfSpeechRemote, WordCardToRemote} from "@/types/WordCard";
 import { withAccelerate } from "@prisma/extension-accelerate";
-import { UpsertCardResult } from "@/types/ActionsResult";
+import {GetCardsResult, GetPartOfSpeechesResult, UpsertCardResult} from "@/types/ActionsResult";
+
 
 const prisma = new PrismaClient().$extends(withAccelerate())
 
@@ -17,6 +18,30 @@ export async function getSyncAt(userId: string) {
         }
     })
 }
+
+// TODO　品詞を取得
+export async function getPartOfSpeechesFromRemote(): Promise<GetPartOfSpeechesResult> {
+    try {
+        const data = await prisma.partOfSpeech.findMany()
+        return { isSuccess: true, data: data }
+    } catch (e) {
+        console.error(e)
+        return { isSuccess: false, error: "データベースとの同期中にエラーが発生しました。", detail: e}
+    }
+}
+
+// TODO　単語を取得
+export async function getCardsFromRemote(): Promise<GetCardsResult> {
+    try {
+        const data = await prisma.word.findMany()
+        return { isSuccess: true, data: data }
+    } catch (e) {
+        console.error(e)
+        return { isSuccess: false, error: "データベースとの同期中にエラーが発生しました。", detail: e}
+    }
+
+}
+
 
 export async function updateSyncAt(userId: string) {
     try {

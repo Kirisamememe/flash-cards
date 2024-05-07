@@ -47,6 +47,13 @@ export interface PartOfSpeech {
     is_deleted: boolean
 }
 
+export interface PartOfSpeechRemote {
+    id: string
+    part_of_speech: string
+    authorId: string
+    is_deleted: boolean
+}
+
 export interface RawWordInfo {
     word: string
     phonetics?: string

@@ -1,4 +1,4 @@
-import React, {SetStateAction} from "react";
+import React from "react";
 import { WordCard } from "@/types/WordCard"
 
 export default function Card({
@@ -7,6 +7,8 @@ export default function Card({
     wordInfo: WordCard,
     children?: React.ReactNode,
 }) {
+
+    // TODO 定義とnotesを隠す機能
 
     return (
         <div className={"flex flex-col items-center justify-center"}>

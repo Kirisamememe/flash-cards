@@ -88,6 +88,8 @@ export default function WordForm({ children, form, onSubmit, userId}: {
         })
     }
 
+    // TODO 連続で単語を作成する場合、品詞が反映されない問題
+
     const onSelectChange = (value: string) => {
         form.setValue('partOfSpeech', value)
     }
@@ -206,19 +208,6 @@ export default function WordForm({ children, form, onSubmit, userId}: {
                             </FormItem>
                         )}
                     />
-                    {/*デバッグ用*/}
-                    {/*<FormField*/}
-                    {/*    control={form.control}*/}
-                    {/*    name="id"*/}
-                    {/*    render={({field}) => (*/}
-                    {/*        <FormItem>*/}
-                    {/*            <FormControl>*/}
-                    {/*                <Input disabled={true} {...field} />*/}
-                    {/*            </FormControl>*/}
-                    {/*            <FormMessage/>*/}
-                    {/*        </FormItem>*/}
-                    {/*    )}*/}
-                    {/*/>*/}
                     <div className={"pt-2"}>
                         {children}
                     </div>
