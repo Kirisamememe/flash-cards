@@ -38,8 +38,8 @@ import { PartOfSpeech, WordCard, WordCardToRemote } from "@/types/WordCard";
 import { Progress } from "@/components/ui/progress"
 import { useToast } from "@/components/ui/use-toast"
 import { useLocale } from 'next-intl';
-import {Word} from "@prisma/client";
-import {GetCardsResult, GetPartOfSpeechesResult} from "@/types/ActionsResult";
+import { Word } from "@prisma/client";
+import { GetCardsResult, GetPartOfSpeechesResult } from "@/types/ActionsResult";
 
 
 export default function AvatarMenu({
@@ -83,6 +83,10 @@ export default function AvatarMenu({
 
     }, [userId, reLoad]);
 
+
+
+
+
     const handleSync = () => {
         if (userId) {
             startTransition(async () => {
@@ -110,13 +114,16 @@ export default function AvatarMenu({
 
                             return value
                         } else {
-                            progress = Math.floor((index + 1) / words.length * 10)
+                            progress += Math.floor((index + 1) / partOfSpeechesToRemote.length * 10)
                             setProgressVal(progress);
 
                             console.log(result)
                             return result
                         }
                     }))
+                } else {
+                    progress += 10;
+                    setProgressVal(progress)
                 }
 
                 // データベースから品詞を取得
@@ -199,7 +206,7 @@ export default function AvatarMenu({
                     });
                     return
                 }
-                progress += 30
+                progress += 20
                 setProgressVal(progress)
 
                 const cardsToIndexDB: Word[] = cardsFromRemote.data.map(value => {
@@ -264,7 +271,7 @@ export default function AvatarMenu({
                 toast({
                     title: t('sync_success'),
                     description: t('sync_success')
-                });
+                })
             })
         }
     }
