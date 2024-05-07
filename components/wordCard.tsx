@@ -1,16 +1,12 @@
 import React, {SetStateAction} from "react";
-import {RawWordInfo} from "@/app/lib/indexDB";
+import { WordCard } from "@/types/WordCard"
 
-export interface WordCard {
-    id: number
-    word: string
-    phonetics?: string
-    definition: string
-    example: string
-    notes?: string
-}
-
-export default function Card({wordInfo, children, setWord}: {wordInfo: WordCard, children?: React.ReactNode, setWord?: React.Dispatch<SetStateAction<RawWordInfo>>}) {
+export default function Card({
+    wordInfo, children
+}: {
+    wordInfo: WordCard,
+    children?: React.ReactNode,
+}) {
 
     return (
         <div className={"flex flex-col items-center justify-center"}>

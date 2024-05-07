@@ -10,35 +10,13 @@ const config = {
     ],
     prefix: "",
     theme: {
-        container: {
-            center: true,
-            padding: "2rem",
-            screens: {
-                "2xl": "1400px",
-            },
-        },
-        borderRadius: {
-            'none': '0',
-            '2': '0.2rem',
-            '4': '0.4rem',
-            DEFAULT: '0.6rem',
-            '16': '1.6rem',
-            'full': '9999px',
-        },
-        borderWidth: {
-            '0': '0',
-            DEFAULT: '1px',
-            '2': '2px',
-            '3': '3px'
-        },
-        screens: {
-            sm: {'max': '480px'},
-            md: {'max': '768px'},
-            lg: {'max': '976px'},
-            xl: {'max': '1280px'},
-            '2xl': {'max': '1440px'},
-        },
         extend: {
+            borderWidth: {
+                '0': '0',
+                DEFAULT: '1px',
+                '2': '2px',
+                '3': '3px'
+            },
             colors: {
                 border: "hsl(var(--border))",
                 input: "hsl(var(--input))",
@@ -75,6 +53,11 @@ const config = {
                 },
             },
             borderRadius: {
+                '2': '0.2rem',
+                '4': '0.4rem',
+                '6': '0.6rem',
+                '16': '1.6rem',
+                'full': '9999px',
                 lg: "var(--radius)",
                 md: "calc(var(--radius) - 2px)",
                 sm: "calc(var(--radius) - 4px)",

@@ -21,11 +21,27 @@ export const signInSchema = z.object({
     }),
 });
 
-export const wordCardSchema = z.object({
-    id: z.number().optional(),
-    phonetics: z.string().min(0).max(50),
-    word: z.string().min(2,"単語は必須です").max(20, "単語は20文字以下で入力してください"),
-    definition: z.string().min(1, "定義は必須です").max(50, "定義は50文字以下で入力してください"),
-    example: z.string().max(150, "150文字以内で入力してください"),
-    notes: z.string().max(200, "200文字以内でにゅうりょくしてください"),
+export const wordCardSaveRequest = z.object({
+    id: z.string().optional(),
+    phonetics: z.string().max(80).optional(),
+    word: z.string().min(1).max(20),
+    partOfSpeech: z.string().optional(),
+    definition: z.string().min(1).max(100),
+    example: z.string().max(200).optional(),
+    notes: z.string().max(500).optional(),
+    is_learned: z.boolean(),
+    created_at: z.date().optional(),
+    updated_at: z.date().optional(),
+    synced_at: z.date().optional(),
+    learned_at: z.date().optional(),
+    retention_rate: z.number().optional(),
+    author: z.string().optional(),
+    is_deleted: z.boolean()
+})
+
+export const partOfSpeech = z.object({
+    id: z.string().optional(),
+    partOfSpeech: z.string().min(1).max(20),
+    author: z.string().optional(),
+    is_deleted: z.boolean()
 })
