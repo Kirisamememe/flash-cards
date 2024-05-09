@@ -1,15 +1,13 @@
-import { signOut } from "@/auth"
 import {Button} from "@/components/ui/button";
+import {signOutHandler} from "@/app/lib/sign-out";
 
-export function SignOut({ text }: { text: any }) {
+export function SignOut({ text, className }: { text: any, className?: string }) {
     return (
         <form
-            action={async () => {
-                "use server"
-                await signOut()
-            }}
+            className={className}
+            action={signOutHandler}
         >
-            <Button>{text.signOut}</Button>
+            <Button variant={"outline"}>{text}</Button>
         </form>
     )
 }

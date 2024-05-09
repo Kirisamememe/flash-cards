@@ -17,7 +17,7 @@
         "password": "密码",
         "profile": "个人中心",
         "wordlist": "单词本",
-        "sync": "同步单词卡",
+        "sync": "数据同步",
         "syncing": "正在同步",
         "synced_at": "最后同步时间",
         "sync_at_null": "数据尚未同步",
@@ -28,11 +28,14 @@
         "sync_success": "数据已成功同步至云端！",
         "sync_error": "数据同步异常",
         "sync_error_occurred": "数据同步中发生错误",
-        "sync_failed": "数据同步失败，请检查网络连接"
+        "sync_failed": "数据同步失败，请检查网络连接",
+        "leaning": "学习中"
     },
     "WordSubmitForm": {
         "save": "保存",
         "add": "新增",
+        "yes": "确定",
+        "no": "取消",
         "word": "单词",
         "cancel": "取消",
         "phonetics": "发音",
@@ -55,7 +58,9 @@
         "example_valid_max": "例句不能超过 200 个字符",
         "notes_valid_max": "笔记不能超过 500 个字符",
         "partOfSpeech_valid_min": "词性不能少于 1 个字符",
-        "partOfSpeech_valid_max": "词性不能超过 20 个字符"
+        "partOfSpeech_valid_max": "词性不能超过 20 个字符",
+        "delete_confirm_title": "确定要删除吗",
+        "delete_confirm_description": "删除后将无法复原"
     },
     "LocaleSwitcher": {
         "label": "Change language",

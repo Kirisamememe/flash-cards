@@ -1,4 +1,4 @@
-export interface WordCard {
+export interface WordCard { //IndexDBでの状態
     id: string
     word: string
     phonetics: string | undefined
@@ -10,7 +10,7 @@ export interface WordCard {
     created_at: Date
     updated_at: Date
     synced_at: Date | undefined
-    learned_at: Date  | undefined
+    learned_at: Date | undefined
     retention_rate: number
     author: string | undefined
     is_deleted: boolean
@@ -26,7 +26,7 @@ export interface WordCardToRemote {
     id: string
     word: string
     phonetics: string | undefined
-    partOfSpeech: PartOfSpeech | null
+    partOfSpeech: PartOfSpeechLocal | undefined
     definition: string
     example: string | undefined
     notes: string | undefined
@@ -36,22 +36,28 @@ export interface WordCardToRemote {
     synced_at: Date | undefined
     learned_at: Date | undefined
     retention_rate: number
-    author: string | undefined
+    author: string // DBと同期を取る時点でundefinedであってはならない
     is_deleted: boolean
 }
 
-export interface PartOfSpeech {
+export interface PartOfSpeechLocal {
     id: string
     partOfSpeech: string
     author: string
     is_deleted: boolean
+    created_at: Date
+    updated_at: Date
+    synced_at: Date | undefined
 }
 
-export interface PartOfSpeechRemote {
+export interface PartOfSpeechToRemote {
     id: string
-    part_of_speech: string
-    authorId: string
+    partOfSpeech: string
+    author: string
     is_deleted: boolean
+    created_at: Date
+    updated_at: Date
+    synced_at: Date | null
 }
 
 export interface RawWordInfo {

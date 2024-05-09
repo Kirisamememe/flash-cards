@@ -17,7 +17,7 @@
         "password": "パスワード",
         "profile": "プロフィール",
         "wordlist": "単語帳",
-        "sync": "カードを同期",
+        "sync": "データを同期",
         "syncing": "同期中",
         "synced_at": "最終同期日時",
         "sync_at_null": "データをクラウドに同期しましょう",
@@ -28,11 +28,14 @@
         "sync_success": "同期が正常に完了しました！",
         "sync_error": "同期が正常に完了しませんでした",
         "sync_error_occurred": "同期中にエラーが発生しました",
-        "sync_failed": "同期が失敗しました。ネットワークの状況を確認してください"
+        "sync_failed": "同期が失敗しました。ネットワークの状況を確認してください",
+        "leaning": "学習中"
     },
     "WordSubmitForm": {
         "save": "保存",
         "add": "作成",
+        "yes": "はい",
+        "no": "いいえ",
         "word": "単語",
         "cancel": "キャンセル",
         "phonetics": "発音記号",
@@ -55,7 +58,9 @@
         "example_valid_max": "「例文」は２００文字以内で入力してください",
         "notes_valid_max": "「メモ」は５００文字以内で入力してください",
         "partOfSpeech_valid_min": "「品詞」は１文字以上で入力してください",
-        "partOfSpeech_valid_max": "「品詞」は２０文字以内で入力してください"
+        "partOfSpeech_valid_max": "「品詞」は２０文字以内で入力してください",
+        "delete_confirm_title": "本当に削除しますか",
+        "delete_confirm_description": "削除すると復元できません"
     },
     "LocaleSwitcher": {
         "label": "Change language",

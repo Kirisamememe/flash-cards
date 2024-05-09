@@ -58,7 +58,6 @@ export default function LocaleSwitcherSelect({
                     <SelectValue placeholder="Theme" />
                 </SelectTrigger>
                 <SelectContent
-
                     onMouseEnter={() => setOpen(true)}
                     onMouseLeave={() => setOpen(false)}
                 >

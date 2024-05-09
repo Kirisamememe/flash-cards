@@ -3,10 +3,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { Button } from '@/components/ui/button';
 import {
     Form,
-    FormControl, FormDescription,
+    FormControl,
     FormField,
     FormItem,
     FormLabel,
@@ -14,11 +13,10 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { signUpSchema } from '@/schemas';
-import { FormError } from '@/components/form-error';
+import { FormError } from '@/components/formError';
 import { useState, useTransition } from 'react';
 import { signUp } from "@/app/lib/sign-up";
 import { toast } from 'sonner';
-import {Social} from "@/components/ui/auth/socialButtons";
 
 export function SignInForm({children, text}: {children?: React.ReactNode, text: any}) {
     const [error, setError] = useState<string | undefined>('');

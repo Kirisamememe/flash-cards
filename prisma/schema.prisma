@@ -13,21 +13,24 @@ datasource db {
 }
 
 model User {
-  id               String          @id @default(cuid())
-  email            String          @unique
-  emailVerified    DateTime?
-  name             String?
-  image            String?
-  password         String?
-  role             Role?           @default(USER)
-  words            Word[]
-  synced_at        DateTime?
-  accounts         Account[]
-  sessions         Session[]
-  Authenticator    Authenticator[]
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
-  part_of_speeches PartOfSpeech[]
+  id                 String          @id @default(cuid())
+  email              String          @unique
+  emailVerified      DateTime?
+  name               String?
+  image              String?
+  password           String?
+  role               Role?           @default(USER)
+  words              Word[]
+  synced_at          DateTime?
+  accounts           Account[]
+  sessions           Session[]
+  Authenticator      Authenticator[]
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  part_of_speeches   PartOfSpeech[]
+  auto_sync          Boolean         @default(false)
+  use_when_loggedout Boolean         @default(true)
+  blind_mode         Boolean         @default(false)
 }
 
 enum Role {
@@ -112,10 +115,13 @@ model Word {
 }
 
 model PartOfSpeech {
-  id             String  @id
+  id             String   @id
   part_of_speech String
   Word           Word[]
-  author         User    @relation(fields: [authorId], references: [id])
+  author         User     @relation(fields: [authorId], references: [id])
   authorId       String
-  is_deleted     Boolean @default(false)
+  created_at     DateTime
+  updated_at     DateTime
+  synced_at      DateTime
+  is_deleted     Boolean  @default(false)
 }

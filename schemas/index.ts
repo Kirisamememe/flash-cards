@@ -1,5 +1,7 @@
 import * as z from 'zod';
 
+
+
 export const signUpSchema = z.object({
     email: z.string().email({
         message: 'メールアドレスは必須です。',
@@ -22,26 +24,31 @@ export const signInSchema = z.object({
 });
 
 export const wordCardSaveRequest = z.object({
-    id: z.string().optional(),
-    phonetics: z.string().max(80).optional(),
-    word: z.string().min(1).max(20),
+    // IndexDBにインサートする時の状態
+    id: z.string().cuid2().optional(),
+    phonetics: z.string().max(80).trim().optional(),
+    word: z.string().min(1).max(20).trim(),
     partOfSpeech: z.string().optional(),
-    definition: z.string().min(1).max(100),
-    example: z.string().max(200).optional(),
-    notes: z.string().max(500).optional(),
-    is_learned: z.boolean(),
-    created_at: z.date().optional(),
-    updated_at: z.date().optional(),
+    definition: z.string().min(1).max(100).trim(),
+    example: z.string().max(200).trim().optional(),
+    notes: z.string().max(500).trim().optional(),
+    is_learned: z.boolean().default(false),
+    created_at: z.date().default(new Date()),
+    updated_at: z.date(),
     synced_at: z.date().optional(),
     learned_at: z.date().optional(),
-    retention_rate: z.number().optional(),
-    author: z.string().optional(),
-    is_deleted: z.boolean()
+    retention_rate: z.number().max(100).default(0),
+    author: z.string().cuid2().optional(),
+    is_deleted: z.boolean().default(false)
 })
 
 export const partOfSpeech = z.object({
+    // IndexDBにインサートする時の状態
     id: z.string().optional(),
     partOfSpeech: z.string().min(1).max(20),
     author: z.string().optional(),
-    is_deleted: z.boolean()
+    is_deleted: z.boolean(),
+    created_at: z.date(),
+    updated_at: z.date(),
+    synced_at: z.date().optional()
 })

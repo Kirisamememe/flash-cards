@@ -1,10 +1,9 @@
 'use client'
 
-// import {SignInForm} from "@/components/ui/auth/signInForm";
-import {Button} from "@/components/ui/button";
-import {useState} from "react";
-import {Social} from "@/components/ui/auth/socialButtons";
-import {useTranslations} from "next-intl";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Social } from "@/components/ui/auth/socialButtons";
+import { useTranslations } from "next-intl";
 
 export default function SignIn(){
     const [isOpen, setIsOpen] = useState(false)

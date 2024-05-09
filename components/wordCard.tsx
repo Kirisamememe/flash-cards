@@ -1,7 +1,7 @@
 import React from "react";
 import { WordCard } from "@/types/WordCard"
 
-export default function Card({
+export default function FlashCard({
     wordInfo, children
 }: {
     wordInfo: WordCard,

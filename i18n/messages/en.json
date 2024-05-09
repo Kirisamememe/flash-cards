@@ -17,7 +17,7 @@
         "password": "Password",
         "profile": "Profile",
         "wordlist": "Wordlist",
-        "sync": "Sync flashcards",
+        "sync": "Data Sync",
         "syncing": "Syncing",
         "synced_at": "Last updated:",
         "sync_at_null": "Let's sync the data to the cloud.",
@@ -28,11 +28,14 @@
         "sync_success": "Synchronization completed successfully!",
         "sync_error": "Synchronization did not complete successfully.",
         "sync_error_occurred": "Some errors occurred during synchronization.",
-        "sync_failed": "Synchronization failed. Please check your network connection."
+        "sync_failed": "Synchronization failed. Please check your network connection.",
+        "leaning": "Learning"
     },
     "WordSubmitForm": {
         "save": "Save",
         "add": "Add",
+        "yes": "Yes",
+        "no": "No",
         "cancel": "Cancel",
         "word": "Word",
         "phonetics": "Phonetics",
@@ -55,7 +58,9 @@
         "example_valid_max": "The example should be within 200 characters.",
         "notes_valid_max": "The notes should be within 500 characters.",
         "partOfSpeech_valid_min": "Please enter a part of speech of at least 1 character.",
-        "partOfSpeech_valid_max": "The part of speech should be within 20 characters."
+        "partOfSpeech_valid_max": "The part of speech should be within 20 characters.",
+        "delete_confirm_title": "Are you sure you want to delete?",
+        "delete_confirm_description": "Deletion cannot be undone."
     },
     "LocaleSwitcher": {
         "label": "Change language",

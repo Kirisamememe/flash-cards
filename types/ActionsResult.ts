@@ -1,9 +1,33 @@
-import { PartOfSpeechRemote, WordCard } from "@/types/WordCard"
-import { Word } from "@prisma/client";
+import {PartOfSpeechLocal, PartOfSpeechToRemote, WordCard} from "@/types/WordCard"
+import {PartOfSpeech, Word} from "@prisma/client";
 
-export type UpsertCardResult = any | {
-    error: string,
-    detail: any
+export type GetUserInfoFromLocalResult = {
+    isSuccess: true, data: any
+}
+
+export type SaveUserInfoResult = {
+    isSuccess: true
+} | {
+    isSuccess: false, error: Error
+}
+
+export type UpsertCardResult = {
+    isSuccess: true
+    data: any
+} | {
+    isSuccess: false
+    error: {
+        message: string
+        detail: any
+    },
+}
+
+export type UpsertPartOfSpeechResult = { isSuccess: true, data: any } | {
+    isSuccess: false
+    error: {
+        message: string
+        detail: any
+    }
 }
 
 export type SaveCardsResults = {
@@ -48,12 +72,10 @@ export type DeleteResult = {
 export type SavePOSResult = {
     isSuccess: true;
     message: string;
-    data: any
+    data: string
 } | {
     isSuccess: false;
-    error: {
-        message: string;
-    }
+    message: string;
 }
 
 export type SignResult =   | {
@@ -68,7 +90,7 @@ export type SignResult =   | {
 
 export type GetPartOfSpeechesResult = {
     isSuccess: true
-    data: PartOfSpeechRemote[]
+    data: PartOfSpeech[]
 } | {
     isSuccess: false
     error: string
@@ -82,4 +104,31 @@ export type GetCardsResult = {
     isSuccess: false
     error: string
     detail: any
+}
+
+export type GetUserInfoFromRemoteResult = {
+    isSuccess: true,
+    data: {
+        id: string
+        synced_at: Date | null,
+        updatedAt: Date
+        auto_sync: boolean,
+        use_when_loggedout: boolean,
+        blind_mode: boolean
+    } | null
+} | {
+    isSuccess: false,
+    error: string,
+    detail: unknown
+}
+
+export type UpdatePromiseCommonResult = {
+    isSuccess: true,
+    data: any
+} | {
+    isSuccess: false,
+    error: {
+        message: string
+        detail: any
+    }
 }

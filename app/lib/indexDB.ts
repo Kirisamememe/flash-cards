@@ -1,6 +1,12 @@
 import { z } from "zod"
 import { partOfSpeech, wordCardSaveRequest } from "@/schemas";
-import { DeleteResult, SaveCardsResults, SavePOSResult, SaveResult } from '@/types/ActionsResult';
+import {
+    DeleteResult, GetUserInfoFromLocalResult,
+    SaveCardsResults,
+    SavePOSResult,
+    SaveResult,
+    SaveUserInfoResult, UpdatePromiseCommonResult
+} from '@/types/ActionsResult';
 import { createId } from '@paralleldrive/cuid2';
 import { WordCard } from "@/types/WordCard";
 import { Word } from "@prisma/client";
@@ -10,7 +16,7 @@ const dbName = 'flashcards_db';
 
 function openDB():Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open(dbName, 2);
+        const request = indexedDB.open(dbName, 3);
 
         request.onupgradeneeded = (event) => {
             const db = (event.target as IDBOpenDBRequest).result;
@@ -19,6 +25,9 @@ function openDB():Promise<IDBDatabase> {
             }
             if (!db.objectStoreNames.contains('partOfSpeech')) {
                 db.createObjectStore('partOfSpeech', { keyPath: 'id' });
+            }
+            if (!db.objectStoreNames.contains('users')) {
+                db.createObjectStore('users', { keyPath: 'id' });
             }
         };
 
@@ -32,15 +41,77 @@ function openDB():Promise<IDBDatabase> {
     });
 }
 
-export async function getCardCount(userId: string) {
+export async function getUserInfoFromLocal(userId: string): Promise<GetUserInfoFromLocalResult> {
+    return new Promise<GetUserInfoFromLocalResult>(async (resolve, reject) => {
+        const db = await openDB();
+        const transaction = db.transaction(['users'], 'readonly');
+        const store = transaction.objectStore('users');
+        const request = store.get(userId)
+
+        request.onsuccess = () => {
+            resolve({
+                isSuccess: true,
+                data: request.result
+            })
+        }
+
+        request.onerror = (e) => {
+            reject({
+                isSuccess: false,
+                data: {
+                    error: e
+                }
+            })
+        }
+
+    })
+}
+
+export async function saveUserInfoToLocal(user: UserInfoToRemote): Promise<UpdatePromiseCommonResult> {
+    return new Promise<UpdatePromiseCommonResult>(async (resolve, reject) => {
+        const db = await openDB();
+        const transaction = db.transaction(['users'], 'readwrite');
+        const store = transaction.objectStore('users');
+        const userInfo = {
+            id: user.id,
+            auto_sync: user.auto_sync ,
+            use_when_loggedout: user.use_when_loggedout,
+            blind_mode: user.blind_mode,
+            synced_at: new Date(),
+            updated_at: user.updatedAt
+        }
+
+        const request = store.put(userInfo)
+
+        request.onsuccess = () => {
+            resolve({
+                isSuccess: true,
+                data: request.result
+            })
+        }
+
+        request.onerror = (e) => {
+            reject({
+                isSuccess: false,
+                error: {
+                    message: "IndexDBにほぞんできませんでした",
+                    detail: e
+                }
+            })
+        }
+    })
+}
+
+export async function getCardCountFromLocal(userId: string) {
     return new Promise<number | undefined>(async (resolve, reject) => {
         const db = await openDB();
-        const transaction = db.transaction(['words'], 'readwrite');
+        const transaction = db.transaction(['words'], 'readonly');
         const store = transaction.objectStore('words');
         const request = store.getAll();
 
         request.onsuccess = () => {
             const filteredResults = request.result.filter(card => !card.is_deleted)
+                .filter(card => card.author === userId || undefined)
             resolve(filteredResults.length)
         }
 
@@ -53,7 +124,7 @@ export async function getCardCount(userId: string) {
     })
 }
 
-export async function saveCards(cards: Word[]): Promise<SaveCardsResults> {
+export async function saveCardsToLocal(cards: Word[]): Promise<SaveCardsResults> {
     return new Promise<SaveCardsResults>(async (resolve) => {
         const db = await openDB();
         const transaction = db.transaction(['words'], 'readwrite');
@@ -125,7 +196,7 @@ export async function saveCards(cards: Word[]): Promise<SaveCardsResults> {
     });
 }
 
-export async function saveCard(values: z.infer<typeof wordCardSaveRequest>): Promise<SaveResult> {
+export async function saveCardToLocal(values: z.infer<typeof wordCardSaveRequest>, forSync: boolean = false): Promise<SaveResult> {
     const validatedFields = wordCardSaveRequest.safeParse(values);
 
     if (!validatedFields.success) {
@@ -152,7 +223,7 @@ export async function saveCard(values: z.infer<typeof wordCardSaveRequest>): Pro
                 notes: values.notes,
                 is_learned: values.is_learned,
                 created_at: values.created_at || new Date(),
-                updated_at: new Date(),
+                updated_at: forSync ? values.updated_at : new Date(),
                 synced_at: values.synced_at,
                 learned_at: values.learned_at,
                 retention_rate: values.retention_rate || 0,
@@ -205,7 +276,7 @@ export async function saveCard(values: z.infer<typeof wordCardSaveRequest>): Pro
     });
 }
 
-export function getCards() {
+export function getCardsFromLocal(userId: string | undefined, containDeleted: boolean = false) {
     return new Promise(async (resolve, reject) => {
         const db = await openDB();
         const transaction = db.transaction(['words'], 'readonly');
@@ -213,8 +284,8 @@ export function getCards() {
         const request = store.getAll();
 
         request.onsuccess = () => {
-            const filteredResults = request.result.filter(card => !card.is_deleted)
-                // .filter(card => card.author === userId)
+            const filteredResults = containDeleted ? request.result : request.result.filter(card => !card.is_deleted)
+                .filter(card => card.author === userId || undefined)
             resolve(filteredResults)
             console.log("取得した")
             console.log(filteredResults)
@@ -243,7 +314,7 @@ export function getCards() {
 //     })
 // }
 
-export function deleteById(values: z.infer<typeof wordCardSaveRequest>): Promise<DeleteResult> {
+export function deleteByIdFromLocal(values: z.infer<typeof wordCardSaveRequest>): Promise<DeleteResult> {
     return new Promise(async (resolve, reject) => {
         const db = await openDB()
         const transaction = db.transaction(['words'], 'readwrite')
@@ -269,8 +340,17 @@ export function deleteById(values: z.infer<typeof wordCardSaveRequest>): Promise
     })
 }
 
-export function savePartOfSpeech(value: z.infer<typeof partOfSpeech>): Promise<SavePOSResult> {
-    return new Promise(async (resolve, reject) => {
+export function savePartOfSpeechToLocal(value: z.infer<typeof partOfSpeech>, forSync: boolean = false): Promise<SavePOSResult> | { message: string; isSuccess: false }{
+    const validatedFields = partOfSpeech.safeParse(value);
+
+    if (!validatedFields.success) {
+        return {
+            isSuccess: false,
+            message: validatedFields.error.message,
+        };
+    }
+
+    return new Promise<SavePOSResult>(async (resolve, reject) => {
         const db = await openDB()
         const transaction = db.transaction(['partOfSpeech'], 'readwrite')
         const store = transaction.objectStore('partOfSpeech')
@@ -278,7 +358,10 @@ export function savePartOfSpeech(value: z.infer<typeof partOfSpeech>): Promise<S
             id: value.id || createId(),
             partOfSpeech: value.partOfSpeech,
             author: value.author,
-            is_deleted: value.is_deleted
+            is_deleted: value.is_deleted,
+            created_at: value.created_at || new Date(),
+            updated_at: forSync ? value.updated_at : new Date(),
+            synced_at: value.synced_at
         }
         const request = store.put(data)
 
@@ -286,7 +369,7 @@ export function savePartOfSpeech(value: z.infer<typeof partOfSpeech>): Promise<S
             resolve({
                 isSuccess: true,
                 message: "品詞を保存しました",
-                data: request.result
+                data: request.result.toString()
             })
         }
 
@@ -299,7 +382,7 @@ export function savePartOfSpeech(value: z.infer<typeof partOfSpeech>): Promise<S
     })
 }
 
-export function getPartOfSpeeches() {
+export function getPartOfSpeechesFromLocal() {
     return new Promise(async (resolve, reject) => {
         const db = await openDB()
         const transaction = db.transaction(["partOfSpeech"], 'readonly')
@@ -321,59 +404,3 @@ export function getPartOfSpeeches() {
         };
     });
 }
-
-// async function addCard(values: z.infer<typeof wordCardSchema>): Promise<ActionsResult> {
-//     const validatedFields = wordCardSchema.safeParse(values);
-//
-//     if (!validatedFields.success) {
-//         return {
-//             isSuccess: false,
-//             error: {
-//                 messages: validatedFields.error.messages,
-//             },
-//         };
-//     }
-//
-//     //存在しなければ追加、存在していれば修正
-//
-//     return new Promise<ActionsResult>(async (resolve, reject) => {
-//         try {
-//             const db = await openDB();
-//             const transaction = db.transaction([storeName], 'readwrite');
-//             const store = transaction.objectStore(storeName);
-//             const request = store.add(values);
-//
-//             request.onsuccess = () => {
-//                 const id = request.result;
-//                 const addedObjectRequest = store.get(id);
-//
-//                 addedObjectRequest.onsuccess = () => {
-//                     console.log("追加した", addedObjectRequest.result);
-//                     resolve({
-//                         isSuccess: true,
-//                         messages: 'カードが成功的に追加されました。',
-//                         data: addedObjectRequest.result
-//                     });
-//                 };
-//             };
-//
-//             request.onerror = (event) => {
-//                 resolve({
-//                     isSuccess: false,
-//                     error: {
-//                         messages: `Error adding card: ${(event.target as IDBRequest).error?.messages}`
-//                     }
-//                 });
-//             };
-//         } catch (error) {
-//             handleError(error)
-//
-//             resolve({
-//                 isSuccess: false,
-//                 error: {
-//                     messages: `データベース操作中にエラーが発生しました'}`
-//                 }
-//             });
-//         }
-//     });
-// }

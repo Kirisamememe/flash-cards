@@ -1,6 +1,7 @@
-import {Form, FormLabel, FormControl, FormField, FormItem, FormMessage} from "@/components/ui/form";
-import {Input} from "@/components/ui/input";
-import {Textarea} from "@/components/ui/textarea";
+import { Form, FormLabel, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { FormError } from '@/components/formError';
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import {
     Dialog,
@@ -11,17 +12,17 @@ import {
     DialogClose,
     // DialogDescription,
     // DialogTrigger,
-} from "@/components/ui/dialog"
-import React, {useEffect, useState, useTransition} from "react";
-import {useForm, UseFormReturn} from "react-hook-form";
+} from "@/components/ui/dialog/dialog"
+import React, { useEffect, useState, useTransition } from "react";
+import { useForm, UseFormReturn } from "react-hook-form";
 import { z } from "zod"
-import {wordCardSaveRequest} from "@/schemas";
-import {useTranslations} from "next-intl";
-import {Button} from "@/components/ui/button";
-import {PartOfSpeech} from "@/types/WordCard";
-import {getPartOfSpeeches, savePartOfSpeech} from "@/app/lib/indexDB";
-import {zodResolver} from "@hookform/resolvers/zod";
-import {toast} from "sonner";
+import { wordCardSaveRequest } from "@/schemas";
+import { useTranslations } from "next-intl";
+import { Button } from "@/components/ui/button";
+import { PartOfSpeechLocal } from "@/types/WordCard";
+import { getPartOfSpeechesFromLocal, savePartOfSpeechToLocal } from "@/app/lib/indexDB";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useToast } from "@/components/ui/use-toast"
 
 export default function WordForm({ children, form, onSubmit, userId}: {
     children: React.ReactNode,
@@ -32,16 +33,21 @@ export default function WordForm({ children, form, onSubmit, userId}: {
     const t = useTranslations('WordSubmitForm')
     const t2 = useTranslations('IndexDB')
     const [isPending, startTransition] = useTransition();
-    const [partOfSpeeches, setPartOfSpeeches] = useState<PartOfSpeech[]>([])
+    const [partOfSpeeches, setPartOfSpeeches] = useState<PartOfSpeechLocal[]>([])
     const [dialogOpen, setDialogOpen] = useState(false)
     const [error, setError] = useState<string | undefined>('');
     const [reLoad, setReload] = useState(false)
+
+    const { toast } = useToast()
 
     const partOfSpeech = z.object({
         id: z.string().optional(),
         partOfSpeech: z.string().min(1, t("partOfSpeech_valid_min")).max(20, t("partOfSpeech_valid_max")),
         author: z.string().optional(),
-        is_deleted: z.boolean()
+        is_deleted: z.boolean(),
+        created_at: z.date().default(new Date()),
+        updated_at: z.date().default(new Date()),
+        synced_at: z.date().optional()
     })
 
     const partOfSpeechForm = useForm<z.infer<typeof partOfSpeech>>({
@@ -51,14 +57,17 @@ export default function WordForm({ children, form, onSubmit, userId}: {
             id: "",
             partOfSpeech: "",
             author: userId,
-            is_deleted: false
+            is_deleted: false,
+            created_at: undefined,
+            updated_at: undefined,
+            synced_at: undefined
         },
     })
 
 
     useEffect(() => {
         const fetchPartOfSpeeches = async () => {
-            const result: PartOfSpeech[] = await getPartOfSpeeches().then()
+            const result: PartOfSpeechLocal[] = await getPartOfSpeechesFromLocal().then()
             setPartOfSpeeches(result)
         }
         fetchPartOfSpeeches().catch(e => console.error(e))
@@ -67,10 +76,15 @@ export default function WordForm({ children, form, onSubmit, userId}: {
 
     const submitPartOfSpeech = (values: z.infer<typeof partOfSpeech>) => {
         startTransition(async () => {
-            const result = await savePartOfSpeech(values)
+            const result = await savePartOfSpeechToLocal(values)
 
             if (!result.isSuccess) {
-                setError(result.error.message);
+                setError(result.message);
+                toast({
+                    variant: "destructive",
+                    title: t2('saved'),
+                    description: error
+                })
                 return;
             }
             else {
@@ -80,22 +94,30 @@ export default function WordForm({ children, form, onSubmit, userId}: {
                     id: "",
                     partOfSpeech: "",
                     author: userId,
-                    is_deleted: false
+                    is_deleted: false,
+                    created_at: undefined,
+                    updated_at: undefined,
+                    synced_at: undefined
                 })
                 console.log(result)
-                toast.success(t2('saved'))
+                toast({
+                    title: t2('saved'),
+                    description: t2('saved')
+                })
             }
         })
     }
 
+    // TODO 品詞を編集する機能
     // TODO 連続で単語を作成する場合、品詞が反映されない問題
 
-    const onSelectChange = (value: string) => {
-        form.setValue('partOfSpeech', value)
-    }
+    // const onSelectChange = (value: string) => {
+    //     form.setValue('partOfSpeech', value)
+    // }
 
     return (
         <>
+            {/*メインフォーム＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝*/}
             <Form {...form}>
                 <form autoComplete={"off"}
                       onSubmit={form.handleSubmit(onSubmit)}
@@ -123,8 +145,8 @@ export default function WordForm({ children, form, onSubmit, userId}: {
                                     <FormLabel className={"ml-1"}>{t('part_of_speech')}</FormLabel>
                                     <FormControl>
                                         <Select
-                                            // value={form.getValues('partOfSpeech') || partOfSpeechValue}
-                                            onValueChange={onSelectChange}
+                                            value={field.value}
+                                            onValueChange={field.onChange}
                                             disabled={isPending}
                                             defaultValue={field.value}
                                         >
@@ -158,7 +180,7 @@ export default function WordForm({ children, form, onSubmit, userId}: {
                             <FormItem>
                                 <FormLabel className={"ml-1"}>{t('phonetics')}</FormLabel>
                                 <FormControl>
-                                    <Input className={""}
+                                     <Input className={""}
                                            placeholder={t('phonetics_placeholder')} {...field} />
                                 </FormControl>
                                 <FormMessage className={"ml-1"}/>
@@ -213,6 +235,8 @@ export default function WordForm({ children, form, onSubmit, userId}: {
                     </div>
                 </form>
             </Form>
+
+            {/*品詞追加用のフォーム＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝*/}
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogContent className="max-w-96 rounded-6">
                     <DialogHeader>
@@ -234,6 +258,7 @@ export default function WordForm({ children, form, onSubmit, userId}: {
                                     </FormItem>
                                 )}
                             />
+                            <FormError message={error} />
                             <DialogFooter className={"flex-row justify-between gap-3"}>
                                 <Button disabled={isPending} className={"w-full"} type={"submit"}>{t('save')}</Button>
                                 <DialogClose asChild>

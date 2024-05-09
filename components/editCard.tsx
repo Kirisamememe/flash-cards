@@ -1,6 +1,6 @@
 import React, { SetStateAction, useState, useTransition } from "react";
-import { FormError } from '@/components/form-error';
-import { deleteById, saveCard } from "@/app/lib/indexDB";
+import { FormError } from '@/components/formError';
+import { deleteByIdFromLocal, saveCardToLocal } from "@/app/lib/indexDB";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -8,17 +8,8 @@ import { z } from "zod"
 import { useToast } from "@/components/ui/use-toast"
 import WordForm from "@/components/wordForm";
 import { WordCard } from "@/types/WordCard"
-import { TrashIcon } from "@radix-ui/react-icons";
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger
-} from "@/components/ui/dialog";
 import {useTranslations} from "next-intl";
+import DestructiveDialog from "@/components/ui/dialog/destructiveDialog";
 
 
 export function EditWordCard({
@@ -45,21 +36,21 @@ export function EditWordCard({
     const { toast } = useToast()
 
     const wordCardSaveRequest = z.object({
-        id: z.string().optional(),
-        phonetics: z.string().max(80, t1('phonetics_valid_max')).optional(),
-        word: z.string().min(1, t1('word_valid_min')).max(20, t1('word_valid_max')),
+        id: z.string().cuid2().optional(),
+        phonetics: z.string().max(80, t1('phonetics_valid_max')).trim().optional(),
+        word: z.string().min(1, t1('word_valid_min')).max(20, t1('word_valid_max')).trim(),
         partOfSpeech: z.string().optional(),
-        definition: z.string().min(1, t1('definition_valid_min')).max(100, t1('definition_valid_max')),
-        example: z.string().max(200, t1('example_valid_max')).optional(),
-        notes: z.string().max(500, t1('notes_valid_max')).optional(),
-        is_learned: z.boolean(),
-        created_at: z.date().optional(),
-        updated_at: z.date().optional(),
+        definition: z.string().min(1, t1('definition_valid_min')).max(100, t1('definition_valid_max')).trim(),
+        example: z.string().max(200, t1('example_valid_max')).trim().optional(),
+        notes: z.string().max(500, t1('notes_valid_max')).trim().optional(),
+        is_learned: z.boolean().default(false),
+        created_at: z.date().default(new Date()),
+        updated_at: z.date(),
         synced_at: z.date().optional(),
         learned_at: z.date().optional(),
-        retention_rate: z.number().optional(),
-        author: z.string().optional(),
-        is_deleted: z.boolean()
+        retention_rate: z.number().max(100).default(0),
+        author: z.string().cuid2().optional(),
+        is_deleted: z.boolean().default(false)
     })
 
     const form = useForm<z.infer<typeof wordCardSaveRequest>>({
@@ -80,7 +71,7 @@ export function EditWordCard({
             learned_at: wordData?.learned_at,
             retention_rate: wordData?.retention_rate,
             author: userId,
-            is_deleted: wordData?.is_deleted || false
+            is_deleted: wordData?.is_deleted
         },
     })
 
@@ -89,7 +80,7 @@ export function EditWordCard({
         startTransition(async () => {
             console.log("フォームをサブミット")
             console.log(values)
-            const result = await saveCard(values)
+            const result = await saveCardToLocal(values)
 
             if (!result.isSuccess) {
                 setError(result.error.message);
@@ -111,6 +102,7 @@ export function EditWordCard({
                     id: undefined,
                     phonetics: "",
                     word: "",
+                    partOfSpeech: "",
                     definition: "",
                     example: "",
                     notes: "",
@@ -137,7 +129,7 @@ export function EditWordCard({
             const id = wordData && wordData.id
             if (!id) return
 
-            const result = await deleteById(wordData)
+            const result = await deleteByIdFromLocal(wordData)
 
             if (!result.isSuccess) {
                 setError(result.error.message);
@@ -157,6 +149,8 @@ export function EditWordCard({
         })
     }
 
+    // TODO 削除のダイアログを部品化及びi18n対応
+
     return (
         <WordForm
             userId={userId}
@@ -167,43 +161,13 @@ export function EditWordCard({
             <Button className={"mr-3"} size={"lg"} type="submit" disabled={isPending}>{t1('save')}</Button>
             {children}
             {form.getValues().id &&
-                <Dialog onOpenChange={() => {}}>
-                    <DialogTrigger asChild>
-                        <Button
-                            className={"absolute right-6 group hover:bg-destructive/10 px-2 w-11"}
-                            variant={"ghost"}
-                            size={"lg"}
-                            type={"button"}
-                        >
-                            <TrashIcon className={"group-hover:text-destructive"} width={20} height={20}/>
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-96 sm:max-w-[425px] rounded-6">
-                        <DialogHeader>
-                            <DialogTitle>{"本当に削除しますか"}</DialogTitle>
-                        </DialogHeader>
-                        <DialogDescription className={"text-center"}>
-                            {"削除すると、復元はできません"}
-                        </DialogDescription>
-                        <div className={"flex w-full justify-stretch gap-3"}>
-                            <Button
-                                className={"w-full"}
-                                variant={"destructive"}
-                                onClick={handleDelete}
-                                type={"button"}>
-                                {"Yes"}
-                            </Button>
-                            <DialogClose asChild>
-                                <Button
-                                    className={"w-full"}
-                                    variant={"ghost"}
-                                    type={"button"}>
-                                    {"Cancel"}
-                                </Button>
-                            </DialogClose>
-                        </div>
-                    </DialogContent>
-                </Dialog>}
+                <DestructiveDialog
+                    eventHandler={handleDelete}
+                    title={t1("delete_confirm_title")}
+                    description={t1("delete_confirm_description")}
+                    confirmBtnText={t1("yes")}
+                    cancelBtnText={t1("no")}
+                />}
         </WordForm>
     )
 }
