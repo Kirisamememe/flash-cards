@@ -45,7 +45,7 @@ export function EditWordCard({
         notes: z.string().max(500, t1('notes_valid_max')).trim().optional(),
         is_learned: z.boolean().default(false),
         created_at: z.date().default(new Date()),
-        updated_at: z.date(),
+        updated_at: z.date().default(new Date()),
         synced_at: z.date().optional(),
         learned_at: z.date().optional(),
         retention_rate: z.number().max(100).default(0),
