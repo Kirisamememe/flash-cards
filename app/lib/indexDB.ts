@@ -124,7 +124,7 @@ export async function getCardCountFromLocal(userId: string) {
     })
 }
 
-export async function saveCardsToLocal(cards: Word[]): Promise<SaveCardsResults> {
+export async function saveCardsToLocal(cards: Word[], forSync: boolean = true): Promise<SaveCardsResults> {
     return new Promise<SaveCardsResults>(async (resolve) => {
         const db = await openDB();
         const transaction = db.transaction(['words'], 'readwrite');
@@ -149,7 +149,7 @@ export async function saveCardsToLocal(cards: Word[]): Promise<SaveCardsResults>
                     is_learned: card.is_learned,
                     created_at: card.created_at,
                     updated_at: card.updated_at,
-                    synced_at: card.synced_at || new Date(),
+                    synced_at: forSync ? new Date() : card.synced_at || undefined,
                     learned_at: card.learned_at || undefined,
                     retention_rate: card.retention_rate || 0,
                     author: card.authorId,
