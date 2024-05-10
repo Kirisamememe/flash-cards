@@ -22,7 +22,7 @@ const Slider = React.forwardRef<
                 <SliderPrimitive.Range className="absolute h-full bg-primary"/>
             </SliderPrimitive.Track>
             <SliderPrimitive.Thumb
-                className="group block size-5 rounded-full border-2 border-primary bg-background ring-offset-background transition hover:scale-110 hover:shadow-md hover:shadow-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-grab active:cursor-grabbing"
+                className="group block size-5 rounded-full border-2 border-primary bg-background ring-offset-background hover:scale-105 hover:shadow-md hover:shadow-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-grab active:cursor-grabbing active:scale-125 transition-all"
             >
                 <div className={"fixed flex w-14 h-8 bottom-8 -left-6 rounded-4 bg-card ring-2 ring-primary items-center font-semibold justify-center text-sm invisible group-hover:visible"}>
                     {children}

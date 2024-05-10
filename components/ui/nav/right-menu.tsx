@@ -44,17 +44,18 @@ export default function RightMenu() {
     }
 
     return (
-        <NavigationMenu>
-            <NavigationMenuList>
+        <NavigationMenu className={"rounded-xl"}>
+            <NavigationMenuList className={"rounded-xl"}>
                 <NavigationMenuItem>
-                    <NavigationMenuTrigger className={"px-3"}>
+                    <NavigationMenuTrigger className={"pl-3 pr-2"}>
                         <Languages size={20} />
                     </NavigationMenuTrigger>
-                    <NavigationMenuContent className={"flex flex-co m-0"}>
+                    <NavigationMenuContent className={"flex flex-co m-0 rounded-xl"}>
                         <div className={"flex flex-col w-36 p-1"}>
                             {locales.map((cur) => (
                                 <Button
-                                    className={"flex pl-3 h-9 gap-3 justify-start rounded-2"}
+                                    className={"flex pl-3 h-9 gap-3 justify-start rounded-2 active:scale-[93%]"}
+                                    animation={false}
                                     key={cur}
                                     value={cur}
                                     variant={"ghost"}
