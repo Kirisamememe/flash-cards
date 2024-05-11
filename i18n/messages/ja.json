@@ -29,7 +29,10 @@
         "sync_error": "同期が正常に完了しませんでした",
         "sync_error_occurred": "同期中にエラーが発生しました",
         "sync_failed": "同期が失敗しました。ネットワークの状況を確認してください",
-        "leaning": "学習中"
+        "leaning": "学習中",
+        "auto_sync": "自動同期",
+        "blind_mode": "ブラインドモード",
+        "use_when_logged_out": "オフランで使用"
     },
     "WordSubmitForm": {
         "save": "保存",

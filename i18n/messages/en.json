@@ -29,7 +29,10 @@
         "sync_error": "Synchronization did not complete successfully.",
         "sync_error_occurred": "Some errors occurred during synchronization.",
         "sync_failed": "Synchronization failed. Please check your network connection.",
-        "leaning": "Learning"
+        "leaning": "Learning",
+        "auto_sync": "Auto Sync",
+        "blind_mode": "Blind Mode",
+        "use_when_logged_out": "Use When Logged Out"
     },
     "WordSubmitForm": {
         "save": "Save",

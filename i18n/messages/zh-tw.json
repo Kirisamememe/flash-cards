@@ -29,7 +29,10 @@
         "sync_error": "資料同步異常",
         "sync_error_occurred": "資料同步中發生錯誤",
         "sync_failed": "資料同步失敗，請檢查網路連接",
-        "leaning": "學習中"
+        "leaning": "學習中",
+        "auto_sync": "自動同步",
+        "blind_mode": "隱藏釋義",
+        "use_when_logged_out": "離線使用"
     },
     "WordSubmitForm": {
         "save": "保存",

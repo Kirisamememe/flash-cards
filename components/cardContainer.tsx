@@ -38,6 +38,7 @@ export default function CardContainer({
     userName: string | undefined | null
 }) {
     const t = useTranslations('Index')
+    const t2 = useTranslations('User')
 
     const [words, setWords] = useState<WordCard[]>([])
     const [currentIndex, setCurrentIndex] = useState(0)
@@ -181,14 +182,14 @@ export default function CardContainer({
             {userId &&
                 <AvatarMenu userId={userId} url={avatar} userName={userName} autoSync={autoSync} parentReload={setReload}>
                     <div className={"h-8 flex w-full justify-between items-center gap-6 mb-3"}>
-                        <h4 className="font-medium leading-none">{("Auto Sync")}</h4>
+                        <h4 className="font-medium leading-none">{t2("auto_sync")}</h4>
                         <Switch
                             checked={autoSync}
                             onClick={() => setAutoSync(prev => !prev)}
                         />
                     </div>
                     <div className={"h-8 flex w-full justify-between items-center gap-6"}>
-                        <h4 className="font-medium leading-none">{("Blind Mode")}</h4>
+                        <h4 className="font-medium leading-none">{t2("blind_mode")}</h4>
                         <Switch
                             checked={blindMode}
                             onClick={() => setBlindMode(prev => !prev)}
@@ -262,7 +263,7 @@ export default function CardContainer({
                             <PopoverContent className={"w-full rounded-xl px-8 py-6 gap-6"}>
                                 {userId ?
                                     <div className={"h-8 flex w-full justify-between items-center gap-6 mb-4"}>
-                                        <h4 className="font-medium leading-none">{("Auto Sync")}</h4>
+                                        <h4 className="font-medium leading-none">{t2("auto_sync")}</h4>
                                         <Switch
                                             checked={autoSync}
                                             defaultChecked={autoSync}
@@ -270,7 +271,7 @@ export default function CardContainer({
                                         />
                                     </div> :
                                     <div className={"h-8 flex w-full justify-between items-center gap-6 mb-4"}>
-                                        <h4 className="font-medium leading-none">{("Logged out use")}</h4>
+                                        <h4 className="font-medium leading-none">{t2("use_when_logged_out")}</h4>
                                         <Switch
                                             checked={loggedOutUse}
                                             defaultChecked={loggedOutUse}
@@ -280,7 +281,7 @@ export default function CardContainer({
                                 }
 
                                 <div className={"h-8 flex w-full justify-between items-center gap-6"}>
-                                    <h4 className="font-medium leading-none">{("Blind Mode")}</h4>
+                                    <h4 className="font-medium leading-none">{t2("blind_mode")}</h4>
                                     <Switch
                                         checked={blindMode}
                                         defaultChecked={blindMode}
