@@ -1,6 +1,6 @@
 import React, { SetStateAction, useState, useTransition } from "react";
 import { FormError } from '@/components/formError';
-import { deleteByIdFromLocal, saveCardToLocal } from "@/app/lib/indexDB";
+import { deleteByIdFromLocal } from "@/app/lib/indexDB/indexDB";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -10,6 +10,7 @@ import WordForm from "@/components/wordForm";
 import { WordCard } from "@/types/WordCard"
 import {useTranslations} from "next-intl";
 import DestructiveDialog from "@/components/ui/dialog/destructiveDialog";
+import { saveCardToLocal } from "@/app/lib/indexDB/saveToLocal";
 
 
 export function EditWordCard({
@@ -70,9 +71,10 @@ export function EditWordCard({
             synced_at: wordData?.synced_at,
             learned_at: wordData?.learned_at,
             retention_rate: wordData?.retention_rate,
-            author: userId,
+            author: wordData?.author || userId,
             is_deleted: wordData?.is_deleted
         },
+        mode: "onChange"
     })
 
     function onSubmit(values: z.infer<typeof wordCardSaveRequest>) {
@@ -80,10 +82,10 @@ export function EditWordCard({
         startTransition(async () => {
             console.log("フォームをサブミット")
             console.log(values)
-            const result = await saveCardToLocal(values)
+            const result = await saveCardToLocal(userId, values)
 
             if (!result.isSuccess) {
-                setError(result.error.message);
+                setError(t1(result.error.message));
                 return;
             }
             else {
@@ -157,7 +159,7 @@ export function EditWordCard({
             form={form}
             onSubmit={onSubmit}
         >
-            <FormError message={error} />
+            <FormError className={"mb-4"} message={error} />
             <Button className={"mr-3"} size={"lg"} type="submit" disabled={isPending}>{t1('save')}</Button>
             {children}
             {form.getValues().id &&

@@ -20,9 +20,10 @@ import { wordCardSaveRequest } from "@/schemas";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { PartOfSpeechLocal } from "@/types/WordCard";
-import { getPartOfSpeechesFromLocal, savePartOfSpeechToLocal } from "@/app/lib/indexDB";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/components/ui/use-toast"
+import {getPartOfSpeechesFromLocal} from "@/app/lib/indexDB/getFromLocal";
+import { savePartOfSpeechToLocal } from "@/app/lib/indexDB/saveToLocal";
 
 export default function WordForm({ children, form, onSubmit, userId}: {
     children: React.ReactNode,
@@ -79,7 +80,7 @@ export default function WordForm({ children, form, onSubmit, userId}: {
             const result = await savePartOfSpeechToLocal(values)
 
             if (!result.isSuccess) {
-                setError(result.message);
+                setError(result.error.message);
                 toast({
                     variant: "destructive",
                     title: t2('saved'),

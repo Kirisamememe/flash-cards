@@ -16,12 +16,6 @@ export interface WordCard { //IndexDBでの状態
     is_deleted: boolean
 }
 
-export interface SyncData {
-    userId: string
-    synced_at: Date
-    words: WordCardToRemote[]
-}
-
 export interface WordCardToRemote {
     id: string
     word: string
@@ -58,12 +52,4 @@ export interface PartOfSpeechToRemote {
     created_at: Date
     updated_at: Date
     synced_at: Date | null
-}
-
-export interface RawWordInfo {
-    word: string
-    phonetics?: string
-    definition: string
-    example?: string
-    notes?: string
 }

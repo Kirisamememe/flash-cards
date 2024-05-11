@@ -13,7 +13,7 @@ export default async function Nav({children}: { children?: React.ReactNode }) {
 
     return (
         <>
-            <nav className="fixed top-0 w-full h-24 px-8 flex justify-between items-center">
+            <nav className="fixed top-0 w-full h-24 px-8 flex justify-between items-center z-20">
                 <Logo/>
                 <div className={"flex gap-4 items-center"}>
                     <GithubLink/>

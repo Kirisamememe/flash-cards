@@ -22,7 +22,7 @@
         "synced_at": "最後同步時間",
         "sync_at_null": "資料尚未同步",
         "sync_local_error": "本地資料庫發生異常！",
-        "sync_parOfSpeech": "正在同步詞類⋯",
+        "sync_partOfSpeech": "正在同步詞類⋯",
         "sync_words": "正在同步單字列表⋯",
         "sync_syncAt": "正在同步時間戳⋯",
         "sync_success": "資料已成功同步至雲端！",
@@ -60,7 +60,8 @@
         "partOfSpeech_valid_min": "词类不能少于 1 个字符",
         "partOfSpeech_valid_max": "词类不能超过 20 个字符",
         "delete_confirm_title": "確定要刪除嘛",
-        "delete_confirm_description": "刪除後將無法復原"
+        "delete_confirm_description": "刪除後將無法復原",
+        "edit_permission_error": "您不能編輯其他使用者建立的卡片"
     },
     "LocaleSwitcher": {
         "label": "Change language",

@@ -19,10 +19,10 @@
         "wordlist": "Wordlist",
         "sync": "Data Sync",
         "syncing": "Syncing",
-        "synced_at": "Last updated:",
+        "synced_at": "Last updated",
         "sync_at_null": "Let's sync the data to the cloud.",
         "sync_local_error": "An error occurred with the local database!",
-        "sync_parOfSpeech": "Syncing part of speech...",
+        "sync_partOfSpeech": "Syncing part of speech...",
         "sync_words": "Syncing word list...",
         "sync_syncAt": "Syncing timestamps...",
         "sync_success": "Synchronization completed successfully!",
@@ -60,7 +60,8 @@
         "partOfSpeech_valid_min": "Please enter a part of speech of at least 1 character.",
         "partOfSpeech_valid_max": "The part of speech should be within 20 characters.",
         "delete_confirm_title": "Are you sure you want to delete?",
-        "delete_confirm_description": "Deletion cannot be undone."
+        "delete_confirm_description": "Deletion cannot be undone.",
+        "edit_permission_error": "You cannot edit cards created by other users."
     },
     "LocaleSwitcher": {
         "label": "Change language",

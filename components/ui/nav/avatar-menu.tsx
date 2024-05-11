@@ -1,62 +1,28 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { SetStateAction, useEffect, useState, useTransition } from "react";
-import { Sheet, SheetContent,
-    SheetTitle,
-    // SheetFooter,
-    // SheetHeader,
-    // SheetClose,
-    // SheetDescription,
-    SheetTrigger
-} from "@/components/ui/sheet";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-    // CardFooter,
-} from "@/components/ui/card"
+import { SetStateAction, useEffect, useState, useTransition, useCallback } from "react";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { useTranslations } from "next-intl";
-import {
-    getCardCountFromLocal,
-    getCardsFromLocal,
-    getPartOfSpeechesFromLocal,
-    saveCardsToLocal,
-    savePartOfSpeechToLocal,
-    getUserInfoFromLocal, saveUserInfoToLocal
-} from "@/app/lib/indexDB";
-import {
-    getCardsFromRemote,
-    getPartOfSpeechesFromRemote, getUserInfoFromRemote,
-    updateRemoteUserInfo, updateUserInfoToRemote,
-    upsertCardToRemote,
-    upsertPartOfSpeechToRemote
-} from "@/app/lib/remoteDB";
-import { PartOfSpeechLocal, WordCard, WordCardToRemote } from "@/types/WordCard";
+import { PartOfSpeechLocal, WordCardToRemote } from "@/types/WordCard";
 import { Progress } from "@/components/ui/progress"
 import { useToast } from "@/components/ui/use-toast"
 import { useLocale } from 'next-intl';
-import {User, Word} from "@prisma/client";
-import {
-    GetCardsResult,
-    GetPartOfSpeechesResult,
-    GetUserInfoFromLocalResult,
-    GetUserInfoFromRemoteResult, UpdatePromiseCommonResult, UpsertPartOfSpeechResult
-} from "@/types/ActionsResult";
-import {cn} from "@/lib/utils";
-import {SignOut} from "@/components/ui/auth/signOut";
+import { cn } from "@/lib/utils";
+import { SignOut } from "@/components/ui/auth/signOut";
+import { getCardCountFromLocal, getCardsFromLocal, getPartOfSpeechesFromLocal, getUserInfoFromLocal } from "@/app/lib/indexDB/getFromLocal";
+import { saveCardsToLocal, savePartOfSpeechToLocal, saveUserInfoToLocal } from "@/app/lib/indexDB/saveToLocal";
+import { getCardsFromRemote, getPartOfSpeechesFromRemote, getUserInfoFromRemote } from "@/app/lib/remoteDB/getFromRemote";
+import { updateUserInfoToRemote, upsertCardToRemote, upsertPartOfSpeechToRemote } from "@/app/lib/remoteDB/saveToRemote";
 
-// このコンポーネントの主な機能：
-// 1、プロフィールの編集
-// 2、データの同期
 
 export default function AvatarMenu({
     userId,
     url,
     userName,
     className = "fixed top-7 right-8",
+    autoSync,
     parentReload,
     children,
 }: {
@@ -64,6 +30,7 @@ export default function AvatarMenu({
     url: string | undefined | null,
     userName: string | undefined | null,
     className?: string
+    autoSync: boolean
     parentReload: React.Dispatch<SetStateAction<boolean>>
     children?: React.ReactNode
 }){
@@ -78,66 +45,29 @@ export default function AvatarMenu({
 
     const t = useTranslations('User')
 
-    useEffect(() => {
-        const fetchSyncedAt = async () => {
-            if (userId){
-                const result = await getUserInfoFromRemote(userId)
-                if (result.isSuccess){
-                    setSyncedAt(result.data?.synced_at)
-                }
-                else {
-                    console.error(result.error)
-                    toast({
-                        variant: "destructive",
-                        title: t('sync_error_occurred'),
-                        description: String(result.error)
-                    })
-                }
-            }
-        }
-
-        // TODO 自動同期
-
-        const fetchCardsCount = async () => {
-            if (userId) {
-                const result = await getCardCountFromLocal(userId)
-                setWordsCount(result)
-            }
-        }
-        fetchSyncedAt().catch()
-        fetchCardsCount().catch()
-
-        parentReload(prev => !prev)
-
-    }, [userId, reLoad, parentReload, toast, t]);
-
-
-    const handleSync = () => {
+    const handleSync = useCallback( () => {
         if (userId) {
             startTransition(async () => {
                 // 同期開始 ========================================================================================
                 let progress = 0;
-                setProgressMessage(t('sync_parOfSpeech'))
+                setProgressMessage(t('sync_partOfSpeech'))
 
-                //ローカルから品詞を取得
+                // フェーズ 1-1
+                // ローカルから品詞を取得
                 const partOfSpeeches: PartOfSpeechLocal[] = await getPartOfSpeechesFromLocal().then()
                 const partOfSpeechesToRemote: PartOfSpeechLocal[] = [...partOfSpeeches.map(value => {
                     value.author = userId
                     return value
                 })]
 
-
-                //ローカルにデータがある場合、「Synced_atがリモートよりも新しいデータ」だけをリモートにプッシュ
+                // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                // フェーズ 1-2
+                // ローカルにデータがある場合、「Synced_atがリモートよりも新しいデータ」だけをリモートにプッシュ
                 if (partOfSpeeches.length > 0) {
                     await Promise.all(partOfSpeechesToRemote.map(async (value, index) => {
-                        const result: UpsertPartOfSpeechResult = await upsertPartOfSpeechToRemote(value)
+                        const result = await upsertPartOfSpeechToRemote(value)
 
                         if (!result?.isSuccess) {
-                            toast({
-                                variant: "destructive",
-                                title: t('sync_error_occurred'),
-                                description: result.error.detail
-                            })
                             console.error(result.error.detail);
                             console.error(`同期に失敗：${value}`)
                         } else {
@@ -150,41 +80,42 @@ export default function AvatarMenu({
                     setProgressVal(progress)
                 }
 
+                // フェーズ 1-3
                 // リモートデータベースから品詞を取得
-                const parOfSpeechFromRemote: GetPartOfSpeechesResult = await getPartOfSpeechesFromRemote(userId)
+                const parOfSpeechFromRemote = await getPartOfSpeechesFromRemote(userId)
                 if (!parOfSpeechFromRemote.isSuccess) {
                     //取得が失敗した場合、同期を中断
-                    console.error(parOfSpeechFromRemote.detail)
-                    toast({
-                        variant: "destructive",
-                        title: t('sync_local_error'),
-                        description: t('sync_local_error')
-                    });
+                    console.error(parOfSpeechFromRemote.error.detail)
                     return
                 }
 
-                //取得した品詞を一個ずつローカルに保存
+                // フェーズ 1-4
+                // 取得した品詞を一個ずつローカルに保存
                 parOfSpeechFromRemote.data.map(async (value) => {
                     const data: PartOfSpeechLocal = {
-                        id: value.id,
+                        ...value,
                         partOfSpeech: value.part_of_speech,
-                        author: value.authorId,
-                        is_deleted: value.is_deleted,
-                        created_at: value.created_at,
-                        updated_at: value.updated_at,
-                        synced_at: value.synced_at
+                        author: value.authorId
                     }
                     await savePartOfSpeechToLocal(data)
                 })
 
-
                 progress += 10;
                 setProgressVal(progress)
                 setProgressMessage(t('sync_words'))
+                // フェーズ 1 終了
+                // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-                //ローカルから単語データを取得
-                const wordData: WordCard[] = await getCardsFromLocal(userId, true).then()
-                const words: WordCardToRemote[] = wordData.map(word => {
+
+                // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                // フェーズ 2-1
+                // ローカルから単語データを取得
+                const fetchedWords = await getCardsFromLocal(userId, true).then()
+                if (!fetchedWords.isSuccess) {
+                    console.error(fetchedWords.error.detail)
+                    return
+                }
+                const words: WordCardToRemote[] = fetchedWords.data.map(word => {
                     // WordCardのpartOfSpeechに対応するPartOfSpeechオブジェクトを取得
                     const correspondingPartOfSpeech = partOfSpeechesToRemote.find(pos => pos.id === word.partOfSpeech)
                     // マージ後のデータを作成
@@ -197,19 +128,14 @@ export default function AvatarMenu({
                     return mergedData as WordCardToRemote;
                 })
 
-                //ローカルに単語データがある場合、それをリモートにプッシュ
-                if (wordData.length > 0){
+                // フェーズ 2-2
+                // ローカルに単語データがある場合、それをリモートにプッシュ
+                if (fetchedWords.data.length > 0){
                     await Promise.all(words.map(async (word, index) => {
                         //Promise.allを使うことによって、words.mapの処理が全部終わってから次へ進むことを約束(Promise)してくれる
                         const result = await upsertCardToRemote(word)
 
                         if (!result.isSuccess) {
-                            toast({
-                                variant: "destructive",
-                                title: t('sync_error_occurred'),
-                                description: result.error.detail
-                            });
-
                             console.error(result.error.detail);
                             console.error(`同期に失敗：${word}`)
                         } else {
@@ -222,109 +148,87 @@ export default function AvatarMenu({
                     setProgressVal(progress)
                 }
 
+                // フェーズ 2-3
                 // リモートデータベースから単語を取得
-                const cardsFromRemote: GetCardsResult = await getCardsFromRemote(userId)
+                const cardsFromRemote = await getCardsFromRemote(userId)
                 if (!cardsFromRemote.isSuccess) {
                     //取得が失敗した場合、同期を中断
-                    console.error(cardsFromRemote.detail)
-                    toast({
-                        variant: "destructive",
-                        title: t('sync_local_error'),
-                        description: t('sync_local_error')
-                    });
+                    console.error(cardsFromRemote.error.detail)
                     return
                 }
                 progress += 20
                 setProgressVal(progress)
 
-                //取得した単語データをチェック＆整形
-                const cardsToIndexDB: Word[] = cardsFromRemote.data.map(value => {
-                    const data: Word = {
-                        id: value.id,
-                        word: value.word,
-                        phonetics: value.phonetics,
-                        partOfSpeechId: value.partOfSpeechId,
-                        definition: value.definition,
-                        example: value.example,
-                        notes: value.notes,
-                        is_learned: value.is_learned,
-                        created_at: value.created_at,
-                        updated_at: value.updated_at,
-                        synced_at: value.synced_at,
-                        learned_at: value.learned_at,
-                        retention_rate: value.retention_rate,
-                        authorId: value.authorId,
-                        is_deleted: value.is_deleted
-                    }
-
-                    return data
-                })
-
-                //整形したデータをローカルに保存
-                const results = await saveCardsToLocal(cardsToIndexDB)
+                // フェーズ 2-4
+                // 取得したデータをローカルに保存
+                const results = await saveCardsToLocal(userId, cardsFromRemote.data)
 
                 if (!results.isSuccess) {
                     console.error(results.message)
-
-                    toast({
-                        variant: "destructive",
-                        title: t('sync_local_error'),
-                        description: t('sync_local_error')
-                    });
-
                     return
                 }
 
                 progress += 20
                 setProgressVal(progress)
+                // フェーズ 2 終了
+                // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-                //ローカルからユーザー設定などの情報を取得
-                //このコンポーネントにアクセスできている時点で、userIdは必ず存在する。
-                //ユーザーの設定情報に関しては、ログイン済みのユーザーであれば、IndexDBに存在すべきである
-                const userInfo: GetUserInfoFromLocalResult = await getUserInfoFromLocal(userId)
 
+                // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                // フェーズ 3-1
+                // ローカルからユーザー設定などの情報を取得
+                // このコンポーネントにアクセスできている時点で、userIdは必ず存在する。
+                // ユーザーの設定情報に関しては、ログイン済みのユーザーであれば、IndexDBに存在すべきである
+                const userInfo = await getUserInfoFromLocal(userId)
+
+                // フェーズ 3-2
                 //ローカルにユーザーデータが存在する場合それをリモートにプッシュ
-                if (userInfo.data) {
+                // ！！！！！！！！！！！！！
+                // 注意！！！ データベースの仕様上、何も帰ってこなくてもSuccessになるので、dataも一緒にチェックしないといけない
+                // ！！！！！！！！！！！！！
+                if (userInfo.isSuccess && userInfo.data) {
                     console.log("ユーザーの情報ゲットしたぜ")
                     const userInfoToRemote: UserInfoToRemote = {
-                        id: userId,
-                        auto_sync: userInfo.data.auto_sync,
-                        use_when_loggedout: userInfo.data.use_when_loggedout,
-                        blind_mode: userInfo.data.blindMode,
+                        ...userInfo.data,
                         updatedAt: userInfo.data.updated_at,
                         synced_at: userInfo.data.synced_at || new Date()
                     }
 
-                    const result: UpdatePromiseCommonResult =　await updateUserInfoToRemote(userInfoToRemote)
+                    const result =　await updateUserInfoToRemote(userInfoToRemote)
                     //リモートへの同期が失敗した場合、同期を中断
                     if (!result.isSuccess) {
                         console.error(result.error.detail)
-                        toast({
-                            variant: "destructive",
-                            title: t('sync_local_error'),
-                            description: String(result.error.detail)
-                        });
                         return
                     }
                 }
 
+                // フェーズ 3-3
+                // リモートからユーザー情報を取得
                 const userInfoFromRemote = await getUserInfoFromRemote(userId)
                 if (userInfoFromRemote.isSuccess && userInfoFromRemote.data) {
-                    const userInfoToLocal = await saveUserInfoToLocal(userInfoFromRemote.data)
+                    const userInfoToLocal: UserInfo = {
+                        ...userInfoFromRemote.data,
+                        updated_at: userInfoFromRemote.data.updatedAt,
+                        synced_at: new Date()
+                    }
 
-                    if (!userInfoToLocal.isSuccess) {
-                        console.error(userInfoToLocal.error.detail)
-                        toast({
-                            variant: "destructive",
-                            title: t('sync_local_error'),
-                            description: String(userInfoToLocal.error.detail)
-                        });
+                    // フェーズ 3-4
+                    // リモートから取得したユーザー情報をローカルに保存
+                    const result = await saveUserInfoToLocal(userInfoToLocal)
+
+                    if (!result.isSuccess) {
+                        console.error(result.error.detail)
                     }
                 }
-
                 progress += 10
                 setProgressVal(progress)
+                // フェーズ 3 終了
+                // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+
+                // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                // フェーズ 4
+                // 結果をチェック
                 if (progress < 100) {
                     toast({
                         variant: "destructive",
@@ -339,6 +243,7 @@ export default function AvatarMenu({
 
                 setProgressVal(0)
                 setReload(prev => !prev)
+                parentReload(prev => !prev)
 
                 toast({
                     title: t('sync_success'),
@@ -346,10 +251,48 @@ export default function AvatarMenu({
                 })
             })
         }
-    }
+    },[parentReload, t, toast, userId])
+
+    useEffect(() => {
+        const fetchSyncedAt = async (userId: string) => {
+            if (userId){
+                const result = await getUserInfoFromLocal(userId)
+                if (result.isSuccess){
+                    setSyncedAt(result.data?.synced_at)
+                }
+                else {
+                    console.error(result.error)
+                }
+            }
+        }
+
+        const fetchCardsCount = async () => {
+            if (userId) {
+                const result = await getCardCountFromLocal(userId)
+                setWordsCount(result)
+            }
+        }
+
+        if (userId) {
+            fetchSyncedAt(userId).catch(e => console.error(e))
+        }
+
+        fetchCardsCount().catch()
+
+    }, [userId, reLoad]);
+
+    useEffect(() => {
+        // 自動同期
+        if (userId && autoSync && syncedAt) {
+            if (new Date().getTime() - syncedAt.getTime() > 24 * 60 * 60 * 1000) {
+                handleSync()
+            }
+        }
+
+    }, [userId, autoSync, syncedAt, handleSync]);
 
     return (
-        <div className={cn("flex", className)}>
+        <div className={cn("flex z-40", className)}>
             <Sheet >
                 <SheetTrigger
                     asChild>
@@ -390,12 +333,7 @@ export default function AvatarMenu({
                                         value={progressVal}/>
                                 </CardHeader>}
                                 {!isPending && <CardContent className={"flex flex-col pt-6 gap-4 items-center"}>
-                                    <Button
-                                        className={"w-full"}
-                                        onClick={handleSync}
-                                        type={"button"}
-                                        disabled={isPending}
-                                    >
+                                    <Button className={"w-full"} onClick={handleSync} type={"button"} disabled={isPending}>
                                         {t("sync")}
                                     </Button>
                                     {syncedAt ?
@@ -410,7 +348,6 @@ export default function AvatarMenu({
 
                     </div>
                     <SignOut className={"flex flex-col w-full"} text={t('signOut')}/>
-                    {/*<Button variant={"outline"}>{t('signOut')}</Button>*/}
                 </SheetContent>
             </Sheet>
         </div>

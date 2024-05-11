@@ -22,7 +22,7 @@
         "synced_at": "最終同期日時",
         "sync_at_null": "データをクラウドに同期しましょう",
         "sync_local_error": "ローカルデータベースに異常が発生しました！",
-        "sync_parOfSpeech": "「品詞」を同期中…",
+        "sync_partOfSpeech": "「品詞」を同期中…",
         "sync_words": "「単語リスト」を同期中…",
         "sync_syncAt": "「タイムスタンプ」を同期中…",
         "sync_success": "同期が正常に完了しました！",
@@ -60,7 +60,8 @@
         "partOfSpeech_valid_min": "「品詞」は１文字以上で入力してください",
         "partOfSpeech_valid_max": "「品詞」は２０文字以内で入力してください",
         "delete_confirm_title": "本当に削除しますか",
-        "delete_confirm_description": "削除すると復元できません"
+        "delete_confirm_description": "削除すると復元できません",
+        "edit_permission_error": "他のユーザーが作成したカードは編集できません"
     },
     "LocaleSwitcher": {
         "label": "Change language",

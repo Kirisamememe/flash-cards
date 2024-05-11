@@ -1,34 +1,4 @@
-import {PartOfSpeechLocal, PartOfSpeechToRemote, WordCard} from "@/types/WordCard"
-import {PartOfSpeech, Word} from "@prisma/client";
-
-export type GetUserInfoFromLocalResult = {
-    isSuccess: true, data: any
-}
-
-export type SaveUserInfoResult = {
-    isSuccess: true
-} | {
-    isSuccess: false, error: Error
-}
-
-export type UpsertCardResult = {
-    isSuccess: true
-    data: any
-} | {
-    isSuccess: false
-    error: {
-        message: string
-        detail: any
-    },
-}
-
-export type UpsertPartOfSpeechResult = { isSuccess: true, data: any } | {
-    isSuccess: false
-    error: {
-        message: string
-        detail: any
-    }
-}
+import { WordCard } from "@/types/WordCard"
 
 export type SaveCardsResults = {
     isSuccess: boolean,
@@ -46,18 +16,6 @@ export type SaveCardsResults = {
     message: string
 }
 
-export type SaveResult =
-    | {
-        isSuccess: true;
-        message: string;
-        data: WordCard
-    }
-    | {
-        isSuccess: false;
-        error: {
-            message: string;
-        }
-    }
 
 export type DeleteResult = {
     isSuccess: true;
@@ -69,16 +27,7 @@ export type DeleteResult = {
     }
 }
 
-export type SavePOSResult = {
-    isSuccess: true;
-    message: string;
-    data: string
-} | {
-    isSuccess: false;
-    message: string;
-}
-
-export type SignResult =   | {
+export type SignResult = {
     isSuccess: true;
     message: string;
 } | {
@@ -88,43 +37,20 @@ export type SignResult =   | {
     };
 };
 
-export type GetPartOfSpeechesResult = {
+export type GetPromiseCommonResult<T> = {
     isSuccess: true
-    data: PartOfSpeech[]
-} | {
-    isSuccess: false
-    error: string
-    detail: any
-}
-
-export type GetCardsResult = {
-    isSuccess: true
-    data: Word[]
-} | {
-    isSuccess: false
-    error: string
-    detail: any
-}
-
-export type GetUserInfoFromRemoteResult = {
-    isSuccess: true,
-    data: {
-        id: string
-        synced_at: Date | null,
-        updatedAt: Date
-        auto_sync: boolean,
-        use_when_loggedout: boolean,
-        blind_mode: boolean
-    } | null
+    data: T
 } | {
     isSuccess: false,
-    error: string,
-    detail: unknown
+    error: {
+        message: string
+        detail: any
+    }
 }
 
-export type UpdatePromiseCommonResult = {
+export type UpdatePromiseCommonResult<T> = {
     isSuccess: true,
-    data: any
+    data: T
 } | {
     isSuccess: false,
     error: {
