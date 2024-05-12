@@ -37,6 +37,7 @@ export function deleteByIdFromLocal(values: z.infer<typeof wordCardSaveRequest>)
         const transaction = db.transaction(['words'], 'readwrite')
         const store = transaction.objectStore('words')
         values.is_deleted = true
+        values.updated_at = new Date()
         const request = store.put(values)
 
         request.onsuccess = () => {
