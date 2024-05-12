@@ -1,5 +1,3 @@
-'use client'
-
 import { Button } from "@/components/ui/button";
 import { Social } from "@/components/ui/auth/socialButtons";
 import { useTranslations } from "next-intl";
@@ -20,7 +18,7 @@ export default function SignIn(){
         <>
             <Dialog>
                 <DialogTrigger asChild>
-                    <Button>
+                    <Button variant={"coloredOutline"} size={"sm"}>
                         {t("signIn")}
                     </Button>
                 </DialogTrigger>

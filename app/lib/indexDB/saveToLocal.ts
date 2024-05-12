@@ -5,6 +5,7 @@ import { z } from "zod";
 import { partOfSpeech, wordCardSaveRequest } from "@/schemas";
 import { createId } from "@paralleldrive/cuid2";
 import { openDB } from "@/app/lib/indexDB/indexDB";
+import { values } from "lodash";
 
 export async function saveUserInfoToLocal(user: UserInfo): Promise<UpdatePromiseCommonResult<IDBValidKey>> {
     return new Promise<UpdatePromiseCommonResult<IDBValidKey>>(async (resolve, reject) => {
@@ -234,7 +235,7 @@ export function savePartOfSpeechToLocal(value: z.infer<typeof partOfSpeech>, for
             is_deleted: value.is_deleted,
             created_at: value.created_at || new Date(),
             updated_at: forSync ? value.updated_at : new Date(),
-            synced_at: value.synced_at
+            synced_at: forSync ? new Date() : undefined
         }
         const request = store.put(data)
 

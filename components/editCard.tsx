@@ -17,18 +17,18 @@ export function EditWordCard({
     children,
     userId,
     wordData,
-    setIsEditing,
+    setOpen,
     setReload,
     setInterval,
     setCurrentIndex
 }: {
     children?: React.ReactNode,
     userId: string | undefined,
-    wordData : WordCard | null,
-    setIsEditing: React.Dispatch<SetStateAction<boolean>>,
-    setReload: React.Dispatch<SetStateAction<boolean>>,
-    setInterval: React.Dispatch<SetStateAction<number>>,
-    setCurrentIndex: React.Dispatch<SetStateAction<number>>
+    wordData?: WordCard | null,
+    setOpen?: React.Dispatch<SetStateAction<boolean>>,
+    setReload?: React.Dispatch<SetStateAction<boolean>>,
+    setInterval?: React.Dispatch<SetStateAction<number>>,
+    setCurrentIndex?: React.Dispatch<SetStateAction<number>>
 }) {
     const [error, setError] = useState<string | undefined>('');
     const [isPending, startTransition] = useTransition();
@@ -89,16 +89,16 @@ export function EditWordCard({
                 return;
             }
             else {
-                if (values.id === undefined){ // 新しく追加された単語
+                if (values.id === undefined && setCurrentIndex){ // 新しく追加された単語
                     setCurrentIndex(0)
                 }
                 else { // 既存の単語
                     const userInterval = localStorage.getItem("interval")
-                    if (userInterval) setInterval(parseInt(userInterval))
-                    else setInterval(1000)
-                    setIsEditing(false)
+                    if (userInterval && setInterval) setInterval(parseInt(userInterval))
+                    else if(setInterval) setInterval(1000)
+                    if (setOpen) setOpen(false)
                 }
-                setReload(prev => !prev)
+                if (setReload) setReload(prev => !prev)
 
                 form.reset({
                     id: undefined,
@@ -137,10 +137,10 @@ export function EditWordCard({
                 setError(result.error.message);
                 return;
             }
-            else {
+            else if (setInterval && setReload) {
                 setInterval(1000)
                 setReload(prev => !prev)
-                setIsEditing && setIsEditing(false)
+                setOpen && setOpen(false)
             }
 
             toast({

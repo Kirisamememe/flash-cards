@@ -10,18 +10,20 @@ import { Progress } from "@/components/ui/progress"
 import { useToast } from "@/components/ui/use-toast"
 import { useLocale } from 'next-intl';
 import { cn } from "@/lib/utils";
+import { CircleUser } from 'lucide-react';
 import { SignOut } from "@/components/ui/auth/signOut";
 import { getCardCountFromLocal, getCardsFromLocal, getPartOfSpeechesFromLocal, getUserInfoFromLocal } from "@/app/lib/indexDB/getFromLocal";
 import { saveCardsToLocal, savePartOfSpeechToLocal, saveUserInfoToLocal } from "@/app/lib/indexDB/saveToLocal";
 import { getCardsFromRemote, getPartOfSpeechesFromRemote, getUserInfoFromRemote } from "@/app/lib/remoteDB/getFromRemote";
 import { updateUserInfoToRemote, upsertCardToRemote, upsertPartOfSpeechToRemote } from "@/app/lib/remoteDB/saveToRemote";
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 
 export default function AvatarMenu({
     userId,
     url,
     userName,
-    className = "fixed top-7 right-8",
+    className = "fixed bottom-[11px] sm:top-7 right-[11.25%] translate-x-[50%] sm:right-[52px]",
     autoSync,
     parentReload,
     children,
@@ -42,6 +44,8 @@ export default function AvatarMenu({
     const [isPending, startTransition] = useTransition()
     const { toast } = useToast()
     const locale = useLocale();
+
+    const isSmallDevice = useMediaQuery('(max-width:640px)');
 
     const t = useTranslations('User')
 
@@ -97,7 +101,7 @@ export default function AvatarMenu({
                         partOfSpeech: value.part_of_speech,
                         author: value.authorId
                     }
-                    await savePartOfSpeechToLocal(data)
+                    await savePartOfSpeechToLocal(data, true)
                 })
 
                 progress += 10;
@@ -296,14 +300,15 @@ export default function AvatarMenu({
             <Sheet >
                 <SheetTrigger
                     asChild>
-                    <Button className={"rounded-full hover:scale-105 hover:ring-2 hover:ring-primary hover:ring-offset-4 transition-all duration-200"} size={"icon"} variant={"ghost"}>
-                        <Avatar>
+                    <Button className={"rounded-none sm:rounded-full w-16 sm:w-10 sm:h-10 hover:bg-transparent sm:hover:scale-105 sm:hover:ring-2 sm:hover:ring-primary sm:hover:ring-offset-4 transition-all duration-200"} size={"icon"} variant={"ghost"}>
+                        <CircleUser className={"sm:hidden text-foreground"} size={24}/>
+                        <Avatar className={"hidden sm:flex"}>
                             <AvatarImage className={"hover:opacity-90"} width={40} height={40} src={url || ""}/>
                             <AvatarFallback>{userName && userName[0] || "A"}</AvatarFallback>
                         </Avatar>
                     </Button>
                 </SheetTrigger>
-                <SheetContent className={"flex flex-col max-w-[25rem] justify-between"} side={"right"}>
+                <SheetContent className={"flex flex-col max-w-[25rem] min-w-80 justify-between"} side={isSmallDevice ? "left" : "right"}>
                     <div className={"flex flex-col"}>
                         <Card className={"mt-8 mb-3"}>
                             <CardHeader className={"items-center gap-2"}>

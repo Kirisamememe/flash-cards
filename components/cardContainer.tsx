@@ -4,17 +4,8 @@ import FlashCard from "@/components/wordCard";
 import { WordCard } from "@/types/WordCard"
 import React, { useState, useEffect } from "react";
 import Loading from "@/components/ui/loading";
-import { PlusIcon } from '@radix-ui/react-icons'
 import { Button } from "@/components/ui/button";
-import { EditWordCard } from "@/components/editCard";
 import { Slider } from "@/components/ui/slider";
-import { cn } from "@/lib/utils";
-import {
-    Dialog,
-    DialogContent,
-    DialogTrigger,
-    DialogClose,
-} from "@/components/ui/dialog/dialog"
 import {
     Popover,
     PopoverContent,
@@ -26,6 +17,10 @@ import { Switch } from "@/components/ui/switch";
 import AvatarMenu from "@/components/ui/nav/avatar-menu";
 import { getCardsFromLocal, getUserInfoFromLocal } from "@/app/lib/indexDB/getFromLocal";
 import { saveUserInfoToLocal } from "@/app/lib/indexDB/saveToLocal";
+import AddWordBtn from "@/components/ui/AddBtn";
+import EditWordBtn from "@/components/ui/EditBtn";
+import { cn } from "@/lib/utils";
+import { PlusIcon } from "@radix-ui/react-icons";
 
 
 export default function CardContainer({
@@ -43,13 +38,13 @@ export default function CardContainer({
     const [words, setWords] = useState<WordCard[]>([])
     const [currentIndex, setCurrentIndex] = useState(0)
     const [isLoading, setIsLoading] = useState(true)
-    const [isAdding, setIsAdding] = useState(false)
-    const [isEditing, setIsEditing] = useState(false)
     const [reLoad, setReload] = useState(false)
     const [interval, setInterval] = useState(10000)
     const [blindMode, setBlindMode] = useState<boolean>(false)
     const [autoSync, setAutoSync] = useState<boolean>(false)
     const [loggedOutUse, setLoggedOutUse] = useState<boolean>(false)
+
+
 
     useEffect(() => {
         const loggedOutUseFromLocalStorage = localStorage.getItem("loggedOutUse")
@@ -58,7 +53,7 @@ export default function CardContainer({
         const fetchCards = async (userId: string | undefined, loggedOutUse: boolean) => {
             const fetchedCards = await getCardsFromLocal(userId, loggedOutUse);
             if (fetchedCards.isSuccess) {
-                setWords(fetchedCards.data.sort((a, b) => parseInt(b.created_at.toString()) - parseInt(a.created_at.toString())))
+                setWords(fetchedCards.data.sort((a, b) => b.created_at.getTime() - a.created_at.getTime()))
                 setIsLoading(false)
                 setCurrentIndex(0)
             }
@@ -106,22 +101,6 @@ export default function CardContainer({
         return () => clearTimeout(timer)
     }, [currentIndex, words, interval])
 
-
-    const handleOpenChange = () => {
-        setIsEditing(prev => !prev)
-
-        if (!isEditing) {
-            console.log("isEditingを変更")
-            setInterval(99999999)
-            if (words.length === 0) setIsAdding(true)
-        }
-        else {
-            const userInterval = localStorage.getItem("interval")
-            if (userInterval) setInterval(parseInt(userInterval))
-            console.log("isEditingを変更してない")
-            setIsAdding(false)
-        }
-    }
 
     const handleSlider = (value: number[]) => {
         setInterval(Math.max(value[0] * 1000, 500))
@@ -177,6 +156,7 @@ export default function CardContainer({
         }
     }
 
+
     return (
         <>
             {userId &&
@@ -196,64 +176,51 @@ export default function CardContainer({
                         />
                     </div>
                 </AvatarMenu>}
-            {words.length > 0 &&
+            <AddWordBtn
+                userId={userId || ""}
+                setReload={setReload}
+                setCurrentIndex={setCurrentIndex}
+            >
                 <Button
-                    className={"fixed right-12 bottom-20 sm:bottom-14 w-16 h-16 z-10 rounded-full"}
-                    onClick={() => {
-                        setIsAdding(true)
-                        setIsEditing(true)
-                    }}>
+                    className={cn(words.length <= 0 && "sm:hidden", "fixed right-[50%] translate-x-[50%] sm:right-20 bottom-3 sm:bottom-14 sm:size-16 z-30 rounded-full")} >
                     <PlusIcon className={""} width={32} height={32}/>
-                </Button>}
+                </Button>
+            </AddWordBtn>
             {isLoading ? <Loading className={"flex h-svh"}/> :
                 <>
-                    <div className={"fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] flex flex-col items-center w-full sm:max-w-[60rem]"}>
-                        <FlashCard wordInfo={words[currentIndex]}>
+                    <div className={"fixed top-[46%] sm:top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] flex flex-col items-center w-full sm:max-w-[60rem]"}>
+                        <FlashCard blindMode={blindMode} wordInfo={words[currentIndex]}>
                             {words.length <= 0 &&
-                                <h1 className={"text-5xl font-bold text-center leading-normal mb-8"}>
+                                <>
                                     {t('description').split('\n').map((line, index) => (
-                                        <React.Fragment key={index}>
+                                        <h1 className={"text-3xl sm:text-4xl lg:text-5xl font-bold text-center leading-normal my-1 sm:my-2 lg:my-2.5"} key={index}>
                                             {line}
-                                            <br/>
-                                        </React.Fragment>
+                                        </h1>
                                     ))}
-                                </h1>}
+                                </>}
                         </FlashCard>
 
-                        <Dialog open={isEditing} onOpenChange={handleOpenChange}>
-                            <DialogTrigger asChild>
+                        {words.length > 0 ? <EditWordBtn
+                                userId={userId}
+                                wordData={words[currentIndex]}
+                                setInterval={setInterval}
+                                setReload={setReload}
+                            /> :
+                            <AddWordBtn
+                                userId={userId || ""}
+                                setReload={setReload}
+                                setCurrentIndex={setCurrentIndex}
+                            >
                                 <Button
-                                    className={cn(words.length > 0 ? "text-base" : "rounded-full text-lg hover:shadow-xl hover:shadow-primary/20 transition")}
-                                    variant={words.length > 0 ? "coloredOutline" : "default"}
-                                    size={words.length > 0 ? "default" : "lg"}
-                                >
-                                    {words.length > 0 ? t('editBtn') : t('createBtn')}
+                                    className={cn("mt-4 z-30 rounded-full")}
+                                    size={"lg"}>
+                                    {t("createBtn")}
                                 </Button>
-                            </DialogTrigger>
-                            <DialogContent className="p-6 bg-background dark:shadow-primary/10 dark:ring-primary/20 shadow-2xl ring-1 ring-foreground/[0.05] rounded-6 sm:max-w-xl">
-                                <EditWordCard
-                                    userId={userId}
-                                    setIsEditing={setIsEditing}
-                                    setReload={setReload}
-                                    setInterval={setInterval}
-                                    setCurrentIndex={setCurrentIndex}
-                                    wordData={isAdding ? null : words[currentIndex]}
-                                >
-                                    <DialogClose asChild>
-                                        <Button
-                                            variant={"ghost"}
-                                            size={"lg"}
-                                            onClick={() => { setIsAdding(false) }}
-                                            type={"button"}>
-                                            {t('cancel')}
-                                        </Button>
-                                    </DialogClose>
-                                </EditWordCard>
-                            </DialogContent>
-                        </Dialog>
+                            </AddWordBtn>
+                        }
                     </div>
 
-                    {words.length > 0 && <div className={"fixed left-[calc(50%-11em)] sm:left-[calc(50%-14rem)] bottom-5 sm:bottom-8 h-16 flex w-[22rem] sm:w-[28rem]  justify-center gap-4 pr-16"}>
+                    {words.length > 0 && <div className={"fixed left-[50%] translate-x-[-50%] bottom-20 sm:bottom-8 h-16 flex w-[20rem] sm:w-[28rem]  justify-center gap-2 sm:gap-4 pr-6 sm:pr-16"}>
                         <Popover>
                             <PopoverTrigger className={""}>
                                 <Button className={"rounded-full h-14 hover:bg-primary/10"} type={"button"} variant={"ghost"}>
