@@ -78,6 +78,40 @@ export function getCardsFromLocal(
     });
 }
 
+export function getCardsFromLocalToRemote(
+    userId: string | undefined,
+): Promise<GetPromiseCommonResult<WordCard[]>>  {
+    return new Promise<GetPromiseCommonResult<WordCard[]>>(async (resolve, reject) => {
+        const db = await openDB();
+        const transaction = db.transaction(['words'], 'readonly');
+        const store = transaction.objectStore('words');
+        const request = store.getAll();
+
+        request.onsuccess = () => {
+            const filteredResults = request.result.filter(
+                    card => card.author === userId || undefined
+                    // Trueになる子要素が残る
+                )
+            resolve({
+                isSuccess: true,
+                data: filteredResults
+            })
+            console.log("取得した")
+            console.log(filteredResults)
+        }
+
+        request.onerror = (event) => {
+            reject({
+                isSuccess: false,
+                error: {
+                    message: `Error fetching card: ${(event.target as IDBRequest).error?.message}`,
+                    detail: event
+                }
+            })
+        };
+    });
+}
+
 export async function getCardCountFromLocal(userId: string) {
     return new Promise<number | undefined>(async (resolve, reject) => {
         const db = await openDB();

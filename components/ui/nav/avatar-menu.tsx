@@ -12,7 +12,12 @@ import { useLocale } from 'next-intl';
 import { cn } from "@/lib/utils";
 import { CircleUser } from 'lucide-react';
 import { SignOut } from "@/components/ui/auth/signOut";
-import { getCardCountFromLocal, getCardsFromLocal, getPartOfSpeechesFromLocal, getUserInfoFromLocal } from "@/app/lib/indexDB/getFromLocal";
+import {
+    getCardCountFromLocal,
+    getCardsFromLocalToRemote,
+    getPartOfSpeechesFromLocal,
+    getUserInfoFromLocal
+} from "@/app/lib/indexDB/getFromLocal";
 import { saveCardsToLocal, savePartOfSpeechToLocal, saveUserInfoToLocal } from "@/app/lib/indexDB/saveToLocal";
 import { getCardsFromRemote, getPartOfSpeechesFromRemote, getUserInfoFromRemote } from "@/app/lib/remoteDB/getFromRemote";
 import { updateUserInfoToRemote, upsertCardToRemote, upsertPartOfSpeechToRemote } from "@/app/lib/remoteDB/saveToRemote";
@@ -114,7 +119,7 @@ export default function AvatarMenu({
                 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                 // フェーズ 2-1
                 // ローカルから単語データを取得
-                const fetchedWords = await getCardsFromLocal(userId, true).then()
+                const fetchedWords = await getCardsFromLocalToRemote(userId).then()
                 if (!fetchedWords.isSuccess) {
                     console.error(fetchedWords.error.detail)
                     return
@@ -135,6 +140,8 @@ export default function AvatarMenu({
                 // フェーズ 2-2
                 // ローカルに単語データがある場合、それをリモートにプッシュ
                 if (fetchedWords.data.length > 0){
+                    console.log("ローカルからフェッチしたデータ＝＝＝＝＝")
+                    console.log(fetchedWords.data)
                     await Promise.all(words.map(async (word, index) => {
                         //Promise.allを使うことによって、words.mapの処理が全部終わってから次へ進むことを約束(Promise)してくれる
                         const result = await upsertCardToRemote(word)
