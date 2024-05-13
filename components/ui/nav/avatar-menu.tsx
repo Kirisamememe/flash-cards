@@ -28,7 +28,7 @@ export default function AvatarMenu({
     userId,
     url,
     userName,
-    className = "fixed bottom-[11px] sm:top-7 right-[11.25%] translate-x-[50%] sm:right-[52px]",
+    className = "fixed bottom-[11px] right-[11.25%] translate-x-[50%] sm:top-7 sm:right-[52px]",
     autoSync,
     parentReload,
     children,

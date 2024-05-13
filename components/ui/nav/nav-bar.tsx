@@ -42,14 +42,6 @@ export default function NavBar({children, isLogin}: {children: React.ReactNode, 
                     <Button disabled className={"w-[18.5%] h-full rounded-none hover:bg-transparent mr-[2%]"} variant={"ghost"}>
                         <CircleUser size={24}/>
                     </Button>
-
-
-                    {/*<Button asChild className={"w-[18.5%] h-full rounded-none hover:bg-transparent ml-[2%]"} variant={"ghost"}>*/}
-                    {/*    <Link href={"/"}><Tv2 className={cn(isActive("") && "text-primary")} size={24}/></Link>*/}
-                    {/*</Button>*/}
-                    {/*<Button asChild className={"w-[18.5%] h-full rounded-none hover:bg-transparent"} variant={"ghost"}>*/}
-                    {/*    <Link href={"/words"}><BookA className={cn(isActive("/words") && "text-primary")} size={24}/></Link>*/}
-                    {/*</Button>*/}
                 </div>
 
             </nav>

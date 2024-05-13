@@ -182,7 +182,7 @@ export default function CardContainer({
                 setCurrentIndex={setCurrentIndex}
             >
                 <Button
-                    className={cn(words.length <= 0 && "sm:hidden", "fixed right-[50%] translate-x-[50%] sm:right-20 bottom-3 sm:bottom-14 sm:size-16 z-30 rounded-full")} >
+                    className={cn(words.length <= 0 && "sm:hidden", "fixed right-[50%] translate-x-[50%] sm:right-20 bottom-3 sm:bottom-14 sm:w-16 sm:h-16 z-50 rounded-full")} >
                     <PlusIcon className={""} width={32} height={32}/>
                 </Button>
             </AddWordBtn>
