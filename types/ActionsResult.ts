@@ -1,11 +1,11 @@
-import { WordCard } from "@/types/WordCard"
+import { WordIndexDB } from "@/types/WordIndexDB"
 
 export type SaveCardsResults = {
     isSuccess: boolean,
     successResults: {
         isSuccess: true;
         message: string;
-        data: WordCard
+        data: WordIndexDB
     }[],
     errorResults: {
         isSuccess: false;

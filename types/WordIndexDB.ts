@@ -1,4 +1,4 @@
-export interface WordCard { //IndexDBでの状態
+export interface WordIndexDB { //IndexDBでの状態
     id: string
     word: string
     phonetics: string | undefined
@@ -15,6 +15,25 @@ export interface WordCard { //IndexDBでの状態
     author: string | undefined
     is_deleted: boolean
 }
+
+export interface WordDataMerged {
+    id: string
+    word: string
+    phonetics: string | undefined
+    partOfSpeech: PartOfSpeechLocal | undefined
+    definition: string
+    example: string | undefined
+    notes: string | undefined
+    is_learned: boolean
+    created_at: Date
+    updated_at: Date
+    synced_at: Date | undefined
+    learned_at: Date | undefined
+    retention_rate: number
+    author: string | undefined
+    is_deleted: boolean
+}
+
 
 export interface WordCardToRemote {
     id: string

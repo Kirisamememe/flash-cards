@@ -1,9 +1,8 @@
 import { Dialog, DialogClose, DialogContent, DialogTrigger } from "@/components/ui/dialog/dialog";
 import { Button } from "@/components/ui/button";
-import { PlusIcon } from "@radix-ui/react-icons";
 import { EditWordCard } from "@/components/editCard";
 import React, { SetStateAction, useState } from "react";
-import { WordCard } from "@/types/WordCard";
+import { WordDataMerged } from "@/types/WordIndexDB";
 import { useTranslations } from "next-intl";
 
 export default function EditWordBtn({
@@ -19,7 +18,7 @@ export default function EditWordBtn({
     isAdding?: boolean
     setIsAdding?: React.Dispatch<SetStateAction<boolean>>
     handleOpenChange?: any
-    wordData?: WordCard
+    wordData?: WordDataMerged
     setReload?: React.Dispatch<SetStateAction<boolean>>
     setInterval?: React.Dispatch<SetStateAction<number>>
     currentIndex?: number

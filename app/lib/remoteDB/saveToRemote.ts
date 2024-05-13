@@ -1,7 +1,7 @@
 'use server'
 
 import { UpdatePromiseCommonResult } from "@/types/ActionsResult";
-import { PartOfSpeechLocal, WordCardToRemote } from "@/types/WordCard";
+import { PartOfSpeechLocal, WordCardToRemote } from "@/types/WordIndexDB";
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { PartOfSpeech, Word } from "@prisma/client";

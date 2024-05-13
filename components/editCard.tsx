@@ -7,11 +7,10 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { useToast } from "@/components/ui/use-toast"
 import WordForm from "@/components/wordForm";
-import { WordCard } from "@/types/WordCard"
-import {useTranslations} from "next-intl";
+import { WordDataMerged } from "@/types/WordIndexDB"
+import { useTranslations } from "next-intl";
 import DestructiveDialog from "@/components/ui/dialog/destructiveDialog";
 import { saveCardToLocal } from "@/app/lib/indexDB/saveToLocal";
-
 
 export function EditWordCard({
     children,
@@ -24,7 +23,7 @@ export function EditWordCard({
 }: {
     children?: React.ReactNode,
     userId: string | undefined,
-    wordData?: WordCard | null,
+    wordData?: WordDataMerged | null,
     setOpen?: React.Dispatch<SetStateAction<boolean>>,
     setReload?: React.Dispatch<SetStateAction<boolean>>,
     setInterval?: React.Dispatch<SetStateAction<number>>,
@@ -61,7 +60,7 @@ export function EditWordCard({
             id: wordData?.id,
             phonetics: wordData?.phonetics,
             word: wordData?.word,
-            partOfSpeech: wordData?.partOfSpeech,
+            partOfSpeech: wordData?.partOfSpeech?.id,
             definition: wordData?.definition,
             example: wordData?.example,
             notes: wordData?.notes,
@@ -131,7 +130,12 @@ export function EditWordCard({
             const id = wordData && wordData.id
             if (!id) return
 
-            const result = await deleteByIdFromLocal(wordData)
+            if (userId !== wordData?.author){
+                setError(t1('edit_permission_error'));
+                return
+            }
+
+            const result = await deleteByIdFromLocal(wordData?.id)
 
             if (!result.isSuccess) {
                 setError(result.error.message);
@@ -150,8 +154,6 @@ export function EditWordCard({
             console.log("削除できたぜ")
         })
     }
-
-    // TODO 削除のダイアログを部品化及びi18n対応
 
     return (
         <WordForm

@@ -1,11 +1,10 @@
 import { Word } from "@prisma/client";
 import { SaveCardsResults, UpdatePromiseCommonResult } from "@/types/ActionsResult";
-import { WordCard } from "@/types/WordCard";
+import { WordIndexDB } from "@/types/WordIndexDB";
 import { z } from "zod";
 import { partOfSpeech, wordCardSaveRequest } from "@/schemas";
 import { createId } from "@paralleldrive/cuid2";
 import { openDB } from "@/app/lib/indexDB/indexDB";
-import { values } from "lodash";
 
 export async function saveUserInfoToLocal(user: UserInfo): Promise<UpdatePromiseCommonResult<IDBValidKey>> {
     return new Promise<UpdatePromiseCommonResult<IDBValidKey>>(async (resolve, reject) => {
@@ -57,7 +56,7 @@ export async function saveCardsToLocal(userId: string , cards: Word[], forSync: 
         for (const card of cards) {
             try {
                 if (card.authorId === userId) {
-                    const wordData: WordCard = {
+                    const wordData: WordIndexDB = {
                         id: card.id,
                         phonetics: card.phonetics || undefined,
                         word: card.word,
@@ -117,7 +116,7 @@ export async function saveCardsToLocal(userId: string , cards: Word[], forSync: 
     });
 }
 
-export async function saveCardToLocal(userId: string | undefined, values: z.infer<typeof wordCardSaveRequest>, forSync: boolean = false): Promise<UpdatePromiseCommonResult<WordCard>> {
+export async function saveCardToLocal(userId: string | undefined, values: z.infer<typeof wordCardSaveRequest>, forSync: boolean = false): Promise<UpdatePromiseCommonResult<WordIndexDB>> {
     if (values.author !== undefined && userId !== values.author) {
         return {
             isSuccess: false,
@@ -140,12 +139,12 @@ export async function saveCardToLocal(userId: string | undefined, values: z.infe
         };
     }
 
-    return new Promise<UpdatePromiseCommonResult<WordCard>>(async (resolve) => {
+    return new Promise<UpdatePromiseCommonResult<WordIndexDB>>(async (resolve) => {
         try {
             const db = await openDB();
             const transaction = db.transaction(['words'], 'readwrite');
             const store = transaction.objectStore('words');
-            const wordData: WordCard = {
+            const wordData: WordIndexDB = {
                 id: values.id === undefined ? createId() : values.id,
                 phonetics: values.phonetics,
                 word: values.word,

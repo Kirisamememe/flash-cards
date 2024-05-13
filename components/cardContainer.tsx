@@ -1,7 +1,7 @@
 'use client'
 
 import FlashCard from "@/components/wordCard";
-import { WordCard } from "@/types/WordCard"
+import { WordDataMerged } from "@/types/WordIndexDB"
 import React, { useState, useEffect } from "react";
 import Loading from "@/components/ui/loading";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ export default function CardContainer({
     const t = useTranslations('Index')
     const t2 = useTranslations('User')
 
-    const [words, setWords] = useState<WordCard[]>([])
+    const [words, setWords] = useState<WordDataMerged[]>([])
     const [currentIndex, setCurrentIndex] = useState(0)
     const [isLoading, setIsLoading] = useState(true)
     const [reLoad, setReload] = useState(false)

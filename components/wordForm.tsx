@@ -19,7 +19,7 @@ import { z } from "zod"
 import { wordCardSaveRequest } from "@/schemas";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { PartOfSpeechLocal } from "@/types/WordCard";
+import { PartOfSpeechLocal } from "@/types/WordIndexDB";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/components/ui/use-toast"
 import {getPartOfSpeechesFromLocal} from "@/app/lib/indexDB/getFromLocal";

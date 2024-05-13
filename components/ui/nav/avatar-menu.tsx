@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { useTranslations } from "next-intl";
-import { PartOfSpeechLocal, WordCardToRemote } from "@/types/WordCard";
+import { PartOfSpeechLocal, WordCardToRemote } from "@/types/WordIndexDB";
 import { Progress } from "@/components/ui/progress"
 import { useToast } from "@/components/ui/use-toast"
 import { useLocale } from 'next-intl';

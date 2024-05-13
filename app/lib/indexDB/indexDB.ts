@@ -1,5 +1,3 @@
-import { z } from "zod"
-import { wordCardSaveRequest } from "@/schemas";
 import { DeleteResult } from '@/types/ActionsResult';
 
 const dbName = 'flashcards_db';
@@ -31,20 +29,37 @@ export function openDB():Promise<IDBDatabase> {
     });
 }
 
-export function deleteByIdFromLocal(values: z.infer<typeof wordCardSaveRequest>): Promise<DeleteResult> {
+export function deleteByIdFromLocal(wordId: string): Promise<DeleteResult> {
     return new Promise(async (resolve, reject) => {
         const db = await openDB()
         const transaction = db.transaction(['words'], 'readwrite')
         const store = transaction.objectStore('words')
-        values.is_deleted = true
-        values.updated_at = new Date()
-        const request = store.put(values)
+        const request = store.get(wordId)
 
         request.onsuccess = () => {
-            resolve({
-                isSuccess: true,
-                message: "削除しました"
-            })
+
+            const deleteData = {
+                ...request.result,
+                is_deleted: true,
+                updated_at: new Date()
+            }
+            const save = store.put(deleteData)
+
+            save.onsuccess = () => {
+                resolve({
+                    isSuccess: true,
+                    message: "削除しました"
+                })
+            }
+
+            save.onerror = (event) => {
+                reject({
+                    isSuccess: false,
+                    error: {
+                        message: `削除できませんでした: ${(event.target as IDBRequest).error?.message}`
+                    }
+                })
+            }
         }
 
         request.onerror = (event) => {
@@ -57,23 +72,6 @@ export function deleteByIdFromLocal(values: z.infer<typeof wordCardSaveRequest>)
         }
     })
 }
-
-// export function getCardById(id: number) {
-//     return new Promise(async (resolve, reject) => {
-//         const db = await openDB();
-//         const transaction = db.transaction([storeName], 'readonly');
-//         const store = transaction.objectStore(storeName);
-//         const request = store.get(id);
-//
-//         request.onsuccess = () => {
-//             resolve(request.result)
-//         }
-//
-//         request.onerror = (event) => {
-//             reject(`Error fetching card: ${(event.target as IDBRequest).error?.message}`);
-//         }
-//     })
-// }
 
 
 
