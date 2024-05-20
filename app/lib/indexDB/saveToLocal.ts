@@ -1,8 +1,8 @@
 import { Word } from "@prisma/client";
 import { SaveCardsResults, UpdatePromiseCommonResult } from "@/types/ActionsResult";
-import { WordIndexDB } from "@/types/WordIndexDB";
+import { PartOfSpeechLocal, WordDataMerged, WordIndexDB } from "@/types/WordIndexDB";
 import { z } from "zod";
-import { partOfSpeech, wordCardSaveRequest } from "@/schemas";
+import { partOfSpeech, saveWordCardRequest } from "@/types";
 import { createId } from "@paralleldrive/cuid2";
 import { openDB } from "@/app/lib/indexDB/indexDB";
 
@@ -13,6 +13,8 @@ export async function saveUserInfoToLocal(user: UserInfo): Promise<UpdatePromise
         const store = transaction.objectStore('users');
         const userInfo = {
             id: user.id,
+            image: user.image,
+            name: user.name,
             auto_sync: user.auto_sync,
             use_when_loggedout: user.use_when_loggedout,
             blind_mode: user.blind_mode,
@@ -58,12 +60,12 @@ export async function saveCardsToLocal(userId: string , cards: Word[], forSync: 
                 if (card.authorId === userId) {
                     const wordData: WordIndexDB = {
                         id: card.id,
-                        phonetics: card.phonetics || undefined,
+                        phonetics: card.phonetics || "",
                         word: card.word,
                         partOfSpeech: card.partOfSpeechId || undefined,
                         definition: card.definition,
-                        example: card.example || undefined,
-                        notes: card.notes || undefined,
+                        example: card.example || "",
+                        notes: card.notes || "",
                         is_learned: card.is_learned,
                         created_at: card.created_at,
                         updated_at: card.updated_at,
@@ -116,8 +118,18 @@ export async function saveCardsToLocal(userId: string , cards: Word[], forSync: 
     });
 }
 
-export async function saveCardToLocal(userId: string | undefined, values: z.infer<typeof wordCardSaveRequest>, forSync: boolean = false): Promise<UpdatePromiseCommonResult<WordIndexDB>> {
-    if (values.author !== undefined && userId !== values.author) {
+
+
+export async function saveCardToLocal(
+    userId: string | undefined,
+    values: z.infer<typeof saveWordCardRequest>,
+    forSync: boolean = false,
+    isAdding: boolean = false
+): Promise<UpdatePromiseCommonResult<WordDataMerged>> {
+    console.log("ここに到達した")
+
+    if (values.author && userId !== values.author) {
+        // 単語に作者が存在する、且つその作者は変更をリクエストした人ではない
         return {
             isSuccess: false,
             error: {
@@ -127,7 +139,7 @@ export async function saveCardToLocal(userId: string | undefined, values: z.infe
         }
     }
 
-    const validatedFields = wordCardSaveRequest.safeParse(values);
+    const validatedFields = saveWordCardRequest.safeParse(values);
 
     if (!validatedFields.success) {
         return {
@@ -136,56 +148,64 @@ export async function saveCardToLocal(userId: string | undefined, values: z.infe
                 message: validatedFields.error.message,
                 detail: validatedFields.error.errors
             },
-        };
+        }
     }
 
-    return new Promise<UpdatePromiseCommonResult<WordIndexDB>>(async (resolve) => {
+    return new Promise<UpdatePromiseCommonResult<WordDataMerged>>(async (resolve, reject) => {
         try {
-            const db = await openDB();
-            const transaction = db.transaction(['words'], 'readwrite');
-            const store = transaction.objectStore('words');
+            const db = await openDB()
+            const transaction = db.transaction(['words', 'partOfSpeech'], 'readwrite')
+            const wordStore = transaction.objectStore('words')
+            const partOfSpeechStore = transaction.objectStore('partOfSpeech')
             const wordData: WordIndexDB = {
-                id: values.id === undefined ? createId() : values.id,
-                phonetics: values.phonetics,
-                word: values.word,
+                ...values,
+                id: values.id ? values.id : createId(),
                 partOfSpeech: values.partOfSpeech,
-                definition: values.definition,
-                example: values.example,
-                notes: values.notes,
-                is_learned: values.is_learned,
-                created_at: values.created_at || new Date(),
-                updated_at: forSync ? values.updated_at : new Date(),
+                created_at: isAdding ? new Date() : values.created_at as Date,
+                updated_at: forSync ? values.updated_at as Date : new Date(),
                 synced_at: values.synced_at,
                 learned_at: values.learned_at,
                 retention_rate: values.retention_rate || 0,
-                author: values.author,
+                author: values.author || userId,
                 is_deleted: values.is_deleted || false
             }
 
-            console.log(wordData)
+            const wordRequest = wordStore.put(wordData)
+            let partOfSpeechResult: PartOfSpeechLocal
+            if (wordData.partOfSpeech) {
+                const posRequest = partOfSpeechStore.get(wordData.partOfSpeech)
+                posRequest.onsuccess = () => {
+                    partOfSpeechResult = posRequest.result
+                }
+            }
 
-            const request = store.put(wordData);
-            request.onsuccess = () => {
-                resolve({
-                    isSuccess: true,
-                    data: wordData
-                });
-            };
-
-            request.onerror = (event) => {
-                resolve({
-                    isSuccess: false,
-                    error: {
-                        message: `Error editing card: ${(event.target as IDBRequest).error?.message}`,
-                        detail: event
+            transaction.oncomplete = () => {
+                if (wordRequest.result) {
+                    const mergedData = {
+                        ...wordData,
+                        partOfSpeech: partOfSpeechResult
                     }
-                });
-            };
+
+                    console.log("IndexDBで整形したデータ：")
+                    console.log(wordData)
+
+                    resolve({
+                        isSuccess: true,
+                        data: mergedData
+                    });
+                } else {
+                    reject({
+                        isSuccess: false,
+                        error: {
+                            message: "データに不備があるようです",
+                            detail: new Error("")
+                        }
+                    })
+                }
+            }
 
             // 確実にトランザクションが終了するのを待ちます
-            transaction.oncomplete = () => {
-                // 処理が成功的に完了
-            };
+
             transaction.onerror = (event) => {
                 resolve({
                     isSuccess: false,
@@ -196,7 +216,7 @@ export async function saveCardToLocal(userId: string | undefined, values: z.infe
                 });
             };
         } catch (error) {
-            console.error('データベース操作中にエラーが発生しました', error);
+            console.error('データベース操作中にエラーが発生しました', error)
             resolve({
                 isSuccess: false,
                 error: {
@@ -205,7 +225,6 @@ export async function saveCardToLocal(userId: string | undefined, values: z.infe
                 }
             });
         }
-
     });
 }
 
@@ -239,6 +258,8 @@ export function savePartOfSpeechToLocal(value: z.infer<typeof partOfSpeech>, for
         const request = store.put(data)
 
         request.onsuccess = () => {
+            console.log("posを保存した：")
+            console.log(request.result)
             resolve({
                 isSuccess: true,
                 data: request.result

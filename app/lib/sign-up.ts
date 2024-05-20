@@ -1,11 +1,11 @@
 'use server';
 
 import {z} from "zod";
-import {signUpSchema} from "@/schemas";
+import {signUpSchema} from "@/types";
 import bcrypt from "bcryptjs";
 import {SignResult} from "@/types/ActionsResult";
 import {getUserByEmail} from "@/app/lib/user";
-import {handleError} from "@/lib/utils";
+import {handleError} from "@/app/lib/utils";
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()

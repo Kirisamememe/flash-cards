@@ -1,7 +1,7 @@
-export default function Loading({className = "bg-primary/10 w-full h-full", size = 48}: {className?: string, size?: number}) {
+export default function Loading({className = "faceIn flex w-lvw h-lvh z-50", size = 48}: {className?: string, size?: number}) {
 
     return (
-        <div className={`${className} stroke-primary justify-center items-center rounded-lg`}>
+        <div className={`${className} absolute top-0 left-0 bg-background stroke-primary justify-center items-center rounded-lg`}>
             <svg className={"animate-spin h-16 w-16"} width={size} height={size} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle className={"stroke-primary"} cx="24" cy="24" r="15.5" stroke="#264AF4" strokeOpacity="0.2" strokeWidth="5"/>
                 <path

@@ -37,6 +37,6 @@ yarn-error.log*
 next-env.d.ts
 /prisma/dev.db
 /prisma/dev.db-journal
-/app/script.ts
+/app/lib/script.ts
 
-/lib/words.json
+/words.json

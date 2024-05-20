@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss"
+import plugin from 'tailwindcss/plugin'
 
 const config = {
     darkMode: ["class"],
@@ -76,9 +77,25 @@ const config = {
                 "accordion-down": "accordion-down 0.2s ease-out",
                 "accordion-up": "accordion-up 0.2s ease-out",
             },
+            backgroundImage: {
+                'banner-pattern': "url('/Mathematics.png')",
+            },
+            variants: {
+                extend: {
+                    backgroundColor: ['HOVER:hover', 'active'],
+                    scale: ['HOVER:hover', 'active']
+                    // Add other properties you want to extend
+                },
+            }
         },
     },
-    plugins: [require("tailwindcss-animate")],
+    plugins: [require("tailwindcss-animate"),
+        plugin(function ({ addVariant }) {
+            addVariant('hover', ['@media(hover:hover){ &:hover }'])
+            addVariant('group-hover', '@media(hover:hover){ .group:hover & }')
+            addVariant('active', '&:active');
+        }),
+    ],
 } satisfies Config
 
 export default config

@@ -22,7 +22,6 @@
     }
   },
   "ts-node": {
-    // Tell ts-node CLI to install the --loader automatically, explained below
     "esm": true
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

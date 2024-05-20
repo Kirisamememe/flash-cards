@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { auth } from "@/app/lib/auth";
 import pages from "@/app/lib/pages";
 import { NextRequest, NextResponse } from "next/server";
 import createIntlMiddleware from "next-intl/middleware";
@@ -62,5 +62,5 @@ export default async function middleware(req: NextRequest) {
 
 export const config = {
     // これにマッチするパスは、ミドルウェアを通らない
-    matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+    matcher: ['/((?!api|_next|.*\\..*).*)'],
 };

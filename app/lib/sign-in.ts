@@ -1,8 +1,8 @@
 'use server';
 
-import { signIn as signInByAuthJS } from '@/auth';
+import { signIn as signInByAuthJS } from '@/app/lib/auth';
 import {z} from "zod";
-import {signInSchema} from "@/schemas";
+import {signInSchema} from "@/types";
 import {SignResult} from "@/types/ActionsResult";
 import {getUserByEmail} from "@/app/lib/user";
 import {DEFAULT_LOGIN_REDIRECT} from "@/routes";

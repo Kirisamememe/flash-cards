@@ -29,7 +29,7 @@ export function openDB():Promise<IDBDatabase> {
     });
 }
 
-export function deleteByIdFromLocal(wordId: string): Promise<DeleteResult> {
+export function deleteByIdFromLocal(userId: string | undefined, wordId: string): Promise<DeleteResult> {
     return new Promise(async (resolve, reject) => {
         const db = await openDB()
         const transaction = db.transaction(['words'], 'readwrite')
@@ -37,6 +37,14 @@ export function deleteByIdFromLocal(wordId: string): Promise<DeleteResult> {
         const request = store.get(wordId)
 
         request.onsuccess = () => {
+            if (request.result.author !== undefined && request.result.author !== userId){
+                reject({
+                    isSuccess: false,
+                    error: {
+                        message: `権限がありません`
+                    }
+                })
+            }
 
             const deleteData = {
                 ...request.result,

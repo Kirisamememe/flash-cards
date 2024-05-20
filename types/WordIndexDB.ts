@@ -1,11 +1,11 @@
 export interface WordIndexDB { //IndexDBでの状態
     id: string
     word: string
-    phonetics: string | undefined
+    phonetics: string
     partOfSpeech: string | undefined
     definition: string
-    example: string | undefined
-    notes: string | undefined
+    example: string
+    notes: string
     is_learned: boolean
     created_at: Date
     updated_at: Date
@@ -19,11 +19,11 @@ export interface WordIndexDB { //IndexDBでの状態
 export interface WordDataMerged {
     id: string
     word: string
-    phonetics: string | undefined
+    phonetics: string
     partOfSpeech: PartOfSpeechLocal | undefined
     definition: string
-    example: string | undefined
-    notes: string | undefined
+    example: string
+    notes: string
     is_learned: boolean
     created_at: Date
     updated_at: Date
@@ -56,7 +56,7 @@ export interface WordCardToRemote {
 export interface PartOfSpeechLocal {
     id: string
     partOfSpeech: string
-    author: string
+    author: string | undefined
     is_deleted: boolean
     created_at: Date
     updated_at: Date

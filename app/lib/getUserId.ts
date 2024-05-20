@@ -1,6 +1,6 @@
 'use server'
 
-import {auth} from "@/auth";
+import {auth} from "@/app/lib/auth";
 
 export default async function getUserId() {
     const session = await auth()

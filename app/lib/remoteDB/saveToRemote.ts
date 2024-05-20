@@ -22,7 +22,7 @@ export async function upsertCardToRemote(flashcard: WordCardToRemote): Promise<U
             // カードが存在するかどうかに応じて、適切な処理を行う
             if (existingCard) {
                 // 現在のレコードがあり、且つ更新日時が問題なければ更新処理を行う
-                if (existingCard.updated_at <= flashcard.updated_at) {
+                if (existingCard.updated_at < flashcard.updated_at) {
                     result = await trx.word.update({
                         where: { id: flashcard.id },
                         data: {
@@ -122,7 +122,7 @@ export async function upsertPartOfSpeechToRemote(partOfSpeech: PartOfSpeechLocal
             let result;
 
             if (existingData) {
-                if (existingData.updated_at <= partOfSpeech.updated_at) {
+                if (existingData.updated_at < partOfSpeech.updated_at) {
                     result = await trx.partOfSpeech.update({
                         where: { id: partOfSpeech.id },
                         data: {
@@ -168,10 +168,12 @@ export async function updateUserInfoToRemote(userInfo: UserInfoToRemote): Promis
             let result
 
             if (existingData) {
-                if (existingData.updatedAt <= userInfo.updatedAt) {
+                if (existingData.updatedAt < userInfo.updatedAt) {
                     result = await trx.user.update({
                         where: { id: userInfo.id },
                         data: {
+                            image: userInfo.image,
+                            name: userInfo.name,
                             updatedAt: userInfo.updatedAt,
                             synced_at: new Date(),
                             auto_sync: userInfo.auto_sync,

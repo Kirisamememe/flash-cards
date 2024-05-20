@@ -1,6 +1,6 @@
 import { GetPromiseCommonResult, UpdatePromiseCommonResult } from "@/types/ActionsResult";
 import { openDB } from "@/app/lib/indexDB/indexDB";
-import { WordDataMerged, WordIndexDB } from "@/types/WordIndexDB";
+import { PartOfSpeechLocal, WordDataMerged, WordIndexDB } from "@/types/WordIndexDB";
 
 export async function getUserInfoFromLocal(userId: string): Promise<UpdatePromiseCommonResult<UserInfo>> {
     return new Promise<UpdatePromiseCommonResult<UserInfo>>(async (resolve, reject) => {
@@ -14,7 +14,7 @@ export async function getUserInfoFromLocal(userId: string): Promise<UpdatePromis
                 isSuccess: true,
                 data: request.result
             })
-            console.log(request.result)
+            // console.log(request.result)
         }
 
         request.onerror = (e) => {
@@ -31,13 +31,12 @@ export async function getUserInfoFromLocal(userId: string): Promise<UpdatePromis
 }
 
 export function getCardsFromLocal(
-    userId: string | undefined,
+    userId: string | undefined | null,
     useWhenLoggedOut: boolean = true,
     containDeleted: boolean = false
 ): Promise<GetPromiseCommonResult<WordDataMerged[]>>  {
     return new Promise<GetPromiseCommonResult<WordDataMerged[]>>(async (resolve, reject) => {
         openDB().then(db => {
-            console.log("チェック0")
             const transaction = db.transaction(['words', 'partOfSpeech'], 'readonly');
             const wordsStore = transaction.objectStore('words');
             const partOfSpeechStore = transaction.objectStore('partOfSpeech');
@@ -45,18 +44,19 @@ export function getCardsFromLocal(
             const wordsRequest = wordsStore.getAll();
             const partOfSpeechRequest = partOfSpeechStore.getAll();
 
-            console.log("チェック1")
-
             transaction.oncomplete = () => {
                 const partOfSpeech = partOfSpeechRequest.result;
+
+                // TODO ここのロジック再度チェック
+
                 const filteredResults = containDeleted ?
                     wordsRequest.result : wordsRequest.result.filter(
                         card => !card.is_deleted && (
                             userId ? (
-                                card.author === userId || undefined
+                                card.author === userId || card.author === undefined
                                 // ログイン状態であれば、確実に自分が作ったカードと、誰が作ったかわからないカードを表示する
                             ) : (
-                                useWhenLoggedOut ? true : card.author === undefined
+                                useWhenLoggedOut ? true : card?.author === undefined
                                 // 非ログイン状態であれば、まずuseWhenLoggedOutをチェックする。
                                 // 非ログイン状態の時に渡されるuseWhenLoggedOutは、ローカルストレージから取得する
                                 // useWhenLoggedOutが真：削除されていなければOK
@@ -65,7 +65,6 @@ export function getCardsFromLocal(
                         )
                         // Trueになる子要素が残る
                     )
-                console.log("チェック2")
 
                 const combinedData = filteredResults.map(word => {
                     const correspondingPartOfSpeech = partOfSpeech.find(pos => pos.id === word.partOfSpeech);
@@ -75,11 +74,9 @@ export function getCardsFromLocal(
                     };
                 });
 
-                console.log(combinedData)
-
                 resolve({
                     isSuccess: true,
-                    data: combinedData
+                    data: combinedData.sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
                 });
             };
 
@@ -161,21 +158,31 @@ export async function getCardCountFromLocal(userId: string) {
     })
 }
 
-export function getPartOfSpeechesFromLocal() {
-    return new Promise(async (resolve, reject) => {
+export function getPartOfSpeechesFromLocal(userId: string | undefined | null) {
+    return new Promise<GetPromiseCommonResult<PartOfSpeechLocal[]>>(async (resolve, reject) => {
         const db = await openDB()
         const transaction = db.transaction(["partOfSpeech"], 'readonly')
         const store = transaction.objectStore("partOfSpeech")
         const request = store.getAll()
 
         request.onsuccess = () => {
-            resolve(request.result)
-            console.log(request.result)
+            const filteredResult = request.result.filter(pos => pos.author === userId || !pos.author).sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
+
+            resolve({
+                isSuccess: true,
+                data: filteredResult
+            })
         }
 
         request.onerror = (event) => {
             console.error(event)
-            reject(`Error fetching card: ${(event.target as IDBRequest).error?.message}`)
-        };
-    });
+            reject({
+                isSuccess: false,
+                error: {
+                    message: `Error fetching card: ${(event.target as IDBRequest).error?.message}`,
+                    detail: event
+                }
+            })
+        }
+    })
 }

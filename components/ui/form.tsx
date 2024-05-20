@@ -1,3 +1,5 @@
+'use client'
+
 import * as React from "react"
 import * as LabelPrimitive from "@radix-ui/react-label"
 import { Slot } from "@radix-ui/react-slot"
@@ -10,8 +12,9 @@ import {
   useFormContext,
 } from "react-hook-form"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/app/lib/utils"
 import { Label } from "@/components/ui/label"
+import { useTranslations } from "next-intl";
 
 const Form = FormProvider
 
@@ -144,8 +147,10 @@ const FormMessage = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, children, ...props }, ref) => {
+  const t = useTranslations('WordSubmitForm')
+
   const { error, formMessageId } = useFormField()
-  const body = error ? String(error?.message) : children
+  const body = error ? t(String(error?.message)) : children
 
   if (!body) {
     return null

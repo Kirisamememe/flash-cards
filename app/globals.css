@@ -51,7 +51,6 @@
 }
 
 
-
 @layer base {
     * {
       @apply border-border;
@@ -60,3 +59,66 @@
       @apply bg-background text-foreground;
     }
   }
+
+
+.preventTouch {
+  -webkit-user-select: none; /* Safari */
+  -webkit-touch-callout: none; /* iOS Safari */
+  -moz-user-select: none;    /* Firefox */
+  -ms-user-select: none;     /* Internet Explorer/Edge */
+  user-select: none;         /* Standard */
+}
+
+.allowTouch {
+  -webkit-user-select: auto; /* Safari */
+  -webkit-touch-callout: default; /* iOS Safari */
+  -moz-user-select: auto;    /* Firefox */
+  -ms-user-select: auto;     /* Internet Explorer/Edge */
+  user-select: auto;         /* Standard */
+}
+
+@keyframes bounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.bounce {
+  animation: bounce 0.4s ease;
+}
+
+
+@keyframes faceIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 100%;
+  }
+}
+
+.faceIn {
+  animation: faceIn 0.3s ease;
+}
+
+@keyframes faceOut {
+  0% {
+    opacity: 100%;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.faceOut {
+  animation: faceIn 0.3s ease;
+}

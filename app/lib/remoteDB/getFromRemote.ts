@@ -15,6 +15,8 @@ export async function getUserInfoFromRemote(userId: string): Promise<GetPromiseC
             },
             select: {
                 id: true,
+                name: true,
+                image: true,
                 synced_at: true,
                 auto_sync: true,
                 updatedAt: true,
@@ -53,7 +55,7 @@ export async function getCardsFromRemote(userId: string): Promise<GetPromiseComm
         const data = await prisma.word.findMany({
             where: {
                 authorId: userId
-            }
+            },
         })
         return { isSuccess: true, data: data }
     } catch (e) {
