@@ -20,6 +20,7 @@ export default function Profile() {
     const setUserInfo = useWordbookStore((state) => state.setUserInfo)
     const words = useWordbookStore((state) => state.words)
     const setWords = useWordbookStore((state) => state.setWords)
+    const addPos = useWordbookStore((state) => state.addPos)
     const blindMode = useWordbookStore((state) => state.blindMode)
     const setBlindMode = useWordbookStore((state) => state.setBlindMode)
 
@@ -34,7 +35,7 @@ export default function Profile() {
     const handleSync = useCallback( () => {
         if (userInfo) {
             startTransition(async () => {
-                await sync(words, setWords, userInfo, setProgressMessage, setProgressVal, t, toast)
+                await sync(words, setWords, addPos, userInfo, setProgressMessage, setProgressVal, t, toast)
             })
         }
     },[setWords, t, toast, userInfo, words])

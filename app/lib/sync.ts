@@ -17,6 +17,7 @@ import { Toast, ToasterToast } from "@/components/ui/use-toast";
 export async function sync (
     words: WordDataMerged[],
     setWords: (words: WordDataMerged[]) => void,
+    addPos: (pos: PartOfSpeechLocal) => void,
     userInfo: UserInfo,
     setProgressMessage: React.Dispatch<SetStateAction<string>>,
     setProgressVal: React.Dispatch<SetStateAction<number>>,
@@ -84,8 +85,8 @@ export async function sync (
             author: value.authorId
         }
         await savePartOfSpeechToLocal(data, true)
+        addPos(data)
     })
-
     progress += 10;
     setProgressVal(progress)
     setProgressMessage(t('sync_words'))
