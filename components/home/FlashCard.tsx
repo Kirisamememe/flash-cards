@@ -61,7 +61,7 @@ export default function FlashCard() {
         return (
             <div
                 className={"fixed top-[46%] left-[50%] translate-x-[-50%] translate-y-[-50%] flex flex-col items-center w-full px-4"}>
-                {words.length > 0 ?
+                {words.length > 0 && !!words[currentIndex] ?
                     <>
                         <div className={cn("group flex flex-col p-5 w-full", blindMode && "select-none preventTouch active:scale-105 transition-all")}>
                             <div className={"flex flex-col items-center min-h-[20rem]"}>
@@ -97,7 +97,7 @@ export default function FlashCard() {
 
     return (
         <div className={"fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] flex flex-col items-center w-full max-w-[64rem] px-14 transition-all"}>
-            {words.length > 0 ?
+            {words.length > 0 && !!words[currentIndex] ?
                 <>
                     <div className={cn("group flex flex-col p-5 w-full", blindMode && "preventTouch active:scale-110 transition-all")}>
                         <div className={"flex flex-col items-center min-h-[20rem]"}>
