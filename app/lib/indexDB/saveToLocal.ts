@@ -60,17 +60,17 @@ export async function saveCardsToLocal(userId: string , cards: Word[], forSync: 
                 if (card.authorId === userId) {
                     const wordData: WordIndexDB = {
                         id: card.id,
-                        phonetics: card.phonetics || "",
+                        phonetics: card?.phonetics || "",
                         word: card.word,
-                        partOfSpeech: card.partOfSpeechId || undefined,
+                        partOfSpeech: card?.partOfSpeechId || undefined,
                         definition: card.definition,
-                        example: card.example || "",
-                        notes: card.notes || "",
+                        example: card?.example || "",
+                        notes: card?.notes || "",
                         is_learned: card.is_learned,
                         created_at: card.created_at,
                         updated_at: card.updated_at,
                         synced_at: forSync ? new Date() : card.synced_at || undefined,
-                        learned_at: card.learned_at || undefined,
+                        learned_at: card?.learned_at || undefined,
                         retention_rate: card.retention_rate || 0,
                         author: card.authorId,
                         is_deleted: card.is_deleted || false

@@ -63,12 +63,12 @@ export default function FlashCard() {
                     <>
                         <div className={cn("group flex flex-col p-5 w-full", blindMode && "select-none preventTouch active:scale-105 transition-all")}>
                             <div className={"flex flex-col items-center min-h-[20rem]"}>
-                                <p className={"text-foreground/50 text-md text-center mb-2"}>{words[currentIndex].phonetics || ""}</p>
+                                <p className={"text-foreground/50 text-md text-center mb-2"}>{words[currentIndex]?.phonetics || ""}</p>
                                 <p className={"scroll-m-20 w-fit text-3xl font-bold text-center mb-5"}>{words[currentIndex].word}</p>
                                 <Badge variant={"coloredSecondary"}
                                        className={"mb-5"}>{words[currentIndex].partOfSpeech?.partOfSpeech && words[currentIndex].partOfSpeech?.partOfSpeech || ""}</Badge>
-                                <p className={cn(blindMode ? "text-transparent bg-foreground/10 group-active:text-foreground/50 text-lg group-active:bg-transparent" : "text-foreground/50 text-lg font-bold", "text-center rounded-4 transition-all mb-6 select-none")}>{words[currentIndex].definition}</p>
-                                <p className={"text-foreground/80 text-xl text-center font-medium leading-tight mb-3"}>{words[currentIndex].example}</p>
+                                <p className={cn(blindMode ? "text-transparent bg-foreground/10 group-active:text-foreground/50 text-lg group-active:bg-transparent" : "text-foreground/50 text-lg font-bold", "text-center rounded-4 transition-all mb-6 select-none")}>{words[currentIndex]?.definition}</p>
+                                <p className={"text-foreground/80 text-xl text-center font-medium leading-tight mb-3"}>{words[currentIndex]?.example}</p>
                                 <p className={cn(blindMode ? "text-transparent bg-foreground/10 group-active:text-foreground/50 text-xs group-active:bg-transparent" : "text-foreground/50 text-xs", "h-6 text-center rounded-4 transition-all select-none")}>{words[currentIndex].notes || ""}</p>
                             </div>
                         </div>
