@@ -10,7 +10,7 @@ export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) 
     return (
         <>
             <div className={"inline-flex gap-1 lg:gap-2 items-center mb-5"}>
-                <p className={"px-1.5 scroll-m-20 font-bold text-3xl sm:text-4xl lg:text-5xl  select-all"}>{wordData.word}</p>
+                <p className={"px-1.5 scroll-m-20 font-bold text-3xl sm:text-4xl lg:text-5xl  select-all"}>{wordData?.word}</p>
                 <Button disabled className={"mt-1.5 lg:mt-2 p-1.5 sm:size-10 lg:size-11"} variant={"ghost"} size={"icon"}>
                     <Volume2 className={""} size={32}/>
                 </Button>
@@ -24,7 +24,7 @@ export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) 
                 </Badge>
             }
 
-            <p className={cn("px-1.5 text-lg lg:text-xl text-muted-foreground font-semibold rounded-4 transition-all")}>{wordData.definition}</p>
+            <p className={cn("px-1.5 text-lg lg:text-xl text-muted-foreground font-semibold rounded-4 transition-all")}>{wordData?.definition}</p>
 
             <Separator className={"my-6"}/>
 

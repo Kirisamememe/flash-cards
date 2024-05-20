@@ -62,7 +62,7 @@ export default function WordItem({ wordData, index }: { wordData: WordDataMerged
                              onTouchEnd={handleTouchEnd}
                              autoFocus={false}
                         >
-                            <p className={""}>{wordData.word}</p>
+                            <p className={""}>{wordData?.word}</p>
                             <Badge variant={"secondary"}
                                    className={"text-xs text-foreground/60 font-normal bg-foreground/5 hover:bg-foreground/10"}>{wordData.partOfSpeech && wordData.partOfSpeech.partOfSpeech}
                             </Badge>
@@ -92,7 +92,7 @@ export default function WordItem({ wordData, index }: { wordData: WordDataMerged
                 onTouchEnd={handleTouchEnd}
                 // onClickだけだと、なぜかiPadでのタッチ操作がワンテンポ遅い
             >
-                <p className={""}>{wordData.word}</p>
+                <p className={""}>{wordData?.word}</p>
                 <Badge variant={"secondary"}
                        className={cn("text-xs text-foreground/60 font-normal bg-foreground/5 hover:bg-foreground/10", index === currentIndex && "bg-primary/10 text-primary hover:bg-primary/15")}>{wordData.partOfSpeech && wordData.partOfSpeech.partOfSpeech}
                 </Badge>
