@@ -7,7 +7,6 @@ import EditWordBtn from "@/components/home/EditBtn";
 import { Button } from "@/components/ui/button";
 import AddWordBtn from "@/components/home/AddBtn";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { CircleCheckBig, Triangle, X } from 'lucide-react';
 
 export default function FlashCard() {
 
@@ -22,7 +21,6 @@ export default function FlashCard() {
     const userInterval = useWordbookStore((state) => state.userInterval)
     const setUserInterval = useWordbookStore((state) => state.setUserInterval)
 
-    const [testStart, setTestStart] = useState(false)
 
     const isSmallDevice = useMediaQuery('(max-width:640px)')
 
@@ -55,6 +53,7 @@ export default function FlashCard() {
         return () => clearInterval(timer)
     }, [currentIndex, setCurrentIndex, userInterval, words.length])
 
+
     if (isSmallDevice) {
         return (
             <div
@@ -64,7 +63,7 @@ export default function FlashCard() {
                         <div className={cn("group flex flex-col p-5 w-full", blindMode && "select-none preventTouch active:scale-105 transition-all")}>
                             <div className={"flex flex-col items-center min-h-[20rem]"}>
                                 <p className={"text-foreground/50 text-md text-center mb-2"}>{words[currentIndex]?.phonetics || ""}</p>
-                                <p className={"scroll-m-20 w-fit text-3xl font-bold text-center mb-5"}>{words[currentIndex].word}</p>
+                                <p className={"scroll-m-20 w-fit text-3xl font-bold text-center mb-5"}>{words[currentIndex]?.word}</p>
                                 <Badge variant={"coloredSecondary"}
                                        className={"mb-5"}>{words[currentIndex].partOfSpeech?.partOfSpeech && words[currentIndex].partOfSpeech?.partOfSpeech || ""}</Badge>
                                 <p className={cn(blindMode ? "text-transparent bg-foreground/10 group-active:text-foreground/50 text-lg group-active:bg-transparent" : "text-foreground/50 text-lg font-bold", "text-center rounded-4 transition-all mb-6 select-none")}>{words[currentIndex]?.definition}</p>

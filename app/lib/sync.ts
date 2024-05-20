@@ -35,6 +35,9 @@ export async function sync (
     if (!partOfSpeeches.isSuccess) {
         return
     }
+
+    console.log("＊＊＊＊　同期ログ：品詞を取得しました　＊＊＊＊")
+
     const partOfSpeechesToRemote: PartOfSpeechLocal[] = [...partOfSpeeches.data.map(value => {
         value.author = userInfo.id
         return value
@@ -55,10 +58,13 @@ export async function sync (
                 setProgressVal(progress);
             }
         }))
+        console.log("＊＊＊＊　同期ログ：ローカルのPOSデータをリモートにプッシュしました　＊＊＊＊")
     } else {
         progress += 10;
         setProgressVal(progress)
     }
+
+
 
     // フェーズ 1-3
     // リモートデータベースから品詞を取得
@@ -113,6 +119,7 @@ export async function sync (
                 setProgressVal(progress);
             }
         }))
+        console.log("＊＊＊＊　同期ログ：ローカルの単語データをリモートにプッシュしました　＊＊＊＊")
     } else {
         progress += 30
         setProgressVal(progress)
@@ -129,6 +136,8 @@ export async function sync (
     progress += 20
     setProgressVal(progress)
 
+    console.log("＊＊＊＊　同期ログ：リモートから単語データを取得しました　＊＊＊＊")
+
     // フェーズ 2-4
     // 取得したデータをローカルに保存
     const results = await saveCardsToLocal(userInfo.id, cardsFromRemote.data)
@@ -138,15 +147,20 @@ export async function sync (
         return
     }
 
+    console.log("＊＊＊＊　同期ログ：単語データをローカルに挿入しました　＊＊＊＊")
+
     const cardsFromLocal = await getCardsFromLocal(userInfo.id, false)
     if (!cardsFromLocal.isSuccess) {
         console.error(cardsFromLocal.error.message)
         return
     }
+    console.log("＊＊＊＊　同期ログ：コンテキストへの設置を開始します　＊＊＊＊")
 
     setWords(cardsFromLocal.data)
     progress += 20
     setProgressVal(progress)
+
+    console.log("＊＊＊＊　同期ログ：コンテキストに設置しました　＊＊＊＊")
     // フェーズ 2 終了
     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -164,7 +178,7 @@ export async function sync (
     // 注意！！！ データベースの仕様上、何も帰ってこなくてもSuccessになるので、dataも一緒にチェックしないといけない
     // ！！！！！！！！！！！！！
     if (userInfoFromLocal.isSuccess && userInfoFromLocal.data) {
-        console.log("ユーザーの情報ゲットしたぜ")
+        console.log("ローカルユーザーの情報ゲットしたぜ")
         const userInfoToRemote: UserInfoToRemote = {
             ...userInfoFromLocal.data,
             image: userInfoFromLocal.data.image || null,
@@ -180,6 +194,8 @@ export async function sync (
             return
         }
     }
+
+    console.log("＊＊＊＊　同期ログ：ローカルからユーザーデータを取得しました　＊＊＊＊")
 
     // フェーズ 3-3
     // リモートからユーザー情報を取得
@@ -201,6 +217,8 @@ export async function sync (
     }
     progress += 10
     setProgressVal(progress)
+
+    console.log("＊＊＊＊　同期ログ：リモートにユーザーデータをプッシュしました　＊＊＊＊")
     // フェーズ 3 終了
     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
