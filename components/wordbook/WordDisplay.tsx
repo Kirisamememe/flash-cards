@@ -18,9 +18,9 @@ export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) 
 
             <p className={"px-1.5 text-foreground/50 text-lg mb-4 select-all"}>{wordData?.phonetics || ""}</p>
 
-            {wordData.partOfSpeech?.partOfSpeech &&
+            {wordData?.partOfSpeech?.partOfSpeech &&
                 <Badge variant={"coloredSecondary"}
-                       className={"mb-5 lg:text-sm"}>{wordData.partOfSpeech?.partOfSpeech || ""}
+                       className={"mb-5 lg:text-sm"}>{wordData?.partOfSpeech?.partOfSpeech || ""}
                 </Badge>
             }
 
