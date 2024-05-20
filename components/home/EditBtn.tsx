@@ -64,7 +64,7 @@ export default function EditWordBtn({
             <DialogTrigger asChild>
                 <Button className={""} variant={"coloredOutline"}>{t2('editBtn')}</Button>
             </DialogTrigger>
-            <DialogContent className="bg-background shadow-2xl rounded-6 mt-4 h-[calc(100vh-2rem)] -translate-y-[calc(50%+1rem)] max-h-[49.75rem] lg:max-w-[60rem] lg:max-h-[31rem] p-4 lg:p-6">
+            <DialogContent className="bg-background shadow-2xl rounded-6 mt-4  h-[calc(100vh-2rem)] -translate-y-[calc(50%+1rem)] max-h-[49.75rem] lg:max-w-[60rem] lg:max-h-[31rem] p-4 lg:p-6">
                 <ScrollArea className={"pb-3 lg:pb-0 w-full h-full"}>
                     <EditWordCard setOpen={setOpen} wordData={wordData}>
                         <DialogClose asChild>

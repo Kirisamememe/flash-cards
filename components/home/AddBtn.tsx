@@ -44,7 +44,7 @@ export default function AddWordBtn({ children }: { children?: React.ReactNode })
             <DialogTrigger asChild>
                 {children}
             </DialogTrigger>
-            <DialogContent className="bg-background shadow-2xl rounded-6 mt-4 h-[calc(100vh-2rem)] -translate-y-[calc(50%+1rem)] max-h-[49.75rem] lg:max-w-[60rem] lg:max-h-[31rem] p-4 lg:p-6">
+            <DialogContent className="bg-background shadow-2xl rounded-6 my-4 h-[calc(100vh-2rem)] -translate-y-[calc(50%+1rem)] max-h-[49.25rem] lg:max-w-[60rem] lg:max-h-[31rem] p-4 sm:pt-8 lg:p-6 lg:pt-4">
                 <ScrollArea className={"pb-3 lg:pb-0 w-full h-full"}>
                     <EditWordCard setCurrentIndex={setCurrentIndex}>
                         <DialogClose asChild>
