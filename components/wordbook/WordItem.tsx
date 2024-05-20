@@ -64,7 +64,7 @@ export default function WordItem({ wordData, index }: { wordData: WordDataMerged
                         >
                             <p className={""}>{wordData?.word}</p>
                             <Badge variant={"secondary"}
-                                   className={"text-xs text-foreground/60 font-normal bg-foreground/5 hover:bg-foreground/10"}>{wordData.partOfSpeech && wordData.partOfSpeech.partOfSpeech}
+                                   className={"text-xs text-foreground/60 font-normal bg-foreground/5 hover:bg-foreground/10"}>{wordData?.partOfSpeech && wordData?.partOfSpeech.partOfSpeech}
                             </Badge>
                         </div>
                     </DrawerTrigger>
