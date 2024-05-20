@@ -106,6 +106,7 @@
         "not_yet_mastered": "Not yet",
         "final_edit": "Final Edit",
         "counter_suffix": "",
-        "filter_words": "Filter words..."
+        "filter_words": "Filter words...",
+        "no_word": "No words added yet"
     }
 }

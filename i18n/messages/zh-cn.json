@@ -106,6 +106,7 @@
         "not_yet_mastered": "尚未掌握",
         "final_edit": "最后编辑",
         "counter_suffix": "次",
-        "filter_words": "搜索单词"
+        "filter_words": "搜索单词",
+        "no_word": "尚未添加单词"
     }
 }

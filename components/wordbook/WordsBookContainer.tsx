@@ -28,10 +28,7 @@ export default function WordsBookContainer() {
 
     const t = useTranslations('WordsBook')
 
-    if (!words) return <p>{"データを取得できませんでした"}</p>
-
-    if (words.length <= 0) return <p>{"まだ単語を登録していません"}</p>
-
+    if (!words) return <p className={"fixed left-1/2 top-1/2 -translate-x-1/2"}>{"データを取得できませんでした"}</p>
 
     if (isSmallDevice) {
         return (
@@ -112,12 +109,15 @@ export default function WordsBookContainer() {
                         </ResizablePanel>
                         <ResizableHandle className={""} withHandle/>
                         <ResizablePanel className={""} defaultSize={68} order={2} id={"resizablePanel-2"}>
-                            <ScrollArea className={"h-full"}>
-                                <WordDetail
-                                    wordData={
-                                        filterText ?
-                                            filteredWords[currentIndex] : words[currentIndex]}
-                                />
+                            <ScrollArea className={"relative h-full"}>
+                                {words.length > 0 ?
+                                    <WordDetail
+                                        wordData={
+                                            filterText ?
+                                                filteredWords[currentIndex] : words[currentIndex]}
+                                    /> :
+                                    <p className={"absolute top-1/2 left-1/2 -translate-x-1/2 text-xl text-muted"}>{t('no_word')}</p>
+                                }
                                 <ScrollBar/>
                             </ScrollArea>
                         </ResizablePanel>

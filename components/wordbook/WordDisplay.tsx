@@ -16,7 +16,7 @@ export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) 
                 </Button>
             </div>
 
-            <p className={"px-1.5 text-foreground/50 text-lg mb-4 select-all"}>{wordData.phonetics || ""}</p>
+            <p className={"px-1.5 text-foreground/50 text-lg mb-4 select-all"}>{wordData?.phonetics || ""}</p>
 
             {wordData.partOfSpeech?.partOfSpeech &&
                 <Badge variant={"coloredSecondary"}
@@ -28,10 +28,10 @@ export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) 
 
             <Separator className={"my-6"}/>
 
-            <p className={"px-1.5 text-foreground text-lg sm:text-xl lg:text-2xl font-medium sm:leading-normal lg:leading-normal"}>{wordData.example || ""}</p>
+            <p className={"px-1.5 text-foreground text-lg sm:text-xl lg:text-2xl font-medium sm:leading-normal lg:leading-normal"}>{wordData?.example || ""}</p>
 
             <div className={"flex flex-col w-full bg-foreground/[0.03] p-4 rounded-lg mt-4"}>
-                <p className={cn("text-base text-muted-foreground rounded-4 transition-all leading-relaxed")}>{wordData.notes || ""}</p>
+                <p className={cn("text-base text-muted-foreground rounded-4 transition-all leading-relaxed")}>{wordData?.notes || ""}</p>
             </div>
         </>
     )

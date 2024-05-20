@@ -1,3 +1,4 @@
+
 export interface WordIndexDB { //IndexDBでの状態
     id: string
     word: string
@@ -19,11 +20,11 @@ export interface WordIndexDB { //IndexDBでの状態
 export interface WordDataMerged {
     id: string
     word: string
-    phonetics: string
+    phonetics: string | undefined
     partOfSpeech: PartOfSpeechLocal | undefined
     definition: string
-    example: string
-    notes: string
+    example: string | undefined
+    notes: string | undefined
     is_learned: boolean
     created_at: Date
     updated_at: Date
