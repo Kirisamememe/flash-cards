@@ -86,7 +86,7 @@ export function EditWordCard({
                     id: undefined,
                     word: "",
                     phonetics: "",
-                    partOfSpeech: undefined,
+                    partOfSpeech: "",
                     definition: "",
                     example: "",
                     notes: "",
