@@ -75,7 +75,7 @@ export default function DestructiveDialog({
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button
-                    className={cn("group hover:bg-destructive/10 px-2 w-11 transition-all", className)}
+                    className={cn("group hover:bg-destructive/10 px-2 w-11 transition-all active:bg-destructive/10 active:text-destructive", className)}
                     variant={"ghost"}
                     size={"lg"}
                     type={"button"}

@@ -101,12 +101,12 @@
         "retention_rate": "學習進度",
         "correct_count": "正確次數",
         "incorrect_count": "錯誤次數",
-        "online_dic": "網絡詞典",
+        "online_dic": "網路詞典",
         "mastered_at": "學習狀態",
         "not_yet_mastered": "尚未掌握",
         "final_edit": "最後編輯",
         "counter_suffix": "次",
-        "filter_words": "檢索單詞",
+        "filter_words": "檢索單字",
         "no_word": "尚未添加單字"
     }
 }

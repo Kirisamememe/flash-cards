@@ -21,7 +21,7 @@ export default function AvatarMenu(){
     if (isSmallDevice) {
         return (
             <Drawer noBodyStyles>
-                <DrawerTrigger asChild>
+                <DrawerTrigger asChild autoFocus={false}>
                     <Button className={"w-full h-full rounded-none"} variant={"ghost"}>
                         <CircleUser className={"text-muted-foreground"} size={24}/>
                     </Button>

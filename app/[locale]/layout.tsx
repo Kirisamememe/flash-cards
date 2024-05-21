@@ -9,6 +9,7 @@ import React from "react";
 import { auth } from "@/app/lib/auth";
 import { WordbookStoreProvider } from "@/providers/wordbook-store-provider";
 import IntlProvider from "@/app/[locale]/IntlProvider";
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -55,6 +56,7 @@ export default async function LocaleLayout({ children, params: { locale } }: Rea
             </WordbookStoreProvider>
             <Toaster/>
         </ThemeProvider>
+        <SpeedInsights />
         </body>
         </html>
     );

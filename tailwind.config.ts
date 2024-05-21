@@ -80,13 +80,6 @@ const config = {
             backgroundImage: {
                 'banner-pattern': "url('/Mathematics.png')",
             },
-            variants: {
-                extend: {
-                    backgroundColor: ['HOVER:hover', 'active'],
-                    scale: ['HOVER:hover', 'active']
-                    // Add other properties you want to extend
-                },
-            }
         },
     },
     plugins: [require("tailwindcss-animate"),
