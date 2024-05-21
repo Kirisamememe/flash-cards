@@ -122,3 +122,19 @@
 .faceOut {
   animation: faceIn 0.3s ease;
 }
+
+@keyframes loading {
+  0% {
+    opacity: 100%;
+  }
+  50% {
+    opacity: 60%;
+  }
+  100% {
+    opacity: 100%;
+  }
+}
+
+.loading {
+  animation: loading 0.4s ease infinite;
+}

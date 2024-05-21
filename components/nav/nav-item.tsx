@@ -13,8 +13,7 @@ export function NavItemMobile<
 
     const isActive = pathname === href;
 
-    const isTransition = useWordbookStore((state) => state.isTransition)
-    const setIsTransition = useWordbookStore((state) => state.setIsTransition)
+    const [isComing, setIsComing] = useState(false)
 
     const bounceAnimation = [
         { transform: 'scale(1)' },
@@ -30,17 +29,17 @@ export function NavItemMobile<
 
     useEffect(() => {
         if (isActive) {
-            setIsTransition(false)
+            setIsComing(false)
         }
 
     }, [isActive]);
 
 
     return (
-        <Button disabled={disabled} asChild className={cn("h-full rounded-none active:bg-transparent active:text-primary", className, isTransition && "animate-bounce text-primary")} variant={"ghost"}
+        <Button disabled={disabled} asChild className={cn("h-full rounded-none active:bg-transparent active:text-primary", className, isComing && "animate-bounce text-primary")} variant={"ghost"}
                 onClick={(event) => {
                     event.currentTarget.animate(bounceAnimation, bounceTiming)
-                    if (!isTransition && !isActive) setIsTransition(true)
+                    if (!isComing && !isActive) setIsComing(true)
                 }}
         >
             <Link
@@ -62,31 +61,27 @@ export function NavItem<
 
     const isActive = pathname === href;
     const [isComing, setIsComing] = useState(false)
-    const isTransition = useWordbookStore((state) => state.isTransition)
-    const setIsTransition = useWordbookStore((state) => state.setIsTransition)
 
     useEffect(() => {
         if (isActive){
-            setIsTransition(false)
             setIsComing(false)
             // setTimeout(() => {
             //     setIsTransition(false)
             //     setIsComing(false)
             // }, 1500)
         }
-    }, [isActive, isTransition, setIsTransition]);
+    }, [isActive]);
 
     return (
-        <Button asChild className={cn("h-full rounded-full flex gap-2", ((isActive && !isTransition) || isComing) && "bg-primary/10 hover:bg-primary/10 active:bg-primary/10 hover:text-primary active:text-primary", className)} variant={"ghost"}>
+        <Button asChild className={cn("h-full rounded-full flex gap-2", (isActive || isComing) && "bg-primary/10 hover:bg-primary/10 active:bg-primary/10 hover:text-primary active:text-primary", isComing && "loading", className)} variant={"ghost"}>
             <Link
-                className={cn(((isActive && !isTransition) || isComing) && "text-primary", disabled && "pointer-events-none text-muted")}
+                className={cn((isActive || isComing) && "text-primary", disabled && "pointer-events-none text-muted")}
                 aria-current={isActive ? 'page' : undefined}
                 href={href}
                 scroll={false}
                 onClick={() => {
-                    if (!isTransition) {
+                    if (!isComing) {
                         setIsComing(true)
-                        setIsTransition(true)
                     }
                 }}
                 {...rest}
