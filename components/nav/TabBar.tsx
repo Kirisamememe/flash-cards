@@ -32,8 +32,8 @@ export default function TabBar({ setOpen }: { setOpen: React.Dispatch<SetStateAc
                 <NavItemMobile disabled className={"flex-auto"} href={"/ai"}>
                     <Cpu size={24}/>
                 </NavItemMobile>
-                <div
-                    className={"flex-auto inline-flex p-0 h-full justify-center items-center transition-all active:scale-110"}>
+                <div autoFocus={false}
+                     className={"flex-auto inline-flex p-0 h-full justify-center items-center transition-all active:scale-110"}>
                     {userInfo ?
                         <AvatarMenu/> :
                         <Button
