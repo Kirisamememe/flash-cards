@@ -7,6 +7,7 @@ import EditWordBtn from "@/components/home/EditBtn";
 import { Button } from "@/components/ui/button";
 import AddWordBtn from "@/components/home/AddBtn";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import { Separator } from "@/components/ui/separator";
 
 export default function FlashCard() {
 
@@ -60,7 +61,7 @@ export default function FlashCard() {
     if (isSmallDevice) {
         return (
             <div
-                className={"fixed top-[46%] left-[50%] translate-x-[-50%] translate-y-[-50%] flex flex-col items-center w-full px-4"}>
+                className={"fixed top-[45%] left-[50%] translate-x-[-50%] translate-y-[-50%] flex flex-col items-center w-full px-4"}>
                 {words.length > 0 && !!words[currentIndex] ?
                     <>
                         <div className={cn("group flex flex-col p-5 w-full", blindMode && "select-none preventTouch active:scale-105 transition-all")}>
@@ -69,12 +70,14 @@ export default function FlashCard() {
                                 <p className={"scroll-m-20 w-fit text-3xl font-bold text-center mb-5"}>{words[currentIndex]?.word}</p>
                                 <Badge variant={"coloredSecondary"}
                                        className={"mb-5"}>{words[currentIndex]?.partOfSpeech?.partOfSpeech && words[currentIndex]?.partOfSpeech?.partOfSpeech || ""}</Badge>
-                                <p className={cn(blindMode ? "text-transparent bg-foreground/10 group-active:text-foreground/50 text-lg group-active:bg-transparent" : "text-foreground/50 text-lg font-bold", "text-center rounded-4 transition-all mb-6 select-none")}>{words[currentIndex]?.definition}</p>
-                                <p className={"text-foreground/80 text-xl text-center font-medium leading-tight mb-3"}>{words[currentIndex]?.example}</p>
-                                <p className={cn(blindMode ? "text-transparent bg-foreground/10 group-active:text-foreground/50 text-xs group-active:bg-transparent" : "text-foreground/50 text-xs", "h-6 text-center rounded-4 transition-all select-none")}>{words[currentIndex]?.notes || ""}</p>
+                                <p className={cn(blindMode ? "text-transparent bg-foreground/10 group-active:text-foreground/50 text-lg group-active:bg-transparent" : "text-foreground/50 text-lg font-bold", "text-center rounded-4 transition-all select-none")}>{words[currentIndex]?.definition}</p>
+
+                                <Separator className={"my-6"}/>
+
+                                <p className={"text-foreground/80 text-xl text-center font-medium leading-normal mb-4"}>{words[currentIndex]?.example}</p>
+                                <p className={cn(blindMode ? "text-transparent bg-foreground/10 group-active:text-foreground/50 text-xs group-active:bg-transparent" : "text-foreground/50 text-xs", "h-6 text-center rounded-4 transition-all select-none leading-relaxed")}>{words[currentIndex]?.notes || ""}</p>
                             </div>
                         </div>
-                        <EditWordBtn wordData={words[currentIndex]}/>
                     </> :
                     <>
                         {t('description').split('\n').map((line, index) => (
@@ -99,13 +102,16 @@ export default function FlashCard() {
         <div className={"fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] flex flex-col items-center w-full max-w-[64rem] px-14 transition-all"}>
             {words.length > 0 && !!words[currentIndex] ?
                 <>
-                    <div className={cn("group flex flex-col p-5 w-full", blindMode && "preventTouch active:scale-110 transition-all")}>
-                        <div className={"flex flex-col items-center min-h-[20rem]"}>
+                    <div className={cn("group flex flex-col items-center p-5 w-full mb-2", blindMode && "preventTouch active:scale-110 transition-all")}>
+                        <div className={"flex flex-col w-fit items-center min-h-[20rem]"}>
                             <p className={"text-foreground/50 text-md text-center mb-2"}>{words[currentIndex]?.phonetics || ""}</p>
                             <p className={"scroll-m-20 w-fit font-bold sm:text-5xl text-center mb-5"}>{words[currentIndex]?.word}</p>
                             <Badge variant={"coloredSecondary"}
                                    className={"mb-5"}>{words[currentIndex]?.partOfSpeech?.partOfSpeech && words[currentIndex]?.partOfSpeech?.partOfSpeech || ""}</Badge>
-                            <p className={cn(blindMode ? "text-transparent bg-foreground/10 group-active:text-foreground/50 group-hover:text-foreground/50 text-lg group-active:scale-[115%] group-hover:scale-[115%] group-active:bg-transparent group-hover:bg-transparent" : "text-foreground/50 text-xl font-bold", "text-center rounded-4 transition-all mb-6")}>{words[currentIndex]?.definition}</p>
+                            <p className={cn(blindMode ? "text-transparent bg-foreground/10 group-active:text-foreground/50 group-hover:text-foreground/50 text-lg group-active:scale-[115%] group-hover:scale-[115%] group-active:bg-transparent group-hover:bg-transparent" : "text-foreground/50 text-xl font-bold", "text-center rounded-4 transition-all")}>{words[currentIndex]?.definition}</p>
+
+                            <Separator className={"my-6"}/>
+
                             <p className={"text-foreground/80 text-xl lg:text-2xl text-center font-medium leading-tight mb-3"}>{words[currentIndex]?.example}</p>
                             <p className={cn(blindMode ? "text-transparent bg-foreground/10 group-active:text-foreground/50 group-hover:text-foreground/50 text-sm group-active:scale-[115%] group-hover:scale-[115%] group-active:bg-transparent group-hover:bg-transparent" : "text-foreground/50 text-base", "text-center rounded-4 transition-all")}>{words[currentIndex]?.notes || ""}</p>
                         </div>
