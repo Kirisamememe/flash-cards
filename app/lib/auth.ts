@@ -2,12 +2,11 @@ import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import bcrypt from 'bcryptjs';
-import {getUserByEmail, getUserById} from "@/app/lib/user";
+import { getUserByEmail } from "@/app/lib/user";
 import GitHub from "@auth/core/providers/github";
-import {signInSchema} from "@/types";
-import {PrismaClient } from '@prisma/client/edge';
-// import {db} from "@/app/lib/db";
-import {withAccelerate} from "@prisma/extension-accelerate";
+import { signInSchema } from "@/types";
+import { PrismaClient } from '@prisma/client/edge';
+import { withAccelerate } from "@prisma/extension-accelerate";
 import Google from "@auth/core/providers/google";
 
 const prisma = new PrismaClient().$extends(withAccelerate())

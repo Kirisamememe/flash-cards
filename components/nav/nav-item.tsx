@@ -95,7 +95,7 @@ export function NavItem<
                 href={href}
                 scroll={false}
                 onClick={() => {
-                    if (!isComing) {
+                    if (!isComing && !isActive) {
                         setIsComing(true)
                     }
                 }}

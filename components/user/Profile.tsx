@@ -67,7 +67,7 @@ export default function Profile() {
                         <SheetTitle className={"text-xl text-center"}>{userInfo.name}</SheetTitle>
                         <div className={"flex flex-col w-full p-6 gap-2 items-center justify-center"}>
                             <h1 className={"text-5xl font-bold"}>{words.length}</h1>
-                            <p>{t("leaning")}</p>
+                            <p>{t("learning")}</p>
                         </div>
                         <Separator/>
                     </CardHeader>
