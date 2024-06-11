@@ -201,7 +201,7 @@ export default function WordDetail({ wordData }: { wordData: WordDataMerged }) {
                             {dicData ?
                                 <OnlineDic en2enItem={dicData}/> :
                                 isFetching ?
-                                    <Loading size={24}/> :
+                                    <Loading /> :
                                     <p className={"text-muted-foreground"}>
                                         {t("WordsBook.online_dic_description")}
                                     </p>
