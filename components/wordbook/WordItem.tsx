@@ -48,7 +48,7 @@ export default function WordItem({ wordData, index }: { wordData: WordDataMerged
                     if (!value) setIsEditing(false)
                 }}>
                     <DrawerTrigger asChild>
-                        <div className={cn("flex gap-2 w-full h-12 items-center px-4 rounded-lg transition-all text-base bg-foreground/5 active:bg-foreground/15 justify-start")}
+                        <div className={cn("relative flex gap-2 w-full h-12 items-center px-4 rounded-lg transition-all text-base bg-foreground/5 active:bg-foreground/15 justify-start", wordData.is_learned && "text-muted-foreground",)}
                              onClick={() => setCurrentIndex(index)}
                              onTouchMove={handleTouchMove}
                              onTouchEnd={handleTouchEnd}
@@ -58,6 +58,7 @@ export default function WordItem({ wordData, index }: { wordData: WordDataMerged
                             <Badge variant={"secondary"}
                                    className={"text-xs text-foreground/60 font-normal bg-foreground/5 hover:bg-foreground/10"}>{wordData?.partOfSpeech && wordData?.partOfSpeech.partOfSpeech}
                             </Badge>
+                            {wordData.is_learned && <CircleCheckBig className={"absolute right-4"} size={20}/>}
                         </div>
                     </DrawerTrigger>
                     <DrawerContent autoFocus={false}>
