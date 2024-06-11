@@ -17,7 +17,7 @@ export default function OnlineDic({ en2enItem }: { en2enItem: EN2ENItem }) {
             </p>
             <div className={"flex mb-1"}>
                 {en2enItem?.syllables?.list.map((syllable, index, array) => (
-                    <span className={"sm:text-2xl lg:text-3xl font-bold"} key={index + syllable}>
+                    <span className={"text-2xl lg:text-3xl font-bold"} key={index + syllable}>
                         {index === array.length - 1 ? syllable : `${syllable}･`}
                     </span>
                 ))}
