@@ -31,10 +31,11 @@ export default function WordsBookContainer() {
     if (isSmallDevice) {
         return (
             <motion.div
+                id={"animation-container"}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 30 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.2 }}
             >
                 <div className={"flex flex-col w-full h-full px-4 pt-20 pb-20 items-center"}>
                     <Banner/>
