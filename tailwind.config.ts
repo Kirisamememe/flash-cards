@@ -63,6 +63,9 @@ const config = {
                 md: "calc(var(--radius) - 2px)",
                 sm: "calc(var(--radius) - 4px)",
             },
+            scale: {
+              '103': '103%'
+            },
             keyframes: {
                 "accordion-down": {
                     from: { height: "0" },
@@ -85,8 +88,8 @@ const config = {
     plugins: [require("tailwindcss-animate"),
         plugin(function ({ addVariant }) {
             addVariant('hover', ['@media(hover:hover){ &:hover }'])
-            addVariant('group-hover', '@media(hover:hover){ .group:hover & }')
             addVariant('active', '&:active');
+            addVariant('group-hover', '@media(hover:hover){ .group:hover & }')
         }),
     ],
 } satisfies Config

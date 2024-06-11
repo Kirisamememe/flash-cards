@@ -1,7 +1,6 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
-
 import { cn } from "@/app/lib/utils"
 import { useState } from "react";
 
@@ -14,7 +13,7 @@ const buttonVariants = cva(
                 destructive:
                     "bg-destructive text-destructive-foreground hover:bg-destructive/90 active:bg-destructive/90",
                 outline:
-                    "border border-input bg-background hover:bg-accent hover:text-accent-foreground active:bg-accent active:text-accent-foreground",
+                    "shadow-[inset_0_0_0_1px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] bg-background hover:bg-accent hover:text-accent-foreground active:bg-accent active:text-accent-foreground",
                 coloredOutline:
                     "text-primary ring-1 ring-primary/50 bg-transparent hover:bg-primary/5 hover:ring-primary hover:text-primary active:bg-primary/5 active:text-primary",
                 secondary:
@@ -64,7 +63,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
         return (
             <Comp
-                className={cn(buttonVariants({ variant, size, className }), animation && "sm:hover:scale-105 sm:active:scale-95")}
+                className={cn(buttonVariants({ variant, size, className }), animation && "hover:scale-105 active:scale-95")}
                 ref={ref}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}

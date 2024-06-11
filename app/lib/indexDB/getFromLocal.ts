@@ -1,6 +1,6 @@
 import { GetPromiseCommonResult, UpdatePromiseCommonResult } from "@/types/ActionsResult";
 import { openDB } from "@/app/lib/indexDB/indexDB";
-import { PartOfSpeechLocal, WordDataMerged, WordIndexDB } from "@/types/WordIndexDB";
+import { EN2ENItem, PartOfSpeechLocal, RecordIndexDB, WordDataMerged, WordIndexDB } from "@/types/WordIndexDB";
 
 export async function getUserInfoFromLocal(userId: string): Promise<UpdatePromiseCommonResult<UserInfo>> {
     return new Promise<UpdatePromiseCommonResult<UserInfo>>(async (resolve, reject) => {
@@ -35,6 +35,9 @@ export function getCardsFromLocal(
     useWhenLoggedOut: boolean = true,
     containDeleted: boolean = false
 ): Promise<GetPromiseCommonResult<WordDataMerged[]>>  {
+    // この関数は基本的には未習得の単語だけを返す
+    // 習得した場合、習得済み専用の配列にプッシュする
+
     return new Promise<GetPromiseCommonResult<WordDataMerged[]>>(async (resolve, reject) => {
         openDB().then(db => {
             const transaction = db.transaction(['words', 'partOfSpeech'], 'readonly');
@@ -48,6 +51,7 @@ export function getCardsFromLocal(
                 const partOfSpeech = partOfSpeechRequest.result;
 
                 // TODO ここのロジック再度チェック
+
 
                 const filteredResults = containDeleted ?
                     wordsRequest.result : wordsRequest.result.filter(
@@ -76,9 +80,9 @@ export function getCardsFromLocal(
 
                 resolve({
                     isSuccess: true,
-                    data: combinedData.sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
-                });
-            };
+                    data: combinedData
+                })
+            }
 
             transaction.onerror = (event) => {
                 reject({
@@ -181,6 +185,84 @@ export function getPartOfSpeechesFromLocal(userId: string | undefined | null) {
                 error: {
                     message: `Error fetching card: ${(event.target as IDBRequest).error?.message}`,
                     detail: event
+                }
+            })
+        }
+    })
+}
+
+export function getRecordsFromLocal(wordId: string) {
+    return new Promise<GetPromiseCommonResult<RecordIndexDB[]>>(async (resolve, reject) => {
+        const db = await openDB()
+        const transaction = db.transaction(["records"], 'readonly')
+        const store = transaction.objectStore("records")
+        const request = store.getAll()
+
+        request.onsuccess = () => {
+            const filteredResult: RecordIndexDB[] = request.result.filter(record => record.word_id === wordId).sort((a, b) => b.reviewed_at.getTime() - a.reviewed_at.getTime())
+
+            resolve({
+                isSuccess: true,
+                data: filteredResult
+            })
+        }
+
+        request.onerror = (e) => {
+            reject({
+                isSuccess: false,
+                error: {
+                    message: `Error fetching records: ${(e.target as IDBRequest).error?.message}`,
+                    detail: e
+                }
+            })
+        }
+
+        transaction.oncomplete = () => {}
+
+        transaction.onerror = (e) => {
+            reject({
+                isSuccess: false,
+                error: {
+                    message: `Transaction Error: ${(e.target as IDBRequest).error?.message}`,
+                    detail: e
+                }
+            })
+        }
+    })
+}
+
+export function getEN2ENItemFromLocal(word: string) {
+    return new Promise<GetPromiseCommonResult<EN2ENItem>>(async (resolve, reject) => {
+        const db = await openDB()
+        const transaction = db.transaction(["EN2ENDictionary"], 'readonly')
+        const store = transaction.objectStore("EN2ENDictionary")
+        const request = store.get(word)
+
+        request.onsuccess = () => {
+            resolve({
+                isSuccess: true,
+                data: request.result
+            })
+        }
+
+        request.onerror = (e) => {
+            reject({
+                isSuccess: false,
+                error: {
+                    message: `Error fetching item: ${(e.target as IDBRequest).error?.message}`,
+                    detail: e
+                }
+            })
+        }
+
+        transaction.oncomplete = () => {}
+
+        transaction.onerror = (e) => {
+            reject({
+                isSuccess: false,
+                error: {
+                    message: `Transaction Error: ${(e.target as IDBRequest).error?.message}`,
+                    detail: e
                 }
             })
         }

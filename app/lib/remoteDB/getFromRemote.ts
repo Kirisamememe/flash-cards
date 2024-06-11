@@ -56,6 +56,9 @@ export async function getCardsFromRemote(userId: string): Promise<GetPromiseComm
             where: {
                 authorId: userId
             },
+            include: {
+                records: true
+            }
         })
         return { isSuccess: true, data: data }
     } catch (e) {

@@ -5,10 +5,14 @@ import { PartOfSpeechLocal, WordCardToRemote } from "@/types/WordIndexDB";
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { PartOfSpeech, Word } from "@prisma/client";
+import { auth } from "@/app/lib/auth";
 
 const prisma = new PrismaClient().$extends(withAccelerate())
 
 export async function upsertCardToRemote(flashcard: WordCardToRemote): Promise<UpdatePromiseCommonResult<Word | undefined>> {
+    const session = await auth()
+    if (!session) throw new Error("権限がありません")
+
     return await prisma.$transaction(async (trx) => {
         try {
             // 現在のレコードを検索する
@@ -58,6 +62,21 @@ export async function upsertCardToRemote(flashcard: WordCardToRemote): Promise<U
                             learned_at: flashcard.learned_at,
                             retention_rate: flashcard.retention_rate,
                             is_deleted: flashcard.is_deleted,
+                            records: {
+                                create: flashcard.records.map((record) => ({
+                                    id: record.id,
+                                    // word: {
+                                    //     connect: {
+                                    //         id: record.word_id
+                                    //     }
+                                    // },
+                                    // word_id: record.word_id,
+                                    is_correct: record.is_correct,
+                                    reviewed_at: record.reviewed_at,
+                                    time: record.time,
+                                    synced_at: new Date()
+                                }))
+                            }
                         }
                     })
                 }
@@ -100,11 +119,45 @@ export async function upsertCardToRemote(flashcard: WordCardToRemote): Promise<U
                         retention_rate: flashcard.retention_rate,
                         author: { connect: { id: flashcard.author } },
                         is_deleted: flashcard.is_deleted,
+                        ...(flashcard.records.length > 0 && {
+                            records: {
+                                create: flashcard.records.map((record) => ({
+                                    id: record.id,
+                                    // word: {
+                                    //     connect: {
+                                    //         id: record.word_id
+                                    //     }
+                                    // },
+                                    // word_id: record.word_id,
+                                    is_correct: record.is_correct,
+                                    reviewed_at: record.reviewed_at,
+                                    time: record.time,
+                                    synced_at: new Date()
+                                }))
+                            }
+                        })
                     }
-                });
+                })
             }
+
+            if (!result && flashcard.records.length > 0) {
+                await trx.record.createMany({
+                    data: (flashcard.records.map(record => ({
+                        id: record.id,
+                        word_id: record.word_id,
+                        is_correct: record.is_correct,
+                        reviewed_at: record.reviewed_at,
+                        time: record.time,
+                        synced_at: new Date()
+                    })))
+                })
+            }
+
+            console.log("Result: ")
+            console.log(result)
             return { isSuccess: true, data: result };
         } catch (e) {
+            console.log("Error: ")
             console.error(e);
             return { isSuccess: false, error: { message: "トランザクション処理中にエラーが発生しました。", detail: e } };
         }
@@ -112,6 +165,9 @@ export async function upsertCardToRemote(flashcard: WordCardToRemote): Promise<U
 }
 
 export async function upsertPartOfSpeechToRemote(partOfSpeech: PartOfSpeechLocal): Promise<UpdatePromiseCommonResult<PartOfSpeech | undefined>> {
+    const session = await auth()
+    if (!session) throw new Error("権限がありません")
+
     return await prisma.$transaction(async (trx) => {
         try {
             const existingData = await trx.partOfSpeech.findUnique({
@@ -158,6 +214,9 @@ export async function upsertPartOfSpeechToRemote(partOfSpeech: PartOfSpeechLocal
 }
 
 export async function updateUserInfoToRemote(userInfo: UserInfoToRemote): Promise<UpdatePromiseCommonResult<UserInfoFormRemote | undefined>> {
+    const session = await auth()
+    if (!session) throw new Error("権限がありません")
+
     return await prisma.$transaction(async (trx) => {
         try {
             const existingData = await trx.user.findUnique({
@@ -196,3 +255,19 @@ export async function updateUserInfoToRemote(userInfo: UserInfoToRemote): Promis
         }
     })
 }
+
+// export async function saveRecordToRemote(record: RecordIndexDB): Promise<UpdatePromiseCommonResult<RecordIndexDB | undefined>> {
+//     const session = await auth()
+//     if (!session) throw new Error("権限がありません")
+//
+//     return await prisma.$transaction(async (trx) => {
+//         try {
+//
+//
+//
+//             return { isSuccess: true, data: result }
+//         } catch (e) {
+//             return { isSuccess: false, error: { message: "トランザクション処理中にエラーが発生しました", detail: e } }
+//         }
+//     })
+// }

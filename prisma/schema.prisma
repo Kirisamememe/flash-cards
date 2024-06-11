@@ -112,6 +112,7 @@ model Word {
   authorId       String
   partOfSpeechId String?
   is_deleted     Boolean       @default(false)
+  records        Record[]
 }
 
 model PartOfSpeech {
@@ -124,4 +125,14 @@ model PartOfSpeech {
   updated_at     DateTime
   synced_at      DateTime
   is_deleted     Boolean  @default(false)
+}
+
+model Record {
+  id          String   @id
+  word        Word     @relation(fields: [word_id], references: [id])
+  word_id     String
+  is_correct  Boolean
+  reviewed_at DateTime
+  time        Float
+  synced_at   DateTime
 }

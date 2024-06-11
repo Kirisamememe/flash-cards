@@ -7,19 +7,20 @@ import { InputProps } from "@/components/ui/input";
 interface FloatInputProps extends InputProps {
     label: string;
     labelClassName?: string
+    parentClass?: string
     description?: string
     limit: number
 }
 
 export const FloatInput = React.forwardRef<HTMLInputElement, FloatInputProps>(
-    ({ className, value, labelClassName, limit, description, type = "text", label, ...props }, ref) => {
+    ({ className, value, labelClassName, parentClass, limit, description, type = "text", label, ...props }, ref) => {
 
         const { error } = useFormField()
 
         return (
-            <FormItem>
+            <FormItem className={parentClass}>
                 <FormControl>
-                    <div className="relative">
+                    <div className={"relative"}>
                         <Input
                             type={type}
                             className={cn(

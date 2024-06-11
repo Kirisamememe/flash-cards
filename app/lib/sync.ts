@@ -1,6 +1,11 @@
 import React, { SetStateAction } from "react";
 import { PartOfSpeechLocal, WordDataMerged } from "@/types/WordIndexDB";
-import { getCardsFromLocal, getPartOfSpeechesFromLocal, getUserInfoFromLocal } from "@/app/lib/indexDB/getFromLocal";
+import {
+    getCardsFromLocal,
+    getPartOfSpeechesFromLocal,
+    getRecordsFromLocal,
+    getUserInfoFromLocal
+} from "@/app/lib/indexDB/getFromLocal";
 import {
     updateUserInfoToRemote,
     upsertCardToRemote,
@@ -13,11 +18,12 @@ import {
 } from "@/app/lib/remoteDB/getFromRemote";
 import { saveCardsToLocal, savePartOfSpeechToLocal, saveUserInfoToLocal } from "@/app/lib/indexDB/saveToLocal";
 import { Toast, ToasterToast } from "@/components/ui/use-toast";
+import { sortWords } from "@/app/lib/utils";
 
 export async function sync (
     words: WordDataMerged[],
     setWords: (words: WordDataMerged[]) => void,
-    addPos: (pos: PartOfSpeechLocal) => void,
+    setPos: (pos: PartOfSpeechLocal) => void,
     userInfo: UserInfo,
     setProgressMessage: React.Dispatch<SetStateAction<string>>,
     setProgressVal: React.Dispatch<SetStateAction<number>>,
@@ -85,7 +91,7 @@ export async function sync (
             author: value.authorId
         }
         await savePartOfSpeechToLocal(data, true)
-        addPos(data)
+        setPos(data)
     })
     progress += 10;
     setProgressVal(progress)
@@ -110,15 +116,22 @@ export async function sync (
         console.log(fetchedWords.data)
         await Promise.all(fetchedWords.data.map(async (word, index) => {
             //Promise.allを使うことによって、words.mapの処理が全部終わってから次へ進むことを約束(Promise)してくれる
-            const result = await upsertCardToRemote({ ...word, author: userInfo.id })
-
-            if (!result.isSuccess) {
-                console.error(result.error.detail);
+            const fetchedRecords = await getRecordsFromLocal(word.id)
+            await upsertCardToRemote({
+                ...word,
+                author: userInfo.id,
+                records: fetchedRecords.isSuccess ? fetchedRecords.data.filter(record => !record.synced_at) : []
+            }).then((result) => {
+                if (result.isSuccess) {
+                    progress += Math.floor((index + 1) / words.length * 30);
+                    setProgressVal(progress);
+                } else {
+                    console.error("未知のエラーが発生しました")
+                }
+            }).catch(result => {
+                console.error(result.error?.detail);
                 console.error(`同期に失敗：${word}`)
-            } else {
-                progress += Math.floor((index + 1) / words.length * 30);
-                setProgressVal(progress);
-            }
+            })
         }))
         console.log("＊＊＊＊　同期ログ：ローカルの単語データをリモートにプッシュしました　＊＊＊＊")
     } else {
@@ -157,7 +170,7 @@ export async function sync (
     }
     console.log("＊＊＊＊　同期ログ：コンテキストへの設置を開始します　＊＊＊＊")
 
-    setWords(cardsFromLocal.data)
+    setWords(sortWords(cardsFromLocal.data))
     progress += 20
     setProgressVal(progress)
 

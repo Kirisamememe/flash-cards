@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/drawer"
 import { ScrollArea } from "@/components/ui/scroll-area";
 import WordDetail from "@/components/wordbook/WordDetail";
-import { Button } from "@/components/ui/button";
+import { CircleCheckBig } from 'lucide-react';
 
 
 export default function WordItem({ wordData, index }: { wordData: WordDataMerged, index: number }) {
@@ -24,15 +24,8 @@ export default function WordItem({ wordData, index }: { wordData: WordDataMerged
     const isEditing = useWordbookStore((state) => state.isEditing)
     const setIsEditing = useWordbookStore((state) => state.setIsEditing)
 
-    // const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null)
     const [open, setOpen] = useState(false)
     const [isScrolling, setIsScrolling] = useState(false)
-
-    // const handleTouchStart = (e: React.TouchEvent) => {
-    //     const touch = e.touches[0];
-    //     setTouchStart({ x: touch.clientX, y: touch.clientY });
-    //     setIsScrolling(false);
-    // }
 
     const handleTouchMove = () => {
         setIsScrolling(true);
@@ -43,7 +36,6 @@ export default function WordItem({ wordData, index }: { wordData: WordDataMerged
             event.preventDefault()
             event.currentTarget.click()
         }
-        // setTouchStart(null);
         setIsScrolling(false);
     }
 
@@ -68,8 +60,8 @@ export default function WordItem({ wordData, index }: { wordData: WordDataMerged
                             </Badge>
                         </div>
                     </DrawerTrigger>
-                    <DrawerContent className={"focus-visible:outline-none"} autoFocus={false}>
-                        <ScrollArea className={""}>
+                    <DrawerContent autoFocus={false}>
+                        <ScrollArea>
                             <WordDetail wordData={wordData}/>
                         </ScrollArea>
                     </DrawerContent>
@@ -81,21 +73,29 @@ export default function WordItem({ wordData, index }: { wordData: WordDataMerged
     return (
         <li className={cn("relative h-14 flex flex-col border-b hover:border-transparent last:border-transparent", index === currentIndex && "border-transparent")}>
             <div
-                className={cn("flex gap-2 w-[calc(100%+1rem)] -translate-x-2.5 -translate-y-[1px] h-14 items-center px-4 rounded-lg hover:scale-[103%] hover:bg-border active:scale-100 cursor-pointer transition-all text-sm hover:text-base", index === currentIndex && "scale-100 hover:scale-100 bg-primary/5 text-primary font-semibold ring-1 ring-primary hover:bg-primary/15 text-xl hover:text-xl")}
+                className={cn(
+                    "flex gap-2 w-[calc(100%+1rem)] -translate-x-2.5 -translate-y-[1px] h-14 items-center px-4 rounded-lg active:-translate-y-[2px] hover:scale-103 hover:bg-border active:scale-100 cursor-pointer transition-all text-sm hover:text-base",
+                    wordData.is_learned && "text-muted-foreground",
+                    index === currentIndex && "scale-100 bg-primary/5 text-primary font-semibold ring-1 ring-primary hover:bg-primary/15 text-xl hover:text-xl hover:scale-100",
+                    // (index === currentIndex) && wordData.is_learned && "bg-foreground/5 text-foreground font-semibold ring-1 ring-border hover:bg-foreground/15 text-xl hover:text-xl scale-100 hover:scale-100"
+                )}
                 onClick={() => {
                     if (currentIndex !== index) setCurrentIndex(index)
                     if (isEditing) setIsEditing(false)
                     console.log("Clicked")
                 }}
-                // onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
                 // onClickだけだと、なぜかiPadでのタッチ操作がワンテンポ遅い
             >
                 <p className={""}>{wordData?.word}</p>
                 <Badge variant={"secondary"}
-                       className={cn("text-xs text-foreground/60 font-normal bg-foreground/5 hover:bg-foreground/10", index === currentIndex && "bg-primary/10 text-primary hover:bg-primary/15")}>{wordData.partOfSpeech && wordData.partOfSpeech.partOfSpeech}
+                       className={cn("text-xs text-foreground/60 font-normal bg-foreground/5 hover:bg-foreground/10",
+                           index === currentIndex && "bg-primary/10 text-primary hover:bg-primary/15",
+                           wordData.is_learned && "")}>
+                    {wordData.partOfSpeech && wordData.partOfSpeech.partOfSpeech}
                 </Badge>
+                {wordData.is_learned && <CircleCheckBig className={"absolute right-3"} size={20}/>}
             </div>
         </li>
     )

@@ -7,7 +7,11 @@
         "home": "ホーム",
         "wordbook": "単語帳",
         "ai_booster": "AIブースター",
-        "docs": "ドキュメント"
+        "docs": "ドキュメント",
+        "forgot": "忘れた",
+        "remembered": "覚えてる",
+        "i_was_wrong": "違った",
+        "next": "次の単語へ"
     },
     "User": {
         "signUp": "登録",
@@ -92,7 +96,9 @@
         "add_a_word": "単語を追加",
         "word_total": "単語数",
         "word_learning": "学習中",
+        "word_mark_as_mastered": "学習済みにする",
         "word_mastered": "学習済み",
+        "word_unmastered": "学習を続ける",
         "days_ago": "{date}前に作成",
         "day": "日",
         "days": "日",
@@ -102,11 +108,13 @@
         "correct_count": "正解した回数",
         "incorrect_count": "間違った回数",
         "online_dic": "Web辞書",
+        "online_dic_description": "「英語」のWeb辞書が利用可能です。右側のボタンでデータが取得できます。",
         "mastered_at": "習得日",
         "not_yet_mastered": "未習得",
         "final_edit": "最終編集",
         "counter_suffix": "回",
         "filter_words": "単語を検索",
-        "no_word": "まだ単語を追加していません"
+        "no_word": "まだ単語を追加していません",
+        "note_null": "学習に役立つ情報を記入しましょう"
     }
 }

@@ -1,19 +1,53 @@
 import { Link, pathnames } from './navigation';
-import { cn } from "@/app/lib/utils";
+import { animateElement, cn } from "@/app/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useSelectedLayoutSegment } from 'next/navigation';
-import { ComponentProps, useEffect, useState } from 'react';
+import React, { ComponentProps, SetStateAction, useEffect, useRef, useState } from 'react';
 import { useWordbookStore } from "@/providers/wordbook-store-provider";
+import { DebouncedState, useDebouncedCallback } from 'use-debounce';
+
+const handlePageSwitchAnimation = (
+    setIsComing: React.Dispatch<SetStateAction<boolean>>,
+    setIsTransition:  DebouncedState<(value: boolean) => void>,
+    linkRef: HTMLAnchorElement
+) => {
+    setIsComing(true)
+    const container = document.getElementById("animation-container")
+
+    if (container) {
+        animateElement(container, [
+            { opacity: '100%', transform: 'translateY(0)' },
+            { opacity: '0', transform: 'translateY(20%)' }
+        ],{
+            duration: 200,
+            easing: 'ease-in-out',
+            fill: "forwards"
+        }).then(res => {
+            if (res.finish && linkRef) {
+                setIsTransition(true)
+                linkRef.click()
+                // setTimeout(() => linkRef.click(), 1000)
+            }
+        })
+    }
+}
 
 export function NavItemMobile<
     Pathname extends keyof typeof pathnames
->({href, className, disabled, ...rest}: ComponentProps<typeof Link<Pathname>> & { disabled?: boolean }) {
+>({href, className, disabled, children, }: ComponentProps<typeof Link<Pathname>> & { disabled?: boolean }) {
     const selectedLayoutSegment = useSelectedLayoutSegment();
     const pathname = selectedLayoutSegment ? `/${selectedLayoutSegment}` : '/';
 
     const isActive = pathname === href;
 
     const [isComing, setIsComing] = useState(false)
+    const setIsTransition = useWordbookStore((state) => state.setIsTransition)
+
+    const linkRef = useRef<HTMLAnchorElement>(null)
+
+    const setIsTransitionDebounced = useDebouncedCallback((value: boolean) => {
+        if (!isActive) setIsTransition(value)
+    }, 300)
 
     const bounceAnimation = [
         { transform: 'scale(1)' },
@@ -27,80 +61,90 @@ export function NavItemMobile<
         easing: 'ease'
     }
 
-    // const loadingBounce = [
-    //     { transform: 'translateY(0)', opacity: 1, easing: 'cubic-bezier(0.0, 0.0, 0.2, 1)' },
-    //     { transform: 'translateY(-10px)', opacity: 0.7, easing: 'cubic-bezier(0.5, 0.35, 0.75, 0.5)', offset: 0.4 },
-    //     { transform: 'translateY(-10px)', opacity: 0.7, easing: 'cubic-bezier(0.5, 0.35, 0.75, 0.5)', offset: 0.5 },
-    //     { transform: 'translateY(0)', opacity: 1, easing: 'cubic-bezier(0.0, 0.0, 0.2, 1)' }
-    // ]
-    //
-    // const loadingBounceTiming = {
-    //     duration: 1000,
-    //     iterations: 1
-    // }
-
-
     useEffect(() => {
         if (isActive) {
             setIsComing(false)
+            if (isComing) setIsTransition(false)
         }
 
-    }, [isActive]);
-
+    }, [isActive, isComing, setIsTransition]);
 
     return (
-        <Button disabled={disabled} asChild className={cn("h-full rounded-none active:bg-transparent active:text-primary", className, isComing && "animate-pulse text-primary")} variant={"ghost"}
-                onClick={(event) => {
-                    event.currentTarget.animate(bounceAnimation, bounceTiming)
-                    if (!isComing && !isActive) {
-                        setIsComing(true)
-                    }
-                }}
-        >
-            <Link
-                className={cn(isActive ? "text-primary" : "text-muted-foreground", disabled && "pointer-events-none text-muted")}
+        <>
+            <Button disabled={disabled}
+                    className={cn(
+                        "h-full rounded-none active:bg-transparent active:text-primary",
+                        isComing && "animate-pulse text-primary",
+                        isActive ? "text-primary" : "text-muted-foreground",
+                        disabled && "pointer-events-none text-muted",
+                        className )}
+                    variant={"ghost"}
+                    onClick={(event) => {
+                        event.currentTarget.animate(bounceAnimation, bounceTiming)
+                        if (!isComing && !isActive && linkRef.current) {
+                            handlePageSwitchAnimation(setIsComing, setIsTransitionDebounced, linkRef.current)
+                        }
+                    }}
+            >
+                {children}
+            </Button>
+            <Link ref={linkRef}
+                className={"hidden"}
                 aria-current={isActive ? 'page' : undefined}
                 href={href}
                 scroll={false}
-                {...rest}
             />
-        </Button>
+        </>
     )
 }
 
 export function NavItem<
     Pathname extends keyof typeof pathnames
->({href, className, disabled, ...rest}: ComponentProps<typeof Link<Pathname>> & { disabled?: boolean }) {
+>({ href, className, disabled, children, }: ComponentProps<typeof Link<Pathname>> & { disabled?: boolean }) {
     const selectedLayoutSegment = useSelectedLayoutSegment();
     const pathname = selectedLayoutSegment ? `/${selectedLayoutSegment}` : '/';
 
+    const setIsTransitionDebounced = useDebouncedCallback((value: boolean) => {
+        if (!isActive) setIsTransition(value)
+    }, 300)
+
     const isActive = pathname === href;
     const [isComing, setIsComing] = useState(false)
+    const setIsTransition = useWordbookStore((state) => state.setIsTransition)
+
+
+    const linkRef = useRef<HTMLAnchorElement>(null)
+
 
     useEffect(() => {
         if (isActive){
             setIsComing(false)
-            // setTimeout(() => {
-            //     setIsTransition(false)
-            //     setIsComing(false)
-            // }, 1500)
+            if (isComing) setIsTransition(false)
         }
-    }, [isActive]);
+    }, [isActive, isComing, setIsTransition]);
 
     return (
-        <Button asChild className={cn("h-full rounded-full flex gap-2", (isActive || isComing) && "bg-primary/10 hover:bg-primary/10 active:bg-primary/10 hover:text-primary active:text-primary", isComing && "animate-pulse", className)} variant={"ghost"}>
-            <Link
-                className={cn((isActive || isComing) && "text-primary", disabled && "pointer-events-none text-muted")}
-                aria-current={isActive ? 'page' : undefined}
-                href={href}
-                scroll={false}
-                onClick={() => {
-                    if (!isComing && !isActive) {
-                        setIsComing(true)
-                    }
-                }}
-                {...rest}
+        <>
+            <Button className={cn(
+                "h-full rounded-full flex gap-2",
+                (isActive || isComing) && "text-primary bg-primary/10 hover:bg-primary/10 active:bg-primary/10 hover:text-primary active:text-primary",
+                isComing && "animate-pulse",
+                disabled && "pointer-events-none text-muted",
+                className)}
+                    variant={"ghost"}
+                    onClick={() => {
+                        if (!isComing && !isActive && linkRef.current) {
+                            handlePageSwitchAnimation(setIsComing, setIsTransitionDebounced, linkRef.current)
+                        }
+                    }}>
+                {children}
+            </Button>
+            <Link ref={linkRef}
+                  className={"hidden"}
+                  aria-current={isActive ? 'page' : undefined}
+                  href={href}
+                  scroll={false}
             />
-        </Button>
+        </>
     )
 }

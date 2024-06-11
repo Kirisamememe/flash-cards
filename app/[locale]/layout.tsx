@@ -61,5 +61,5 @@ export default async function LocaleLayout({ children, params: { locale } }: Rea
         <Analytics/>
         </body>
         </html>
-    );
+    )
 }

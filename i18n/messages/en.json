@@ -7,7 +7,11 @@
         "home": "Home",
         "wordbook": "Wordbook",
         "ai_booster": "AI Booster",
-        "docs": "Docs"
+        "docs": "Docs",
+        "forgot": "I've forgotten",
+        "remembered": "Remembered",
+        "i_was_wrong": "I was wrong",
+        "next": "Next word"
     },
     "User": {
         "signUp": "Sign up",
@@ -92,7 +96,9 @@
         "add_a_word": "Add a word",
         "word_total": "Total Words",
         "word_learning": "Learning",
+        "word_mark_as_mastered": "Mark as Mastered",
         "word_mastered": "Mastered",
+        "word_unmastered": "Mark as Unmastered",
         "days_ago": "Created {date} ago",
         "day": "day",
         "days": "days",
@@ -102,11 +108,13 @@
         "correct_count": "Correct Count",
         "incorrect_count": "Incorrect Count",
         "online_dic": "Online Dictionary",
+        "online_dic_description": "English web dictionary is available. Get data with the button on the right.",
         "mastered_at": "Learned At",
         "not_yet_mastered": "Not yet",
         "final_edit": "Final Edit",
         "counter_suffix": "",
         "filter_words": "Filter words...",
-        "no_word": "No words added yet"
+        "no_word": "No words added yet",
+        "note_null": "Let's fill in information that will be useful for learning."
     }
 }

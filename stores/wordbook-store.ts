@@ -2,7 +2,9 @@ import { createStore } from 'zustand/vanilla'
 import { PartOfSpeechLocal, WordDataMerged } from "@/types/WordIndexDB";
 import { getCardsFromLocal, getPartOfSpeechesFromLocal, getUserInfoFromLocal } from "@/app/lib/indexDB/getFromLocal";
 import { getUserInfoFromRemote } from "@/app/lib/remoteDB/getFromRemote";
-import { saveUserInfoToLocal } from "@/app/lib/indexDB/saveToLocal";
+import { saveCardToLocal, saveUserInfoToLocal } from "@/app/lib/indexDB/saveToLocal";
+import { UpdatePromiseCommonResult } from "@/types/ActionsResult";
+import { animateElement, sortWords } from "@/app/lib/utils";
 
 
 export type WordbookState = {
@@ -19,7 +21,7 @@ export type WordbookState = {
     overlayIsOpen: boolean
     isTransition: boolean
     isAddingPos: boolean
-    testStart: boolean
+    reload: boolean
 }
 
 export type WordbookActions = {
@@ -27,6 +29,7 @@ export type WordbookActions = {
     setPoses: (poses: PartOfSpeechLocal[]) => void
     addWord: (word: WordDataMerged) => void
     setWord: (word: WordDataMerged) => void
+    setWordToINDB: (userId: string | undefined, word: WordDataMerged) => Promise<UpdatePromiseCommonResult<number>>
     deleteWord: (wordId: string) => void
     setPos: (pos: PartOfSpeechLocal) => void
     addPos: (pos: PartOfSpeechLocal) => void
@@ -41,7 +44,7 @@ export type WordbookActions = {
     setOverlayIsOpen: (value: boolean) => void
     setIsTransition: (value: boolean) => void
     setIsAddingPos: (value: boolean) => void
-    setTestStart: (value: boolean) => void
+    setReload: () => void
 }
 
 export type WordbookStore = WordbookState & WordbookActions
@@ -55,11 +58,13 @@ export const initWordbookStore = async (userId: string | undefined | null, url: 
     const blindModeFromLocalStorage = localStorage.getItem("blindMode")
     const localInterval = localStorage.getItem("interval")
 
+    if (!localInterval) localStorage.setItem("interval", "10000")
+
     const fetchedWords = await getCardsFromLocal(userId, !loggedOutUseFromLocalStorage ? true : loggedOutUseFromLocalStorage === "1")
     if (!fetchedWords.isSuccess) {
         console.log("ZustandがローカルからWordsを取得できなかったわ")
     } else {
-        words = fetchedWords.data
+        words = sortWords(fetchedWords.data)
     }
 
     const fetchedPoses = await getPartOfSpeechesFromLocal(userId)
@@ -113,11 +118,11 @@ export const initWordbookStore = async (userId: string | undefined | null, url: 
         blindMode: userInfo?.blind_mode || blindModeFromLocalStorage === "1" || false,
         loggedOutUse: loggedOutUseFromLocalStorage === "1",
         filteredWords: [],
-        userInterval: localInterval && parseInt(localInterval) || 500,
+        userInterval: localInterval && parseInt(localInterval) || 10000,
         overlayIsOpen: false,
         isTransition: false,
         isAddingPos: false,
-        testStart: false
+        reload: false
     }
 }
 
@@ -135,22 +140,50 @@ export const defaultInitState: WordbookState = {
     overlayIsOpen: false,
     isTransition: false,
     isAddingPos: false,
-    testStart: false
+    reload: false
 }
 
 export const createWordbookStore = (initState: WordbookState = defaultInitState) => {
-    return createStore<WordbookStore>()((set) => ({
+    return createStore<WordbookStore>()((set, getState) => ({
         ...initState,
         setWords: (words: WordDataMerged[]) => set(() => ({ words: words })),
         setPoses: (poses: PartOfSpeechLocal[]) => set(() => ({ poses: poses })),
         setWord: (word: WordDataMerged) => set((state) => ({ words: state.words?.map(prev => prev.id === word.id ? word : prev) })),
+        setWordToINDB: (userId: string | undefined, word: WordDataMerged) => {
+            return new Promise<UpdatePromiseCommonResult<number>>(async (resolve, reject) => {
+                saveCardToLocal(userId, {
+                    ...word,
+                    phonetics: word.phonetics || "",
+                    partOfSpeech: word.partOfSpeech?.id || "",
+                    example: word.example || "",
+                    notes: word.notes || "",
+                }).then((res) => {
+                    if (res.isSuccess) {
+                        set((state) => ({ words: sortWords(state.words?.map(prev => prev.id === word.id ? word : prev)) }))
+
+                        resolve({
+                            isSuccess: true,
+                            data: getState().words.findIndex(value => value.id === word.id)
+                        })
+                    }
+                }).catch(error => {
+                    reject({
+                        isSuccess: false,
+                        error: {
+                            message: "IndexDBに保存できませんでした",
+                            detail: error
+                        }
+                    })
+                })
+            })
+        },
         addWord: (word: WordDataMerged) => set((state) => ({ words: [word, ...state.words] })),
         deleteWord: (wordId: string) => set((state) => ({ words: state.words.filter(val => val.id !== wordId)})),
         setPos: (pos: PartOfSpeechLocal) => set((state) => ({ poses: state.poses?.map(prev => prev.id === pos.id ? pos : prev) })) ,
         addPos: (pos: PartOfSpeechLocal) => set((state) => ({ poses: [pos, ...state.poses] })) ,
         setUserInfo: (userInfo: UserInfo) => set(() => ({ userInfo: userInfo })),
         setCurrentIndex: (num: number) => set(() => ({ currentIndex: num })),
-        setFilterText: (text: string) => set(() => ({ filterText: text })),
+        setFilterText: (text: string) => set(() => ({ filterText: text, currentIndex: 0 })),
         setIsEditing: (value: boolean) => set(() => ({ isEditing: value })),
         setBlindMode: async (value: boolean, userInfo?: UserInfo) => {
             //イベントハンドラーかuseEffect内でしか実行できないから要注意！
@@ -160,14 +193,14 @@ export const createWordbookStore = (initState: WordbookState = defaultInitState)
                 const data: UserInfo = { ...userInfo, blind_mode: value, updated_at: new Date() }
                 await saveUserInfoToLocal(data).then()
 
-                set(() => ({userInfo: data}))
+                set(() => ({ userInfo: data }))
             }
             else {
                 localStorage.setItem("blindMode", value ? "1" : "0")
             }
 
             set(() => ({ blindMode: value }))
-        } ,
+        },
         setLoggedOutUse: (value: boolean) => {
             localStorage.setItem("loggedOutUse", value ? "1" : "0")
             set(() => ({ loggedOutUse: value }))
@@ -180,10 +213,30 @@ export const createWordbookStore = (initState: WordbookState = defaultInitState)
                 // TODO 日本語のカタカナ・ひらがな対応
             }))
         },
-        setUserInterval: (num: number) => set(() => ({ userInterval: num })),
+        setUserInterval: (num: number) => {
+            set(() => ({ userInterval: num }))
+            console.log(`userInterval: ${num}`)
+        },
         setOverlayIsOpen: (value: boolean) => set(() => ({ overlayIsOpen: value })),
-        setIsTransition: (value: boolean) => set(() => ({ isTransition: value })),
+        setIsTransition: (value: boolean) => {
+            if (value) {
+                set(() => ({ isTransition: value }))
+            } else {
+                const loadingDiv = document.getElementById("loading-div")
+                if (loadingDiv) {
+                    animateElement(loadingDiv, [
+                        { opacity: '100%' },
+                        { opacity: '0' }
+                    ],{
+                        duration: 200,
+                        easing: 'ease-in-out',
+                    }).finally(() => {
+                        set(() => ({ isTransition: value }))
+                    })
+                }
+            }
+        },
         setIsAddingPos: (value: boolean) => set(() => ({ isAddingPos: value })),
-        setTestStart: (value: boolean) => set(() => ({ testStart: value }))
+        setReload: () => set((state) => ({ reload: !state.reload }))
     }))
 }

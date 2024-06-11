@@ -21,16 +21,17 @@ export default function CardContainer() {
 
     return (
         <motion.div
+            id={"animation-container"}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -30 }}
-            transition={{ duration: 0.3 }}
-            className={"h-full"}
+            transition={{ duration: 0.2 }}
+            className={"flex flex-col h-full min-h-[32rem] items-center"}
         >
             {!isSmallDevice &&
                 <AddWordBtn>
                     <Button
-                        className={"fixed right-20 bottom-14 w-16 h-16 z-50 rounded-full"}>
+                        className={"fixed sm:right-12 lg:right-20 bottom-14 w-16 h-16 z-50 rounded-full"}>
                         <PlusIcon className={""} width={32} height={32}/>
                     </Button>
                 </AddWordBtn>

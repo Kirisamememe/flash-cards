@@ -1,5 +1,4 @@
-import React, { SetStateAction, useState, useTransition } from "react";
-import { FormError } from '@/components/ui/formError';
+import React, { SetStateAction, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -12,14 +11,16 @@ import { saveCardToLocal } from "@/app/lib/indexDB/saveToLocal";
 import { saveWordCardRequest } from "@/types";
 import { useWordbookStore } from "@/providers/wordbook-store-provider";
 import { WordDataMerged } from "@/types/WordIndexDB";
+import { cn } from "@/app/lib/utils";
 
-export function EditWordCard({
+export function WordFormContainer({
     children,
     setOpen, // 編集が終わったらダイアログを閉じたいから必要
     setIsEditing,
     className,
     wordData,
-    setCurrentIndex // 単語を追加する時に必要
+    setCurrentIndex, // 単語を追加する時に必要
+    half = true
 }: {
     children?: React.ReactNode,
     setOpen?: React.Dispatch<SetStateAction<boolean>>
@@ -27,13 +28,12 @@ export function EditWordCard({
     className?: string,
     wordData?: WordDataMerged
     setCurrentIndex?: (num: number) => void
+    half?: boolean
 }) {
     console.log("EditWordCardがレンダリングされたようだ")
 
-    const [error, setError] = useState<string | undefined>('');
     const [isPending, startTransition] = useTransition();
-    const t1 = useTranslations('WordSubmitForm')
-    const t2 = useTranslations('IndexDB')
+    const t = useTranslations()
     const { toast } = useToast()
 
     const addWord = useWordbookStore((state) => state.addWord)
@@ -57,14 +57,17 @@ export function EditWordCard({
 
 
     function onSubmitToSave(values: z.infer<typeof saveWordCardRequest>) {
-        setError("")
         startTransition(async () => {
             console.log("フォームをサブミット")
             console.log(values)
             const result = await saveCardToLocal(userInfo?.id, values, false, !wordData)
 
             if (!result.isSuccess) {
-                setError(t1(result.error.message));
+                toast({
+                    variant: "destructive",
+                    title: t('IndexDB.dbErr'),
+                    description: result.error?.detail
+                })
                 return;
             }
             else {
@@ -96,23 +99,27 @@ export function EditWordCard({
             }
             toast({
                 variant: "default",
-                title: t2('saved')
-            });
+                title: t('IndexDB.saved')
+            })
         })
     }
 
 
     return (
-        <WordForm form={formToSave} onSubmit={onSubmitToSave} className={className}>
-            <FormError className={"my-2"} message={error}/>
-            <div className={"flex justify-between mt-3"}>
-                {wordData ?
-                    <DestructiveDialog className={""} isPendingParent={isPending}/> :
-                    <div className={"size-11"}></div>}
-                <div>
-                    {children}
+        <WordForm form={formToSave} onSubmit={onSubmitToSave} className={className} >
+            <div className={cn("absolute flex right-0 bottom-0 justify-between p-[inherit] bg-background/80 lg:bg-transparent rounded-b-4",
+                half ? "w-full lg:w-1/2" : "w-full")}>
+                {wordData &&
+                    <DestructiveDialog isPendingParent={isPending}/>
+                }
+                <div className={cn(!wordData &&
+                    "flex w-full justify-end"
+                )}>
                     {/*このchildrenはキャンセルボタン*/}
-                    <Button id={"submitFormBtn"} className={"ml-4"} size={"lg"} type="submit" disabled={isPending}>{t1('save')}</Button>
+                    {children}
+                    <Button id={"submitFormBtn"} className={"ml-4"} size={"lg"} type="submit" disabled={isPending}>
+                        {t('WordSubmitForm.save')}
+                    </Button>
                 </div>
             </div>
         </WordForm>

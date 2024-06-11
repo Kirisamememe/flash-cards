@@ -7,7 +7,11 @@
         "home": "主頁",
         "wordbook": "單字本",
         "ai_booster": "AI助力器",
-        "docs": "文檔"
+        "docs": "文檔",
+        "forgot": "忘記了",
+        "remembered": "還記得",
+        "i_was_wrong": "記錯了",
+        "next": "下一個"
     },
     "User": {
         "signUp": "註冊",
@@ -92,7 +96,9 @@
         "add_a_word": "添加單字",
         "word_total": "單字總數",
         "word_learning": "學習中",
+        "word_mark_as_mastered": "已掌握",
         "word_mastered": "已掌握",
+        "word_unmastered": "未掌握",
         "days_ago": "{date}前創建",
         "day": "天",
         "days": "天",
@@ -102,11 +108,13 @@
         "correct_count": "正確次數",
         "incorrect_count": "錯誤次數",
         "online_dic": "網路辭典",
+        "online_dic_description": "英文單字支援網路辭典，點擊右側按鈕可獲取單字資料",
         "mastered_at": "學習狀態",
         "not_yet_mastered": "尚未掌握",
         "final_edit": "最後編輯",
         "counter_suffix": "次",
         "filter_words": "檢索單字",
-        "no_word": "尚未添加單字"
+        "no_word": "尚未添加單字",
+        "note_null": "或許可以填寫一些能夠輔助記憶的資訊？"
     }
 }

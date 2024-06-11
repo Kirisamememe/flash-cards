@@ -7,7 +7,11 @@
         "home": "首页",
         "wordbook": "单词本",
         "ai_booster": "AI助力器",
-        "docs": "文档"
+        "docs": "文档",
+        "forgot": "忘记了",
+        "remembered": "还记得",
+        "i_was_wrong": "记错了",
+        "next": "下一个"
     },
     "User": {
         "signUp": "注册",
@@ -92,7 +96,9 @@
         "add_a_word": "添加单词",
         "word_total": "单词总数",
         "word_learning": "学习中",
+        "word_mark_as_mastered": "设为已掌握",
         "word_mastered": "已掌握",
+        "word_unmastered": "未掌握",
         "days_ago": "{date}前创建",
         "day": "天",
         "days": "天",
@@ -102,11 +108,13 @@
         "correct_count": "正确次数",
         "incorrect_count": "错误次数",
         "online_dic": "网络词典",
+        "online_dic_description": "英语单词支持在线辞典，点击右侧按钮可获取数据",
         "mastered_at": "掌握时间",
         "not_yet_mastered": "尚未掌握",
         "final_edit": "最后编辑",
         "counter_suffix": "次",
         "filter_words": "搜索单词",
-        "no_word": "尚未添加单词"
+        "no_word": "尚未添加单词",
+        "note_null": "或许可以填写一些能够辅助记忆的信息？"
     }
 }

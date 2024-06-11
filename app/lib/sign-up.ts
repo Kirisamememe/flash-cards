@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 import {SignResult} from "@/types/ActionsResult";
 import {getUserByEmail} from "@/app/lib/user";
 import {handleError} from "@/app/lib/utils";
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client/edge'
 
 const prisma = new PrismaClient()
 

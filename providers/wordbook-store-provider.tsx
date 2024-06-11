@@ -27,7 +27,12 @@ export const WordbookStoreProvider = ({
     const storeRef = useRef<StoreApi<WordbookStore> | null>(null)
     // const [store, setStore] = useState<StoreApi<WordbookStore> | null>(null);
     const [rerender, setRerender] = useState(false);
-    console.log("WordbookStoreProviderが実行されたようだ")
+    // console.log("WordbookStoreProvider: userId > ")
+    // console.log(userId)
+    // console.log("WordbookStoreProvider: url > ")
+    // console.log(url)
+    // console.log("WordbookStoreProvider: userName > ")
+    // console.log(userName)
 
     useEffect(() => {
         // let isMounted = true;
@@ -77,53 +82,3 @@ export const useWordbookStore = <T,>(
 
     return useStore(wordbookStoreContext, selector)
 }
-
-// export const WordbookStoreProvider = ({
-//   children, userId
-// }: WordbookStoreProviderProps) => {
-//     const [store, setStore] = useState<StoreApi<WordbookStore> | null>(null);
-//
-//     useEffect(() => {
-//         let isMounted = true;
-//
-//         const initialize = async (userId: string | undefined) => {
-//             const initializedStore = await initWordbookStore(userId);
-//             if (isMounted) {
-//                 setStore(createWordbookStore(initializedStore))
-//             }
-//             console.log(initializedStore)
-//         }
-//
-//         initialize(userId).catch(e => console.error(e))
-//
-//         return () => {
-//             isMounted = false
-//         }
-//     }, [userId])
-//
-//     if (!store) {
-//         return (
-//             <div className={"flex items-center justify-center"}>
-//             <Loading className={"w-full h-full"}/>
-//         </div>
-//     )
-//     }
-//
-//     return (
-//         <WordbookStoreContext.Provider value={store}>
-//             {children}
-//             </WordbookStoreContext.Provider>
-//     );
-// }
-//
-// export const useWordbookStore = <T,>(
-//     selector: (store: WordbookStore) => T,
-// ): T => {
-//     const wordbookStoreContext = useContext(WordbookStoreContext)
-//
-//     if (!wordbookStoreContext) {
-//         throw new Error(`useWordbookStore must be use within WordbookStoreProvider`)
-//     }
-//
-//     return useStore(wordbookStoreContext, selector)
-// }

@@ -1,22 +1,112 @@
 import { Separator } from "@/components/ui/separator";
 import { useLocale, useTranslations } from "next-intl";
 import DestructiveDialog from "@/components/dialog/DestructiveDialog";
-import { WordDataMerged } from "@/types/WordIndexDB";
+import { EN2ENItem, RecordIndexDB, WordDataMerged } from "@/types/WordIndexDB";
 import { Button } from "@/components/ui/button";
 import { CloudDownload } from 'lucide-react';
 import { CircleCheckBig } from 'lucide-react';
 import { SquarePen } from 'lucide-react';
 import { useWordbookStore } from "@/providers/wordbook-store-provider";
 import WordDisplay from "@/components/wordbook/WordDisplay";
-import { EditWordCard } from "@/components/form/EditCard";
+import { WordFormContainer } from "@/components/form/WordFormContainer";
+import { useEffect, useRef, useState } from "react";
+import { getEN2ENItemFromLocal, getRecordsFromLocal } from "@/app/lib/indexDB/getFromLocal";
+import { cn, isEnglish } from "@/app/lib/utils";
+import { useToast } from "@/components/ui/use-toast";
+import { ToastAction } from "@/components/ui/toast"
+import { fetchFromWordsAPI } from "@/app/lib/fetcher";
+import OnlineDic from "@/components/wordbook/OnlineDic";
+import { saveEN2ENItemToLocal } from "@/app/lib/indexDB/saveToLocal";
+import Loading from "@/components/ui/loading";
 
 export default function WordDetail({ wordData }: { wordData: WordDataMerged }) {
 
     const t = useTranslations()
     const locale = useLocale();
+    const { toast } = useToast()
+
+    const correctDiv = useRef<HTMLDivElement>(null)
+    const incorrectDiv = useRef<HTMLDivElement>(null)
 
     const isEditing = useWordbookStore((state) => state.isEditing)
     const setIsEditing = useWordbookStore((state) => state.setIsEditing)
+    const setWordToINDB = useWordbookStore((state) => state.setWordToINDB)
+    const userInfo = useWordbookStore((state) => state.userInfo)
+    const setCurrentIndex = useWordbookStore((state) => state.setCurrentIndex)
+
+    const [correctRecords, setCorrectRecords] = useState<RecordIndexDB[]>([])
+    const [incorrectRecords, setIncorrectRecords] = useState<RecordIndexDB[]>([])
+    const [dicData, setDicData] = useState<EN2ENItem | null>(null)
+    const [isFetching, setIsFetching] = useState(false)
+
+    useEffect(() => {
+        if (wordData?.id) {
+            getRecordsFromLocal(wordData.id).then((res) => {
+                if (res.isSuccess) {
+                    setCorrectRecords(res.data.filter(record => record.is_correct))
+                    setIncorrectRecords(res.data.filter(record => !record.is_correct))
+                }
+            })
+
+            getEN2ENItemFromLocal(wordData.word).then((res) => {
+                if (res.isSuccess && res.data) {
+                    setDicData(res.data)
+                }
+                else {
+                    setDicData(null)
+                }
+            })
+        }
+
+        if (correctDiv.current) {
+            correctDiv.current.style.width = `${(correctRecords.length / (correctRecords.length + incorrectRecords.length)) * 100}%`
+        }
+        if (incorrectDiv.current) {
+            incorrectDiv.current.style.width = `${(incorrectRecords.length / (correctRecords.length + incorrectRecords.length)) * 100}%`
+        }
+
+    }, [correctRecords.length, incorrectRecords.length, wordData]);
+
+
+
+    const handleLearned = () => {
+        if (!wordData.is_learned) {
+            toast({
+                title: ("Marked as Mastered"),
+                description: ("The word has been marked as Mastered. Click the button again to undo."),
+                action:
+                    <ToastAction onClick={() => setWordToINDB(userInfo?.id,{...wordData, is_learned: wordData.is_learned}).catch(err => console.error(err))} altText={("Undo")}>
+                    {"Undo"}
+                    </ToastAction>,
+                duration: 5000
+            })
+        }
+
+        setWordToINDB(userInfo?.id,{...wordData, is_learned: !wordData.is_learned})
+            .then((res) => {
+                if (res.isSuccess && wordData.is_learned) {
+                    setCurrentIndex(res.data)
+                }
+            })
+            .catch(err => console.error(err))
+    }
+
+    const handleOnlineDic = async () => {
+        if (!dicData) {
+            setIsFetching(true)
+            fetchFromWordsAPI(wordData.word)
+                .then(res => {
+                    console.log(res)
+                    setDicData(res)
+                    saveEN2ENItemToLocal(res).catch((error) => {
+                        console.error(error)
+                    })
+                })
+                .finally(() => {
+                    setIsFetching(false)
+                })
+        }
+    }
 
     if (!wordData) return null
 
@@ -25,7 +115,7 @@ export default function WordDetail({ wordData }: { wordData: WordDataMerged }) {
 
 
     return (
-        <div className={"flex flex-col justify-start items-start px-5 sm:px-6 lg:px-9 pt-6 pb-12"}>
+        <div className={"flex flex-col justify-start items-start px-4 sm:px-6 lg:px-9 pt-6 pb-12"}>
             <div className={"pl-1.5 flex w-full items-center justify-between mb-2"}>
                 <p className={"text-sm text-foreground/20"}>
                     {t("WordsBook.days_ago", { date: timeStr })}
@@ -52,33 +142,40 @@ export default function WordDetail({ wordData }: { wordData: WordDataMerged }) {
             </div>
 
             {isEditing ?
-                <EditWordCard className={"flex flex-col w-full px-0 lg:gap-6"} wordData={wordData} setIsEditing={setIsEditing}>
+                <WordFormContainer className={"relative flex flex-col w-full mt-4 p-0.5 sm:p-0.5 gap-5"} wordData={wordData} setIsEditing={setIsEditing} half={false}>
                     <Button className={"px-6"} type={"button"} variant={"ghost"} size={"lg"} onClick={() => setIsEditing(false)}>
                         {t("WordSubmitForm.cancel")}
                     </Button>
-                </EditWordCard> :
+                </WordFormContainer> :
+                // 単語情報
                 <WordDisplay wordData={wordData}/>
             }
 
             <Separator className={"my-6"}/>
 
+            {/*定着度*/}
             <div className={"flex flex-col w-full"}>
                 <div className={"pl-1.5 flex justify-between items-center mb-4"}>
                     <h1 className={"text-lg sm:text-xl lg:text-2xl font-bold"}>{t("WordsBook.retention_rate")}</h1>
-                    <Button disabled className={"gap-2 h-9 sm:h-10 px-3 sm:px-4"}
-                            variant={"outline"} type={"button"}>
+                    <Button className={cn("group gap-2 h-9 sm:h-10 px-3 sm:px-4",
+                            wordData.is_learned &&
+                                "text-primary hover:bg-destructive shadow-primary hover:shadow-destructive hover:text-destructive-foreground")
+                            }
+                            variant={"outline"} type={"button"}
+                            onClick={handleLearned}>
                         <CircleCheckBig size={16}/>
-                        {t("WordsBook.word_mastered")}
+                        <span className={cn(wordData.is_learned && "group-hover:hidden")}>{wordData.is_learned ? t("WordsBook.word_mastered") : t("WordsBook.word_mark_as_mastered")}</span>
+                        <span className={cn("hidden", wordData.is_learned && "group-hover:block text-destructive-foreground")}>{wordData.is_learned && t('WordsBook.word_unmastered')}</span>
                     </Button>
                 </div>
                 <div className={"bg-foreground/[0.03] p-5 rounded-lg"}>
                     <div className={"flex justify-between px-0.5"}>
-                        <p className={"text-foreground text-base font-bold"}>{`0 ${t('WordsBook.counter_suffix')}`}</p>
-                        <p className={"text-foreground text-base font-bold"}>{`0 ${t('WordsBook.counter_suffix')}`}</p>
+                        <p className={"text-foreground text-base font-bold"}>{`${correctRecords.length} ${t('WordsBook.counter_suffix')}`}</p>
+                        <p className={"text-foreground text-base font-bold"}>{`${incorrectRecords.length} ${t('WordsBook.counter_suffix')}`}</p>
                     </div>
-                    <div className={"flex my-4 gap-1 justify-between"}>
-                        <div className={"bg-primary h-3 w-[50%] rounded-l-4"}></div>
-                        <div className={"bg-primary/30 h-3 w-[50%] rounded-r-4"}></div>
+                    <div className={cn("flex my-4 gap-1 justify-between h-3 rounded-4 overflow-hidden", correctRecords.length + incorrectRecords.length === 0 && "bg-foreground/5")}>
+                        {correctRecords.length > 0 && <div ref={correctDiv} className={cn("bg-primary")}/>}
+                        {incorrectRecords.length > 0 && <div ref={incorrectDiv} className={cn("bg-primary/30")}/>}
                     </div>
                     <div className={"flex justify-between px-0.5"}>
                         <p className={"text-muted-foreground text-sm"}>{t("WordsBook.correct_count")}</p>
@@ -87,25 +184,36 @@ export default function WordDetail({ wordData }: { wordData: WordDataMerged }) {
                 </div>
             </div>
 
+            {/*Web辞書*/}
+            {isEnglish(wordData.word) &&
+                <>
+                    <Separator className={"my-6"}/>
+                    <div className={"flex flex-col w-full"}>
+                        <div className={"pl-1.5 flex w-full justify-between items-center mb-3"}>
+                            <h1 className={"text-lg sm:text-xl sm:leading-[2.25rem] lg:text-2xl lg:leading-[2.75rem] font-bold"}>{t("WordsBook.online_dic")}</h1>
+                            {!dicData && <Button className={"size-9 p-1.5 lg:size-11 lg:p-2"} variant={"ghost"}
+                                                 size={"icon"}
+                                                 onClick={handleOnlineDic}>
+                                <CloudDownload size={28}/>
+                            </Button>}
+                        </div>
+                        <div className={"flex flex-col w-full bg-foreground/[0.03] p-4 rounded-lg"}>
+                            {dicData ?
+                                <OnlineDic en2enItem={dicData}/> :
+                                isFetching ?
+                                    <Loading size={24}/> :
+                                    <p className={"text-muted-foreground"}>
+                                        {t("WordsBook.online_dic_description")}
+                                    </p>
+                            }
+                        </div>
+                    </div>
+                </>
+            }
+
             <Separator className={"my-6"}/>
 
-            <div className={"flex flex-col w-full"}>
-                <div className={"pl-1.5 flex w-full justify-between items-center mb-4"}>
-                    <h1 className={"text-lg sm:text-xl lg:text-2xl font-bold"}>{t("WordsBook.online_dic")}</h1>
-                    <Button disabled className={"size-9 p-1.5 lg:size-11 lg:p-2"} variant={"ghost"}
-                            size={"icon"}><CloudDownload size={28}/></Button>
-                </div>
-                <div className={"flex flex-col w-full bg-foreground/[0.03] p-4 rounded-lg"}>
-                    <p className={"text-muted-foreground"}>
-                        {"coming soon..."}
-                        {/*{"「英語」のWeb辞書が利用可能です。右側のボタンでデータが取得できます。"}*/}
-                    </p>
-                </div>
-            </div>
-
-            <Separator className={"my-6"}/>
-
-
+            {/*エキストラ情報*/}
             <div className={"flex w-full items-center justify-between pl-1.5"}>
                 <div className={"flex items-center gap-5 sm:gap-6 lg:gap-8"}>
                     <div className={""}>

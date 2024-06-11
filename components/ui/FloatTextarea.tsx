@@ -7,18 +7,20 @@ import { TextareaProps } from "@/components/ui/textarea";
 interface FloatTextareaProps extends TextareaProps {
     label: string;
     description?: string
+    parentClass?: string
+    labelClassName?: string
     limit: number
 }
 
 export const FloatTextarea = React.forwardRef<HTMLTextAreaElement, FloatTextareaProps>(
-    ({ className, value, rows = 2, limit, description, label, ...props }, ref) => {
+    ({ className, parentClass, labelClassName, value, rows = 2, limit, description, label, ...props }, ref) => {
 
         const { error } = useFormField()
 
         return (
-            <FormItem>
+            <FormItem className={parentClass}>
                 <FormControl>
-                    <div className="relative h-full">
+                    <div className={"relative"}>
                         <Textarea
                             className={cn(
                                 "peer w-full h-full rounded-md bg-transparent ring-1 ring-border hover:ring-foreground/30 border-0 px-5 py-4 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:hover:ring-ring focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 resize-none",
@@ -41,7 +43,7 @@ export const FloatTextarea = React.forwardRef<HTMLTextAreaElement, FloatTextarea
                 </FormControl>
 
                 {!error ?
-                    <div className={"flex justify-between mx-1 py-0.5 text-xs"}>
+                    <div className={cn("flex justify-between mx-1 py-0.5 text-xs", labelClassName)}>
                         <FormDescription className={"text-xs text-foreground/20"}>
                             {description}
                         </FormDescription>

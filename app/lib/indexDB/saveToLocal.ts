@@ -1,6 +1,12 @@
-import { Word } from "@prisma/client";
 import { SaveCardsResults, UpdatePromiseCommonResult } from "@/types/ActionsResult";
-import { PartOfSpeechLocal, WordDataMerged, WordIndexDB } from "@/types/WordIndexDB";
+import {
+    EN2ENItem,
+    PartOfSpeechLocal,
+    RecordIndexDB,
+    WordDataMerged,
+    WordIndexDB,
+    WordRemote
+} from "@/types/WordIndexDB";
 import { z } from "zod";
 import { partOfSpeech, saveWordCardRequest } from "@/types";
 import { createId } from "@paralleldrive/cuid2";
@@ -43,11 +49,12 @@ export async function saveUserInfoToLocal(user: UserInfo): Promise<UpdatePromise
     })
 }
 
-export async function saveCardsToLocal(userId: string , cards: Word[], forSync: boolean = true): Promise<SaveCardsResults> {
+export async function saveCardsToLocal(userId: string , cards: WordRemote[], forSync: boolean = true): Promise<SaveCardsResults> {
     return new Promise<SaveCardsResults>(async (resolve) => {
         const db = await openDB();
-        const transaction = db.transaction(['words'], 'readwrite');
+        const transaction = db.transaction(['words', 'records'], 'readwrite');
         const store = transaction.objectStore('words');
+        const recordStore = transaction.objectStore('records');
         const results: SaveCardsResults = {
             isSuccess: false,
             successResults: [],
@@ -77,6 +84,9 @@ export async function saveCardsToLocal(userId: string , cards: Word[], forSync: 
                     }
 
                     const request = store.put(wordData);
+                    card.records && card.records.map(record => {
+                        recordStore.put(record);
+                    })
                     request.onsuccess = () => {
                         results.successResults.push({
                             isSuccess: true,
@@ -93,6 +103,7 @@ export async function saveCardsToLocal(userId: string , cards: Word[], forSync: 
                             }
                         })
                     }
+
                 }
 
             } catch (error) {
@@ -126,7 +137,6 @@ export async function saveCardToLocal(
     forSync: boolean = false,
     isAdding: boolean = false
 ): Promise<UpdatePromiseCommonResult<WordDataMerged>> {
-    console.log("ここに到達した")
 
     if (values.author && userId !== values.author) {
         // 単語に作者が存在する、且つその作者は変更をリクエストした人ではない
@@ -183,7 +193,7 @@ export async function saveCardToLocal(
                 if (wordRequest.result) {
                     const mergedData = {
                         ...wordData,
-                        partOfSpeech: partOfSpeechResult
+                        partOfSpeech: partOfSpeechResult,
                     }
 
                     console.log("IndexDBで整形したデータ：")
@@ -192,7 +202,7 @@ export async function saveCardToLocal(
                     resolve({
                         isSuccess: true,
                         data: mergedData
-                    });
+                    })
                 } else {
                     reject({
                         isSuccess: false,
@@ -274,6 +284,82 @@ export function savePartOfSpeechToLocal(value: z.infer<typeof partOfSpeech>, for
                     detail: e
                 }
 
+            })
+        }
+    })
+}
+
+export function saveRecordToLocal(record: RecordIndexDB) {
+    return new Promise<UpdatePromiseCommonResult<IDBValidKey>>(async (resolve, reject) => {
+        const db = await openDB()
+        const transaction = db.transaction(['records'], 'readwrite')
+        const store = transaction.objectStore('records')
+        const request = store.put(record)
+
+        request.onsuccess = () => {
+            resolve({
+                isSuccess: true,
+                data: request.result
+            })
+        }
+
+        request.onerror = (e) => {
+            reject({
+                isSuccess: false,
+                error: {
+                    message: "レビュー記録を保存できませんでした",
+                    detail: e
+                }
+            })
+        }
+
+        transaction.oncomplete = () => {}
+
+        transaction.onerror = (e) => {
+            reject({
+                isSuccess: false,
+                error: {
+                    message: `Transaction error: ${(e.target as IDBTransaction).error?.message}`,
+                    detail: e
+                }
+            })
+        }
+    })
+}
+
+export function saveEN2ENItemToLocal(en2enItem: EN2ENItem) {
+    return new Promise<UpdatePromiseCommonResult<IDBValidKey>>(async (resolve, reject) => {
+        const db = await openDB()
+        const transaction = db.transaction(['EN2ENDictionary'], 'readwrite')
+        const store = transaction.objectStore('EN2ENDictionary')
+        const request = store.put(en2enItem)
+
+        request.onsuccess = () => {
+            resolve({
+                isSuccess: true,
+                data: request.result
+            })
+        }
+
+        request.onerror = (e) => {
+            reject({
+                isSuccess: false,
+                error: {
+                    message: "辞書アイテムを保存できませんでした",
+                    detail: e
+                }
+            })
+        }
+
+        transaction.oncomplete = () => {}
+
+        transaction.onerror = (e) => {
+            reject({
+                isSuccess: false,
+                error: {
+                    message: `Transaction error: ${(e.target as IDBTransaction).error?.message}`,
+                    detail: e
+                }
             })
         }
     })

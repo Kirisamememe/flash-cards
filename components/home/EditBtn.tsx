@@ -1,40 +1,39 @@
 import { Dialog, DialogClose, DialogContent, DialogTrigger } from "@/components/dialog/dialog";
 import { Button } from "@/components/ui/button";
-import { EditWordCard } from "@/components/form/EditCard";
+import { WordFormContainer } from "@/components/form/WordFormContainer";
 import React, { useState } from "react";
 import { WordDataMerged } from "@/types/WordIndexDB";
 import { useTranslations } from "next-intl";
-import { useWordbookStore } from "@/providers/wordbook-store-provider";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { Drawer, DrawerClose, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useWordbookStore } from "@/providers/wordbook-store-provider";
 
-export default function EditWordBtn({
-    children,
-    wordData
-}: {
+interface EditWordBtnProps {
     children?: React.ReactNode
-    wordData: WordDataMerged
-}) {
+    wordData?: WordDataMerged
+}
+
+const EditWordBtn = React.forwardRef<HTMLButtonElement, EditWordBtnProps>(({
+    wordData, children
+}, ref) => {
     console.log("EditWordBtnがレンダリングされたようだ")
 
-    const t = useTranslations('WordSubmitForm')
-    const t2 = useTranslations('Index')
+    const t = useTranslations()
 
     const [open, setOpen] = useState(false)
-
-    const setUserInterval = useWordbookStore((state) => state.setUserInterval)
+    const setCurrentIndex = useWordbookStore((state) => state.setCurrentIndex)
 
     const isSmallDevice = useMediaQuery('(max-width:640px)');
 
     const handleOnChange = () => {
         setOpen(prev => !prev)
+
         if (!open) {// ここの値は変更前の値、つまりprevのほう
-            setUserInterval(99999999)
+            document.getAnimations().map(a => a.pause())
         }
         else {
-            const interval = localStorage.getItem("interval") || "2000"
-            setUserInterval(parseInt(interval))
+            document.getAnimations().map(a => a.play())
         }
     }
 
@@ -42,17 +41,21 @@ export default function EditWordBtn({
         return (
             <Drawer noBodyStyles>
                 <DrawerTrigger asChild>
-                    <Button className={""} variant={"coloredOutline"}>{t2('editBtn')}</Button>
+                    {children ? children :
+                        <Button ref={ref} variant={"coloredOutline"}>
+                        {t('Index.editBtn')}
+                        </Button>
+                    }
                 </DrawerTrigger>
                 <DrawerContent>
-                    <ScrollArea className={"w-full h-full px-3"}>
-                        <EditWordCard className={"mb-6"} setOpen={setOpen} wordData={wordData}>
+                    <ScrollArea barClass={"mr-0.5 py-1"}>
+                        <WordFormContainer setOpen={setOpen} wordData={wordData} setCurrentIndex={setCurrentIndex}>
                             <DrawerClose asChild>
                                 <Button variant={"ghost"} size={"lg"} type={"button"} className={"px-5"}>
-                                    {t('cancel')}
+                                    {t('WordSubmitForm.cancel')}
                                 </Button>
                             </DrawerClose>
-                        </EditWordCard>
+                        </WordFormContainer>
                     </ScrollArea>
                 </DrawerContent>
             </Drawer>
@@ -62,20 +65,26 @@ export default function EditWordBtn({
     return (
         <Dialog open={open} onOpenChange={handleOnChange}>
             <DialogTrigger asChild>
-                <Button className={""} variant={"coloredOutline"}>{t2('editBtn')}</Button>
+                {children ? children :
+                    <Button ref={ref} variant={"coloredOutline"}>
+                        {t('Index.editBtn')}
+                    </Button>
+                }
             </DialogTrigger>
-            <DialogContent className="bg-background shadow-2xl rounded-6 mt-4  h-[calc(100vh-2rem)] -translate-y-[calc(50%+1rem)] max-h-[49.75rem] lg:max-w-[60rem] lg:max-h-[31rem] p-4 lg:p-6">
-                <ScrollArea className={"pb-3 lg:pb-0 w-full h-full"}>
-                    <EditWordCard setOpen={setOpen} wordData={wordData}>
+            <DialogContent className="p-0 pt-10 shadow-2xl rounded-6 h-[calc(100vh-2rem)] -translate-y-[calc(50%)] lg:max-w-[60rem] max-h-[49rem] lg:max-h-[31rem]">
+                <ScrollArea barClass={"mr-0.5 py-1"}>
+                    <WordFormContainer setOpen={setOpen} wordData={wordData} setCurrentIndex={setCurrentIndex}>
                         <DialogClose asChild>
                             <Button variant={"ghost"} size={"lg"} type={"button"} className={"px-5"}>
-                                {t('cancel')}
+                                {t('WordSubmitForm.cancel')}
                             </Button>
                         </DialogClose>
-                    </EditWordCard>
-                    {children}
+                    </WordFormContainer>
                 </ScrollArea>
             </DialogContent>
         </Dialog>
     )
-}
+})
+
+EditWordBtn.displayName = "EditWordBtn"
+export default EditWordBtn

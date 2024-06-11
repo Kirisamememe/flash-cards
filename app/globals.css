@@ -99,28 +99,32 @@
 
 @keyframes faceIn {
   0% {
+    /*transform: translateY(-200%) translateX(-50%);*/
     opacity: 0;
   }
   100% {
+    /*transform: translateY(-50%) translateX(-50%);*/
     opacity: 100%;
   }
 }
 
 .faceIn {
-  animation: faceIn 0.3s ease;
+  animation: faceIn 0.3s ease-in-out;
 }
 
 @keyframes faceOut {
   0% {
     opacity: 100%;
+    transform: translateY(-50%) translateX(-50%);
   }
   100% {
     opacity: 0;
+    transform: translateY(-200%) translateX(-50%);
   }
 }
 
 .faceOut {
-  animation: faceIn 0.3s ease;
+  animation: faceOut 0.2s ease-in-out forwards;
 }
 
 @keyframes loading {
@@ -164,4 +168,182 @@
 
 .iconBounce {
   animation: iconBounce 0.8s infinite;
+}
+
+.diagonal-box-left {
+  clip-path: polygon(-2% -2%, 100% -2%, 95% 102%, -2% 102%);
+}
+
+.diagonal-box-left::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  right: 0;
+  width: 100%;
+  height: 0.08rem;
+  background-color: hsl(var(--destructive)); /* 線の色 */
+  transform: rotate(-81deg); /* 角度 */
+  transform-origin: bottom right;
+}
+
+.diagonal-box-right {
+  clip-path: polygon(5% -2%, 102% -2%, 102% 102%, 0% 102%);
+}
+
+.diagonal-box-right::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0.05rem;
+  width: 100%;
+  height: 0.08rem;
+  background-color: rgb(22,163,74); /* 線の色 */
+  transform: rotate(-81deg); /* 角度 */
+  transform-origin: bottom left;
+}
+
+@media (min-width: 640px) {
+  .diagonal-box-right::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0.05rem;
+    width: 100%;
+    height: 0.08rem;
+    background-color: rgb(22,163,74); /* 線の色 */
+    transform: rotate(-79.5deg); /* 角度 */
+    transform-origin: bottom left;
+  }
+
+  .diagonal-box-left::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    right: 0;
+    width: 100%;
+    height: 0.08rem;
+    background-color: hsl(var(--destructive)); /* 線の色 */
+    transform: rotate(-79.5deg); /* 角度 */
+    transform-origin: bottom right;
+  }
+}
+
+.examples {
+  font-family: 'DIN 2014', sans-serif;
+  font-size: 1.25rem;
+  font-style: italic;
+  font-weight: 500;
+  line-height: normal;
+}
+
+.line-2-horizontal {
+  --size: 32px;
+  --stroke-width: calc(var(--size) / 6);
+  --color: hsl(var(--primary));
+  --animation-timing-function: linear;
+  --animation-duration: 1s;
+  position: fixed;
+  width: var(--size);
+  height: var(--size);
+}
+
+.line-2-horizontal::before,
+.line-2-horizontal::after {
+  content: '';
+  position: absolute;
+  transform: scaleY(1);
+  animation: var(--animation-timing-function) var(--animation-duration) infinite line-2-horizontal-animation;
+}
+
+.line-2-horizontal::before {
+  inset: 0;
+  border-top: var(--stroke-width) solid var(--color);
+  border-bottom: var(--stroke-width) solid var(--color);
+}
+
+.line-2-horizontal::after {
+  top: calc(50% - var(--stroke-width) / 2);
+  right: 0;
+  left: 0;
+  border-top: var(--stroke-width) solid var(--color);
+  animation-delay: calc(var(--animation-duration) / 2);
+}
+
+@keyframes line-2-horizontal-animation {
+  0% {
+    transform: scaleX(1);
+  }
+
+  50% {
+    transform: scaleX(.5);
+  }
+
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+.circle-pulse-1 {
+  --size: 48px;
+  --color: hsl(var(--primary));
+  --animation-timing-function: linear;
+  --animation-duration: 2s;
+  position: fixed;
+  width: var(--size);
+  height: var(--size);
+}
+
+.circle-pulse-1::before,
+.circle-pulse-1::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--color);
+  border-radius: 50%;
+  opacity: 1;
+  transform: scale(0);
+  animation: var(--animation-timing-function) var(--animation-duration) infinite circle-pulse-1-animation;
+}
+
+.circle-pulse-1::after {
+  animation-delay: calc(var(--animation-duration) / 2);
+}
+
+@keyframes circle-pulse-1-animation {
+  0% {
+    opacity: 1;
+    transform: scale(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+.square-spin-2 {
+  --size: 32px;
+  --stroke-width: calc(var(--size) / 6);
+  --color: hsl(var(--primary));
+  --animation-timing-function: linear;
+  --animation-duration: 2s;
+  position: fixed;
+  width: var(--size);
+  height: var(--size);
+  background-image:
+      radial-gradient(circle at var(--stroke-width) var(--stroke-width), var(--color) 0%, var(--color) var(--stroke-width), transparent var(--stroke-width), transparent 100%),
+      radial-gradient(circle at calc(100% - var(--stroke-width)) var(--stroke-width), var(--color) 0%, var(--color) var(--stroke-width), transparent var(--stroke-width), transparent 100%),
+      radial-gradient(circle at calc(100% - var(--stroke-width)) calc(100% - var(--stroke-width)), var(--color) 0%, var(--color) var(--stroke-width), transparent var(--stroke-width), transparent 100%),
+      radial-gradient(circle at var(--stroke-width) calc(100% - var(--stroke-width)), var(--color) 0%, var(--color) var(--stroke-width), transparent var(--stroke-width), transparent 100%);
+  animation: var(--animation-timing-function) var(--animation-duration) infinite square-spin-2-animation;
+}
+
+@keyframes square-spin-2-animation {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
