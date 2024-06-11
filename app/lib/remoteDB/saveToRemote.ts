@@ -10,8 +10,8 @@ import { auth } from "@/app/lib/auth";
 const prisma = new PrismaClient().$extends(withAccelerate())
 
 export async function upsertCardToRemote(flashcard: WordCardToRemote): Promise<UpdatePromiseCommonResult<Word | undefined>> {
-    const session = await auth()
-    if (!session) throw new Error("権限がありません")
+    // const session = await auth()
+    // if (!session?.user) throw new Error("権限がありません")
 
     return await prisma.$transaction(async (trx) => {
         try {
@@ -165,8 +165,8 @@ export async function upsertCardToRemote(flashcard: WordCardToRemote): Promise<U
 }
 
 export async function upsertPartOfSpeechToRemote(partOfSpeech: PartOfSpeechLocal): Promise<UpdatePromiseCommonResult<PartOfSpeech | undefined>> {
-    const session = await auth()
-    if (!session) throw new Error("権限がありません")
+    // const session = await auth()
+    // if (!session) throw new Error("権限がありません")
 
     return await prisma.$transaction(async (trx) => {
         try {
