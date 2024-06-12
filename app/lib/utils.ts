@@ -22,6 +22,7 @@ export function animateElement(
             return;
         }
         const animation = element.animate(keyframes, options)
+
         animation.onfinish = () => {
             resolve({ finish: true })
         }
@@ -30,35 +31,6 @@ export function animateElement(
         }
         animation.onremove = () => {
             resolve({ finish: false })
-        }
-    })
-}
-
-export function disappearAnimation(
-    containerRef: HTMLDivElement | HTMLElement | null,
-    btn1Ref: HTMLButtonElement | null = null,
-    btn2Ref: HTMLButtonElement | null = null,
-    btn3Ref: HTMLButtonElement | null = null
-): Promise<{ finish: boolean }> {
-    return new Promise((resolve, reject) => {
-        if (containerRef) {
-            if (btn1Ref) btn1Ref.disabled = true
-            if (btn2Ref) btn2Ref.disabled = true
-            if (btn3Ref) btn3Ref.disabled = true
-
-            animateElement(containerRef,[
-                { opacity: '100%', transform: 'translateX(0)' },
-                { opacity: '0', transform: 'translateX(-20%)' }
-            ],{
-                duration: 300,
-                easing: 'ease-in-out'
-            }).then(res => {
-                resolve(res)
-            }).catch(err => {
-                reject(err)
-            })
-        } else {
-            reject({ finish: false })
         }
     })
 }

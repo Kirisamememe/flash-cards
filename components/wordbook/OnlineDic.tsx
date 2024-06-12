@@ -7,7 +7,7 @@ const toTitleCase = (str: string) => {
         .replace(/_/g, ' ')  // スネークケースに対応: "example_key" -> "example key"
         .replace(/\b\w/g, (char) => char.toUpperCase())  // 各単語の最初の文字を大文字にする
         .trim()
-};
+}
 
 export default function OnlineDic({ en2enItem }: { en2enItem: EN2ENItem }) {
     return (

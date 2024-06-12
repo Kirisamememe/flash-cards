@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { SetStateAction, useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/app/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useWordbookStore } from "@/providers/wordbook-store-provider";
@@ -9,7 +9,7 @@ import AddWordBtn from "@/components/home/AddBtn";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { Separator } from "@/components/ui/separator";
 import { CircleX, CircleCheck } from 'lucide-react';
-import { animateElement, disappearAnimation } from "@/app/lib/utils";
+import { animateElement } from "@/app/lib/utils";
 import { saveRecordToLocal } from "@/app/lib/indexDB/saveToLocal";
 import { createId } from "@paralleldrive/cuid2";
 
@@ -26,6 +26,7 @@ export default function FlashCard() {
     const rememberedBtnBG = useRef<HTMLDivElement>(null)
     const countDownBar = useRef<HTMLDivElement>(null)
     const editBtn = useRef<HTMLButtonElement>(null)
+    const btnArea = useRef<HTMLDivElement>(null)
 
     const words = useWordbookStore((state) => state.words).filter(word => !word.is_learned)
     const blindMode = useWordbookStore((state) => state.blindMode)
@@ -44,10 +45,152 @@ export default function FlashCard() {
 
     const isSmallDevice = useMediaQuery('(max-width:640px)')
 
-    const onAnimationEnd = useCallback(() => {
-        const nextIndex = (currentIndex + 1) % words.length;
-        setCurrentIndex(nextIndex)
-    },[currentIndex, setCurrentIndex, words.length])
+    const switchAnimation = useCallback((
+        currentIndex: number,
+        setCurrentIndex: (num: number) => void,
+        wordsLength: number,
+        flashcardRef: HTMLDivElement | HTMLElement | null,
+        btnAreaRef: HTMLDivElement | HTMLElement | null,
+        forgotBtnRef: HTMLButtonElement | null,
+        rememberedBtnRef: HTMLButtonElement | null,
+        editBtnRef: HTMLButtonElement | null,
+        setIsPaused?: React.Dispatch<SetStateAction<boolean>>,
+        setIsRemembered?: React.Dispatch<SetStateAction<boolean>>,
+    ) => {
+
+        if (forgotBtnRef) forgotBtnRef.disabled = true
+        if (rememberedBtnRef) rememberedBtnRef.disabled = true
+        if (editBtnRef) editBtnRef.disabled = true
+
+        if (flashcardRef && btnAreaRef) {
+            Promise.all([
+                animateElement(flashcardRef, [
+                    { opacity: '100%', transform: 'translateX(0)' },
+                    { opacity: '0', transform: 'translateX(-20%)' }
+                ], {
+                    duration: 300,
+                    easing: 'ease-in-out'
+                }),
+                animateElement(btnAreaRef, [
+                    { opacity: '1.0', scale: '1.0' },
+                    { opacity: '0', scale: '0.9' },
+                ], {
+                    duration: 200,
+                    easing: 'ease-in-out',
+                    fill: "forwards"
+                })
+            ]).then(results => {
+                let allFinished = true
+                results.forEach(res => allFinished = res && allFinished)
+
+                if (allFinished) {
+                    const nextIndex = (currentIndex + 1) % wordsLength;
+                    setCurrentIndex(nextIndex)
+                    if (setIsPaused) setIsPaused(false)
+                    if (setIsRemembered) setIsRemembered(false)
+
+                    if (flashcardRef && btnAreaRef) {
+                        Promise.all([
+                            animateElement(flashcardRef, [
+                                { opacity: '0', transform: 'translateX(20%)' },
+                                { opacity: '100%', transform: 'translateX(0)' }
+                            ],{
+                                duration: 300,
+                                easing: 'ease-in-out'
+                            }),
+                            animateElement(btnAreaRef, [
+                                { opacity: '0', scale: '1.1' },
+                                { opacity: '1.0', scale: '1.0' },
+                            ], {
+                                duration: 200,
+                                easing: 'ease-in-out',
+                                fill: "forwards"
+                            })
+                        ]).then((results2) => {
+                            let allFinished = true
+                            results2.forEach(res => allFinished = res && allFinished)
+
+                            if (allFinished) {
+                                if (forgotBtnRef) forgotBtnRef.disabled = false
+                                if (rememberedBtnRef) rememberedBtnRef.disabled = false
+                                if (editBtnRef) editBtnRef.disabled = false
+                            }
+                        })
+                    }
+                }
+            })
+        }
+    },[])
+
+    const flipAnimation = (
+        containerRef: HTMLDivElement | HTMLElement | null,
+        container2Ref: HTMLDivElement | HTMLElement | null,
+        setIsPaused?: React.Dispatch<SetStateAction<boolean>>,
+        setIsRemembered?: React.Dispatch<SetStateAction<boolean>>,
+    ) => {
+        return new Promise<{ finish: boolean }>((resolve, reject) => {
+            if (containerRef && container2Ref) {
+                Promise.all([
+                    animateElement(containerRef, [
+                        { transform: 'rotateY(0deg) translateZ(100px)', offset: 0 },
+                        { transform: 'rotateY(30deg) translateZ(100px)', offset: 0.4 },
+                        { transform: 'rotateY(-90deg) translateZ(100px)', offset: 1 },
+                    ], {
+                        duration: 300,
+                        easing: 'ease-in',
+                        fill: "forwards"
+                    }),
+                    animateElement(container2Ref, [
+                        { opacity: '1.0', scale: '1.0' },
+                        { opacity: '0', scale: '0.9' },
+                    ], {
+                        duration: 200,
+                        easing: 'ease-in-out',
+                        fill: "forwards"
+                    })
+                ]).then(results => {
+                    let allFinished = true
+                    results.forEach(res => allFinished = res && allFinished)
+
+                    if (allFinished) {
+                        if (setIsPaused) setIsPaused(true)
+                        if (setIsRemembered) setIsRemembered(true)
+
+                        Promise.all([
+                            animateElement(containerRef, [
+                                { transform: 'rotateY(90deg) translateZ(100px) translateX(50px)', offset: 0 },
+                                { transform: 'rotateY(-15deg) translateZ(100px)', offset: 0.5 },
+                                { transform: 'rotateY(10deg) translateZ(100px)', offset: 0.75 },
+                                { transform: 'rotateY(0deg) translateZ(100px) translateX(0)', offset: 1 },
+                            ], {
+                                duration: 800,
+                                easing: "ease-out",
+                                fill: "forwards"
+                            }),
+                            animateElement(container2Ref, [
+                                { opacity: '0', scale: '1.1' },
+                                { opacity: '1.0', scale: '1.0' },
+                            ], {
+                                duration: 200,
+                                easing: 'ease-in-out',
+                                fill: "forwards"
+                            })
+                        ]).then(results2 => {
+                            let allFinished = true
+                            results2.forEach(res => allFinished = res && allFinished)
+
+                            resolve({ finish: allFinished })
+                        }).catch(() => {
+                            reject({ finish: false })
+                        })
+                    }
+                })
+            }
+            else {
+                reject({ finish: false })
+            }
+        })
+    }
 
     useEffect(() => {
         console.log("(1) ＊＊＊＊＊FlashCardのuseEffectが実行された＊＊＊＊")
@@ -59,21 +202,10 @@ export default function FlashCard() {
         const rememberedBtnBGRef = rememberedBtnBG.current
         const countDownBarRef = countDownBar.current
         const editBtnRef = editBtn.current
+        const btnAreaRef = btnArea.current
 
         if (words.length > 0 && flashcardRef) {
-            // wordが存在する場合はアニメーションを実行
-
-            animateElement(flashcardRef, [
-                { opacity: '0', transform: 'translateX(20%)' },
-                { opacity: '100%', transform: 'translateX(0)' }
-            ],{
-                duration: 300,
-                easing: 'ease-in-out'
-            }).then((res) => {
-                if (res.finish) {
-                    setReviewedAt(new Date())
-                }
-            })
+            setReviewedAt(new Date())
 
             // fill(CSSではanimation-fill-mode)はアニメーション後の状態を定義する
             // forwardsにすると終了時の状態が保持される
@@ -107,25 +239,24 @@ export default function FlashCard() {
                 )
             }
 
-            if (forgotBtnRef) forgotBtnRef.disabled = false
-            if (rememberedBtnRef) rememberedBtnRef.disabled = false
-            if (editBtnRef) editBtnRef.disabled = false
-
             Promise.all(promiseArray).then((results) => {
                 let allFinished = true
                 results.forEach(res => {
-                    // console.log("res.finish: ")
-                    // console.log(res.finish)
                     allFinished = (res.finish && allFinished && !!flashcard.current)
                     // flashcard.currentの存在を判定しないと、他のページに行ってもTrueになってしまう
                 })
-                // console.log(`allFinished: ${allFinished}`)
 
                 if (allFinished) {
-                    disappearAnimation(flashcardRef, forgotBtnRef, rememberedBtnRef, editBtnRef)
-                        .then(res => {
-                            if (res.finish) onAnimationEnd()
-                        })
+                    switchAnimation(
+                        currentIndex,
+                        setCurrentIndex,
+                        words.length,
+                        flashcardRef,
+                        btnAreaRef,
+                        forgotBtnRef,
+                        rememberedBtnRef,
+                        editBtnRef
+                    )
                 }
             })
             // アニメーションが終わったら次のwordへ
@@ -134,7 +265,6 @@ export default function FlashCard() {
                 if (forgotBtnBGRef) {
                     forgotBtnBGRef.getAnimations().map(a => {
                         a.cancel()
-                        // console.log("(2) forgotBtnBGRefのアニメーションをキャンセルしようとしたぞ")
                     })
                 }
                 if (rememberedBtnBGRef) {
@@ -157,54 +287,70 @@ export default function FlashCard() {
         // 変更があればuseEffectの中身を再実行する
         // （ただし、クリーンアップ関数がある場合、再実行される前にまずクリーンアップ関数を実行する
 
-    }, [currentIndex, setCurrentIndex, words.length, userInterval, blindMode, onAnimationEnd])
+    }, [currentIndex, setCurrentIndex, words.length, userInterval, blindMode, switchAnimation])
 
 
     const handleForgot = () => {
-        // console.log("Forgotがクリックされました")
         if (forgotBtnBG.current) forgotBtnBG.current.getAnimations().map(a => a.cancel())
         if (rememberedBtnBG.current) rememberedBtnBG.current.getAnimations().map(a => a.cancel())
 
-        setIsPaused(true)
-
-        if (reviewedAt) {
-            saveRecordToLocal({
-                id: createId(),
-                word_id: words[currentIndex].id,
-                is_correct: false,
-                reviewed_at: reviewedAt,
-                time: (new Date().getTime() - reviewedAt.getTime()) / 1000,
-                synced_at: undefined
-            }).then(res => {
-                if (res.isSuccess) {
-                    // console.log(res.data)
+        if (flashcard.current && btnArea.current) {
+            flipAnimation(
+                flashcard.current,
+                btnArea.current,
+                setIsPaused
+            ).then(res => {
+                if (res.finish) {
+                    if (reviewedAt) {
+                        saveRecordToLocal({
+                            id: createId(),
+                            word_id: words[currentIndex].id,
+                            is_correct: false,
+                            reviewed_at: reviewedAt,
+                            time: (new Date().getTime() - reviewedAt.getTime()) / 1000,
+                            synced_at: undefined
+                        }).catch(err => console.error(err))
+                    }
                 }
             })
         }
     }
 
     const handleForgotToNext = () => {
-        setIsPaused(false)
-        disappearAnimation(flashcard.current, forgotBtn.current, rememberedBtn.current, editBtn.current)
-            .then(res => {
-                if (res.finish) onAnimationEnd()
-            })
+        switchAnimation(
+            currentIndex,
+            setCurrentIndex,
+            words.length,
+            flashcard.current,
+            btnArea.current,
+            forgotBtn.current,
+            rememberedBtn.current,
+            editBtn.current,
+            setIsPaused
+        )
     }
 
     const handleRemembered = () => {
-        // console.log("Rememberedがクリックされました")
         if (forgotBtnBG.current) forgotBtnBG.current.getAnimations().map(a => a.cancel())
         if (rememberedBtnBG.current) rememberedBtnBG.current.getAnimations().map(a => a.cancel())
 
-        setIsPaused(true)
-        setIsRemembered(true)
-
-        reviewedAt && setTime((new Date().getTime() - reviewedAt.getTime()) / 1000)
+        if (flashcard.current && btnArea.current) {
+            flipAnimation(
+                flashcard.current,
+                btnArea.current,
+                setIsPaused,
+                setIsRemembered
+            ).then(res => {
+                if (res.finish) {
+                    reviewedAt && setTime((new Date().getTime() - reviewedAt.getTime()) / 1000)
+                }
+            })
+        }
     }
 
     const handleCorrect = () => {
-        setIsPaused(false)
-        setIsRemembered(false)
+        // setIsPaused(false)
+        // setIsRemembered(false)
 
         if (reviewedAt) {
             saveRecordToLocal({
@@ -216,10 +362,18 @@ export default function FlashCard() {
                 synced_at: undefined
             }).then(res => {
                 if (res.isSuccess) {
-                    disappearAnimation(flashcard.current, forgotBtn.current, rememberedBtn.current, editBtn.current)
-                        .then(res => {
-                            if (res.finish) onAnimationEnd()
-                        })
+                    switchAnimation(
+                        currentIndex,
+                        setCurrentIndex,
+                        words.length,
+                        flashcard.current,
+                        btnArea.current,
+                        forgotBtn.current,
+                        rememberedBtn.current,
+                        editBtn.current,
+                        setIsPaused,
+                        setIsRemembered
+                    )
                 }
             }).catch(err => {
                 console.error(err)
@@ -228,8 +382,8 @@ export default function FlashCard() {
     }
 
     const handleIncorrect = () => {
-        setIsPaused(false)
-        setIsRemembered(false)
+        // setIsPaused(false)
+        // setIsRemembered(false)
 
         if (reviewedAt) {
             saveRecordToLocal({
@@ -240,11 +394,20 @@ export default function FlashCard() {
                 time: time,
                 synced_at: undefined
             }).then(res => {
+                console.log(`finish: ${res.isSuccess}`)
                 if (res.isSuccess) {
-                    disappearAnimation(flashcard.current, forgotBtn.current, rememberedBtn.current, editBtn.current)
-                        .then(res => {
-                            if (res.finish) onAnimationEnd()
-                        })
+                    switchAnimation(
+                        currentIndex,
+                        setCurrentIndex,
+                        words.length,
+                        flashcard.current,
+                        btnArea.current,
+                        forgotBtn.current,
+                        rememberedBtn.current,
+                        editBtn.current,
+                        setIsPaused,
+                        setIsRemembered
+                    )
                 }
             }).catch(err => {
                 console.error(err)
@@ -252,12 +415,11 @@ export default function FlashCard() {
         }
     }
 
-
     return (
         <div className={"flex flex-col items-center justify-center w-full h-full transition-all mt-20"}>
             {words.length > 0 && !!words[currentIndex] ?
                 <>
-                    <div className={cn("group flex flex-col items-center py-6 px-8 sm:px-12 w-fit max-w-[50rem] min-h-64 sm:min-h-[25rem]", blindMode && "preventTouch transition-all")}
+                    <div className={cn("group flex flex-col items-center py-6 px-8 sm:px-12 w-fit max-w-[50rem] min-h-64 sm:min-h-[25rem] bg-background", blindMode && "preventTouch transition-all")}
                          ref={flashcard}>
                         {/*発音記号*/}
                         <p className={"text-foreground/50 text-xs sm:text-sm lg:text-base text-center mb-2"}>
@@ -283,7 +445,7 @@ export default function FlashCard() {
                             <div ref={countDownBar}
                                  className={cn(
                                      "absolute left-0 top-0 w-full h-[1px]",
-                                     !blindMode && "bg-foreground/10")} />
+                                     !blindMode && "bg-foreground/30")} />
                             <Separator />
                         </div>
                         {/*例文*/}
@@ -299,52 +461,55 @@ export default function FlashCard() {
                         </p>
                     </div>
 
-                    <div className={cn("flex scale-90 sm:scale-100", (!blindMode || isPaused) && "hidden")}>
-                        <Button ref={forgotBtn}
-                                className={`relative rounded-l-full p-0 text-destructive pr-6 pl-4 h-12 w-40 sm:w-48 diagonal-box-left justify-between ring-destructive hover:ring-destructive hover:text-destructive hover:bg-transparent active:text-destructive active:bg-destructive/10 overflow-hidden`}
-                                size={"lg"} variant={"coloredOutline"} onClick={handleForgot}>
-                            <CircleX size={20}/>
-                            {t("Index.forgot")}
-                            <div ref={forgotBtnBG} className={"absolute left-0 top-0 h-12 w-full bg-destructive/15"}></div>
-                        </Button>
+                    <div ref={btnArea}>
+                        <div className={cn("flex scale-90 sm:scale-100", (!blindMode || isPaused) && "hidden")}>
+                            <Button ref={forgotBtn}
+                                    className={`relative rounded-l-full p-0 text-destructive pr-6 pl-4 h-12 w-40 sm:w-48 diagonal-box-left justify-between ring-destructive hover:ring-destructive hover:text-destructive hover:bg-transparent active:text-destructive active:bg-destructive/10 overflow-hidden`}
+                                    size={"lg"} variant={"coloredOutline"} onClick={handleForgot}>
+                                <CircleX size={20}/>
+                                {t("Index.forgot")}
+                                <div ref={forgotBtnBG} className={"absolute left-0 top-0 h-12 w-full bg-destructive/15"}></div>
+                            </Button>
 
-                        <Button ref={rememberedBtn}
-                                className={"relative rounded-r-full p-0 text-green-600 pl-6 pr-4 h-12 w-40 sm:w-48 diagonal-box-right justify-between ring-green-600 hover:ring-green-600 hover:text-green-600 hover:bg-transparent active:ring-green-600 active:text-green-600 active:bg-green-600/10 overflow-hidden"}
-                                size={"lg"} variant={"coloredOutline"} onClick={handleRemembered}>
-                            {t("Index.remembered")}
-                            <CircleCheck size={20}/>
-                            <div ref={rememberedBtnBG} className={"absolute left-[-100%] top-0 h-12 w-full bg-green-600/15"}></div>
-                        </Button>
+                            <Button ref={rememberedBtn}
+                                    className={"relative rounded-r-full p-0 text-green-600 pl-6 pr-4 h-12 w-40 sm:w-48 diagonal-box-right justify-between ring-green-600 hover:ring-green-600 hover:text-green-600 hover:bg-transparent active:ring-green-600 active:text-green-600 active:bg-green-600/10 overflow-hidden"}
+                                    size={"lg"} variant={"coloredOutline"} onClick={handleRemembered}>
+                                {t("Index.remembered")}
+                                <CircleCheck size={20}/>
+                                <div ref={rememberedBtnBG} className={"absolute left-[-100%] top-0 h-12 w-full bg-green-600/15"}></div>
+                            </Button>
+                        </div>
+
+                        {isRemembered &&
+                            <div className={"flex relative scale-90 sm:scale-100"}>
+                                <Button
+                                    className={`peer/forgot rounded-l-full bg-destructive hover:bg-destructive active:bg-destructive p-0 pr-6 pl-4 h-12 w-40 sm:w-48 diagonal-box-left justify-between overflow-hidden`}
+                                    size={"lg"} onClick={handleIncorrect}>
+                                    <CircleX size={20}/>
+                                    {t("Index.i_was_wrong")}
+                                </Button>
+
+                                <Button
+                                    className={"peer/remembered rounded-r-full bg-green-600 hover:bg-green-600 active:bg-green-600 p-0 pl-6 pr-4 h-12 w-40 sm:w-48 diagonal-box-right justify-between overflow-hidden"}
+                                    size={"lg"} onClick={handleCorrect}>
+                                    {t("Index.next")}
+                                    <CircleCheck size={20}/>
+                                </Button>
+
+                                <div className={"absolute rounded-full left-0 top-0 w-40 sm:w-48 h-12 peer-hover/forgot:shadow-xl peer-hover/forgot:shadow-destructive/30 transition-shadow bg-transparent -z-10"}/>
+                                <div className={"absolute rounded-full right-0 top-0 w-40 sm:w-48 h-12 peer-hover/remembered:shadow-xl peer-hover/remembered:shadow-green-600/30 transition-shadow bg-transparent -z-10"}/>
+                            </div>
+                        }
+
+                        {isPaused && !isRemembered &&
+                            <Button className={"h-12 min-w-36 rounded-full"}
+                                    variant={"coloredOutline"}
+                                    onClick={handleForgotToNext}>
+                                {t("Index.next")}
+                            </Button>
+                        }
                     </div>
 
-                    {isRemembered &&
-                        <div className={"flex relative scale-90 sm:scale-100"}>
-                            <Button
-                                className={`peer/forgot rounded-l-full bg-destructive hover:bg-destructive active:bg-destructive p-0 pr-6 pl-4 h-12 w-40 sm:w-48 diagonal-box-left justify-between overflow-hidden`}
-                                size={"lg"} onClick={handleIncorrect}>
-                                <CircleX size={20}/>
-                                {t("Index.i_was_wrong")}
-                            </Button>
-
-                            <Button
-                                className={"peer/remembered rounded-r-full bg-green-600 hover:bg-green-600 active:bg-green-600 p-0 pl-6 pr-4 h-12 w-40 sm:w-48 diagonal-box-right justify-between overflow-hidden"}
-                                size={"lg"} onClick={handleCorrect}>
-                                {t("Index.next")}
-                                <CircleCheck size={20}/>
-                            </Button>
-
-                            <div className={"absolute rounded-full left-0 top-0 w-40 sm:w-48 h-12 peer-hover/forgot:shadow-xl peer-hover/forgot:shadow-destructive/30 transition-shadow bg-transparent -z-10"}/>
-                            <div className={"absolute rounded-full right-0 top-0 w-40 sm:w-48 h-12 peer-hover/remembered:shadow-xl peer-hover/remembered:shadow-green-600/30 transition-shadow bg-transparent -z-10"}/>
-                        </div>
-                    }
-
-                    {isPaused && !isRemembered &&
-                        <Button className={"h-12 min-w-36 rounded-full"}
-                                variant={"coloredOutline"}
-                                onClick={handleForgotToNext}>
-                            {t("Index.next")}
-                        </Button>
-                    }
 
                     {!blindMode && !isSmallDevice &&
                         <EditWordBtn ref={editBtn} wordData={words[currentIndex]} />
