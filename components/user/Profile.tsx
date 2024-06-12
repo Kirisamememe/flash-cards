@@ -89,7 +89,7 @@ export default function Profile() {
                             <Switch
                                 checked={blindMode}
                                 defaultChecked={blindMode}
-                                onCheckedChange={(value) => setBlindMode(value, userInfo)}
+                                onCheckedChange={(value) => setBlindMode(value)}
                             />
                         </div>
                     </CardContent>

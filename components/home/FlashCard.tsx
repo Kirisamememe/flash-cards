@@ -45,152 +45,7 @@ export default function FlashCard() {
 
     const isSmallDevice = useMediaQuery('(max-width:640px)')
 
-    const switchAnimation = useCallback((
-        currentIndex: number,
-        setCurrentIndex: (num: number) => void,
-        wordsLength: number,
-        flashcardRef: HTMLDivElement | HTMLElement | null,
-        btnAreaRef: HTMLDivElement | HTMLElement | null,
-        forgotBtnRef: HTMLButtonElement | null,
-        rememberedBtnRef: HTMLButtonElement | null,
-        editBtnRef: HTMLButtonElement | null,
-        setIsPaused?: React.Dispatch<SetStateAction<boolean>>,
-        setIsRemembered?: React.Dispatch<SetStateAction<boolean>>,
-    ) => {
-
-        if (forgotBtnRef) forgotBtnRef.disabled = true
-        if (rememberedBtnRef) rememberedBtnRef.disabled = true
-        if (editBtnRef) editBtnRef.disabled = true
-
-        if (flashcardRef && btnAreaRef) {
-            Promise.all([
-                animateElement(flashcardRef, [
-                    { opacity: '100%', transform: 'translateX(0)' },
-                    { opacity: '0', transform: 'translateX(-20%)' }
-                ], {
-                    duration: 300,
-                    easing: 'ease-in-out'
-                }),
-                animateElement(btnAreaRef, [
-                    { opacity: '1.0', scale: '1.0' },
-                    { opacity: '0', scale: '0.9' },
-                ], {
-                    duration: 200,
-                    easing: 'ease-in-out',
-                    fill: "forwards"
-                })
-            ]).then(results => {
-                let allFinished = true
-                results.forEach(res => allFinished = res && allFinished)
-
-                if (allFinished) {
-                    const nextIndex = (currentIndex + 1) % wordsLength;
-                    setCurrentIndex(nextIndex)
-                    if (setIsPaused) setIsPaused(false)
-                    if (setIsRemembered) setIsRemembered(false)
-
-                    if (flashcardRef && btnAreaRef) {
-                        Promise.all([
-                            animateElement(flashcardRef, [
-                                { opacity: '0', transform: 'translateX(20%)' },
-                                { opacity: '100%', transform: 'translateX(0)' }
-                            ],{
-                                duration: 300,
-                                easing: 'ease-in-out'
-                            }),
-                            animateElement(btnAreaRef, [
-                                { opacity: '0', scale: '1.1' },
-                                { opacity: '1.0', scale: '1.0' },
-                            ], {
-                                duration: 200,
-                                easing: 'ease-in-out',
-                                fill: "forwards"
-                            })
-                        ]).then((results2) => {
-                            let allFinished = true
-                            results2.forEach(res => allFinished = res && allFinished)
-
-                            if (allFinished) {
-                                if (forgotBtnRef) forgotBtnRef.disabled = false
-                                if (rememberedBtnRef) rememberedBtnRef.disabled = false
-                                if (editBtnRef) editBtnRef.disabled = false
-                            }
-                        })
-                    }
-                }
-            })
-        }
-    },[])
-
-    const flipAnimation = (
-        containerRef: HTMLDivElement | HTMLElement | null,
-        container2Ref: HTMLDivElement | HTMLElement | null,
-        setIsPaused?: React.Dispatch<SetStateAction<boolean>>,
-        setIsRemembered?: React.Dispatch<SetStateAction<boolean>>,
-    ) => {
-        return new Promise<{ finish: boolean }>((resolve, reject) => {
-            if (containerRef && container2Ref) {
-                Promise.all([
-                    animateElement(containerRef, [
-                        { transform: 'rotateY(0deg) translateZ(100px)', offset: 0 },
-                        { transform: 'rotateY(30deg) translateZ(100px)', offset: 0.4 },
-                        { transform: 'rotateY(-90deg) translateZ(100px)', offset: 1 },
-                    ], {
-                        duration: 300,
-                        easing: 'ease-in',
-                        fill: "forwards"
-                    }),
-                    animateElement(container2Ref, [
-                        { opacity: '1.0', scale: '1.0' },
-                        { opacity: '0', scale: '0.9' },
-                    ], {
-                        duration: 200,
-                        easing: 'ease-in-out',
-                        fill: "forwards"
-                    })
-                ]).then(results => {
-                    let allFinished = true
-                    results.forEach(res => allFinished = res && allFinished)
-
-                    if (allFinished) {
-                        if (setIsPaused) setIsPaused(true)
-                        if (setIsRemembered) setIsRemembered(true)
-
-                        Promise.all([
-                            animateElement(containerRef, [
-                                { transform: 'rotateY(90deg) translateZ(100px) translateX(50px)', offset: 0 },
-                                { transform: 'rotateY(-15deg) translateZ(100px)', offset: 0.5 },
-                                { transform: 'rotateY(10deg) translateZ(100px)', offset: 0.75 },
-                                { transform: 'rotateY(0deg) translateZ(100px) translateX(0)', offset: 1 },
-                            ], {
-                                duration: 800,
-                                easing: "ease-out",
-                                fill: "forwards"
-                            }),
-                            animateElement(container2Ref, [
-                                { opacity: '0', scale: '1.1' },
-                                { opacity: '1.0', scale: '1.0' },
-                            ], {
-                                duration: 200,
-                                easing: 'ease-in-out',
-                                fill: "forwards"
-                            })
-                        ]).then(results2 => {
-                            let allFinished = true
-                            results2.forEach(res => allFinished = res && allFinished)
-
-                            resolve({ finish: allFinished })
-                        }).catch(() => {
-                            reject({ finish: false })
-                        })
-                    }
-                })
-            }
-            else {
-                reject({ finish: false })
-            }
-        })
-    }
+    const switchAnimation = useCallback(switchAnimator,[])
 
     useEffect(() => {
         console.log("(1) ＊＊＊＊＊FlashCardのuseEffectが実行された＊＊＊＊")
@@ -287,7 +142,7 @@ export default function FlashCard() {
         // 変更があればuseEffectの中身を再実行する
         // （ただし、クリーンアップ関数がある場合、再実行される前にまずクリーンアップ関数を実行する
 
-    }, [currentIndex, setCurrentIndex, words.length, userInterval, blindMode, switchAnimation])
+    }, [currentIndex, setCurrentIndex, words.length, userInterval, switchAnimation, blindMode])
 
 
     const handleForgot = () => {
@@ -295,7 +150,7 @@ export default function FlashCard() {
         if (rememberedBtnBG.current) rememberedBtnBG.current.getAnimations().map(a => a.cancel())
 
         if (flashcard.current && btnArea.current) {
-            flipAnimation(
+            flipAnimator(
                 flashcard.current,
                 btnArea.current,
                 setIsPaused
@@ -335,7 +190,7 @@ export default function FlashCard() {
         if (rememberedBtnBG.current) rememberedBtnBG.current.getAnimations().map(a => a.cancel())
 
         if (flashcard.current && btnArea.current) {
-            flipAnimation(
+            flipAnimator(
                 flashcard.current,
                 btnArea.current,
                 setIsPaused,
@@ -420,7 +275,7 @@ export default function FlashCard() {
             {words.length > 0 && !!words[currentIndex] ?
                 <>
                     <div className={cn("group flex flex-col items-center py-6 px-8 sm:px-12 w-fit max-w-[50rem] min-h-64 sm:min-h-[25rem] bg-background", blindMode && "preventTouch transition-all")}
-                         ref={flashcard}>
+                         ref={flashcard} id={"flashcard"}>
                         {/*発音記号*/}
                         <p className={"text-foreground/50 text-xs sm:text-sm lg:text-base text-center mb-2"}>
                             {words[currentIndex]?.phonetics || ""}
@@ -445,7 +300,7 @@ export default function FlashCard() {
                             <div ref={countDownBar}
                                  className={cn(
                                      "absolute left-0 top-0 w-full h-[1px]",
-                                     !blindMode && "bg-foreground/30")} />
+                                     blindMode ? "hidden" : "bg-foreground/30")} />
                             <Separator />
                         </div>
                         {/*例文*/}
@@ -461,7 +316,7 @@ export default function FlashCard() {
                         </p>
                     </div>
 
-                    <div ref={btnArea}>
+                    <div ref={btnArea} id={"btnArea"}>
                         <div className={cn("flex scale-90 sm:scale-100", (!blindMode || isPaused) && "hidden")}>
                             <Button ref={forgotBtn}
                                     className={`relative rounded-l-full p-0 text-destructive pr-6 pl-4 h-12 w-40 sm:w-48 diagonal-box-left justify-between ring-destructive hover:ring-destructive hover:text-destructive hover:bg-transparent active:text-destructive active:bg-destructive/10 overflow-hidden`}
@@ -508,12 +363,11 @@ export default function FlashCard() {
                                 {t("Index.next")}
                             </Button>
                         }
+
+                        {!blindMode && !isSmallDevice &&
+                            <EditWordBtn ref={editBtn} wordData={words[currentIndex]} />
+                        }
                     </div>
-
-
-                    {!blindMode && !isSmallDevice &&
-                        <EditWordBtn ref={editBtn} wordData={words[currentIndex]} />
-                    }
                 </> :
                 <>
                     {t('Index.description').split('\n').map((line, index) => (
@@ -531,4 +385,159 @@ export default function FlashCard() {
             }
         </div>
     )
+}
+
+
+export function flipAnimator(
+    containerRef: HTMLDivElement | HTMLElement | null,
+    container2Ref: HTMLDivElement | HTMLElement | null,
+    stateSetter1?: React.Dispatch<SetStateAction<boolean>> | null,
+    stateSetter2?: React.Dispatch<SetStateAction<boolean>> | null,
+    stateSetter3?: (value: boolean) => void,
+    state?: boolean
+) {
+    return new Promise<{ finish: boolean }>((resolve, reject) => {
+        if (containerRef && container2Ref) {
+            Promise.all([
+                animateElement(containerRef, [
+                    { transform: 'rotateY(0deg) translateZ(100px)', offset: 0 },
+                    { transform: 'rotateY(30deg) translateZ(100px)', offset: 0.4 },
+                    { transform: 'rotateY(-90deg) translateZ(100px)', offset: 1 },
+                ], {
+                    duration: 300,
+                    easing: 'ease-in',
+                    fill: "forwards"
+                }),
+                animateElement(container2Ref, [
+                    { opacity: '1.0', scale: '1.0' },
+                    { opacity: '0', scale: '0.8' },
+                ], {
+                    duration: 200,
+                    easing: 'ease-in',
+                    fill: "forwards"
+                })
+            ]).then(results => {
+                let allFinished = true
+                results.forEach(res => allFinished = res && allFinished)
+
+                if (allFinished) {
+                    if (stateSetter1) stateSetter1(true)
+                    if (stateSetter2) stateSetter2(true)
+                    if (!!stateSetter3 && state !== undefined) stateSetter3(state)
+
+                    Promise.all([
+                        animateElement(containerRef, [
+                            { transform: 'rotateY(90deg) translateZ(100px) translateX(50px)', offset: 0 },
+                            { transform: 'rotateY(-15deg) translateZ(100px)', offset: 0.5 },
+                            { transform: 'rotateY(10deg) translateZ(100px)', offset: 0.75 },
+                            { transform: 'rotateY(0deg) translateZ(100px) translateX(0)', offset: 1 },
+                        ], {
+                            duration: 800,
+                            easing: "ease-out",
+                            fill: "forwards"
+                        }),
+                        animateElement(container2Ref, [
+                            { opacity: '0', scale: '0.8', offset: 0 },
+                            { opacity: '0.9', scale: '1.05', offset: 0.5 },
+                            { opacity: '0.9', scale: '0.95', offset: 0.75 },
+                            { opacity: '1.0', scale: '1.0', offset: 1 },
+                        ], {
+                            duration: 300,
+                            easing: 'ease-out',
+                            fill: "forwards"
+                        })
+                    ]).then(results2 => {
+                        let allFinished = true
+                        results2.forEach(res => allFinished = res && allFinished)
+
+                        resolve({ finish: allFinished })
+                    }).catch(() => {
+                        reject({ finish: false })
+                    })
+                }
+            })
+        }
+        else {
+            reject({ finish: false })
+        }
+    })
+}
+
+function switchAnimator(
+    currentIndex: number,
+    setCurrentIndex: (num: number) => void,
+    wordsLength: number,
+    flashcardRef: HTMLDivElement | HTMLElement | null,
+    btnAreaRef: HTMLDivElement | HTMLElement | null,
+    forgotBtnRef: HTMLButtonElement | null,
+    rememberedBtnRef: HTMLButtonElement | null,
+    editBtnRef: HTMLButtonElement | null,
+    setIsPaused?: React.Dispatch<SetStateAction<boolean>>,
+    setIsRemembered?: React.Dispatch<SetStateAction<boolean>>,
+) {
+
+    if (forgotBtnRef) forgotBtnRef.disabled = true
+    if (rememberedBtnRef) rememberedBtnRef.disabled = true
+    if (editBtnRef) editBtnRef.disabled = true
+
+    if (flashcardRef && btnAreaRef) {
+        Promise.all([
+            animateElement(flashcardRef, [
+                { opacity: '100%', transform: 'translateX(0)' },
+                { opacity: '0', transform: 'translateX(-200px)' }
+            ], {
+                duration: 300,
+                easing: 'ease-in-out'
+            }),
+            animateElement(btnAreaRef, [
+                { opacity: '1.0', scale: '1.0' },
+                { opacity: '0', scale: '0.8' },
+            ], {
+                duration: 200,
+                easing: 'ease-in',
+                fill: "forwards"
+            })
+        ]).then(results => {
+            let allFinished = true
+            results.forEach(res => allFinished = res && allFinished)
+
+            if (allFinished) {
+                const nextIndex = (currentIndex + 1) % wordsLength;
+                setCurrentIndex(nextIndex)
+                if (setIsPaused) setIsPaused(false)
+                if (setIsRemembered) setIsRemembered(false)
+
+                if (flashcardRef && btnAreaRef) {
+                    Promise.all([
+                        animateElement(flashcardRef, [
+                            { opacity: '0', transform: 'translateX(200px)' },
+                            { opacity: '100%', transform: 'translateX(0)' }
+                        ],{
+                            duration: 300,
+                            easing: 'ease-in-out'
+                        }),
+                        animateElement(btnAreaRef, [
+                            { opacity: '0', scale: '0.8', offset: 0 },
+                            { opacity: '0.9', scale: '1.05', offset: 0.5 },
+                            { opacity: '0.9', scale: '0.95', offset: 0.75 },
+                            { opacity: '1.0', scale: '1.0', offset: 1 },
+                        ], {
+                            duration: 300,
+                            easing: 'ease-out',
+                            fill: "forwards"
+                        })
+                    ]).then((results2) => {
+                        let allFinished = true
+                        results2.forEach(res => allFinished = res && allFinished)
+
+                        if (allFinished) {
+                            if (forgotBtnRef) forgotBtnRef.disabled = false
+                            if (rememberedBtnRef) rememberedBtnRef.disabled = false
+                            if (editBtnRef) editBtnRef.disabled = false
+                        }
+                    })
+                }
+            }
+        })
+    }
 }

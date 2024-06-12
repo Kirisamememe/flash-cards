@@ -31,7 +31,7 @@ export default function CardContainer() {
             {!isSmallDevice &&
                 <AddWordBtn>
                     <Button
-                        className={"fixed sm:right-12 lg:right-20 bottom-14 w-16 h-16 z-50 rounded-full"}>
+                        className={"fixed sm:right-12 lg:right-20 bottom-14 w-16 h-16 z-50 rounded-full shadow-xl dark:shadow-none shadow-primary/40"}>
                         <PlusIcon className={""} width={32} height={32}/>
                     </Button>
                 </AddWordBtn>

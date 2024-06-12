@@ -37,7 +37,7 @@ export type WordbookActions = {
     setCurrentIndex: (num: number) => void
     setFilterText: (text: string) => void
     setIsEditing: (value: boolean) => void
-    setBlindMode: (value: boolean, userInfo?: UserInfo) => void
+    setBlindMode: (value: boolean) => void
     setLoggedOutUse: (value: boolean) => void
     setFilteredWords: () => void
     setUserInterval: (num: number) => void
@@ -185,8 +185,9 @@ export const createWordbookStore = (initState: WordbookState = defaultInitState)
         setCurrentIndex: (num: number) => set(() => ({ currentIndex: num })),
         setFilterText: (text: string) => set(() => ({ filterText: text, currentIndex: 0 })),
         setIsEditing: (value: boolean) => set(() => ({ isEditing: value })),
-        setBlindMode: async (value: boolean, userInfo?: UserInfo) => {
+        setBlindMode: async (value: boolean) => {
             //イベントハンドラーかuseEffect内でしか実行できないから要注意！
+            const userInfo = getState().userInfo
             if (userInfo) {
                 localStorage.setItem("blindMode", value ? "1" : "0")
 

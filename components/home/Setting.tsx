@@ -4,12 +4,13 @@ import { Slider } from "@/components/ui/slider";
 import { Toggle } from "@/components/ui/toggle"
 import { useState } from "react";
 import { useDebouncedCallback } from 'use-debounce';
+import { flipAnimator } from "@/components/home/FlashCard";
+import { animateElement } from "@/app/lib/utils";
 
 export default function Setting() {
 
     console.log("Settingがレンダリングされたようだ")
 
-    const userInfo = useWordbookStore((state) => state.userInfo)
     const blindMode = useWordbookStore((state) => state.blindMode)
     const setBlindMode = useWordbookStore((state) => state.setBlindMode)
     const userInterval = useWordbookStore((state) => state.userInterval)
@@ -23,7 +24,7 @@ export default function Setting() {
         localStorage.setItem("interval", (value[0] * 1000).toString())
         document.getAnimations().map(a => a.cancel())
 
-        console.log("！！！setBlindModeが実行されました！！！")
+        // console.log("！！！setBlindModeが実行されました！！！")
     },400)
 
     const handleBlindModeSwitchChange = (value: boolean) => {
@@ -40,7 +41,10 @@ export default function Setting() {
             setCurrentIndex(0)
         }
 
-        setBlindMode(value, userInfo)
+        const flashcard = document.getElementById("flashcard")
+        const btnArea = document.getElementById("btnArea")
+        flipAnimator(flashcard, btnArea, null, null, setBlindMode, value).then()
+
     }
 
     return (
