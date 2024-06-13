@@ -27,19 +27,19 @@ export const WordbookStoreProvider = ({
     const storeRef = useRef<StoreApi<WordbookStore> | null>(null)
     // const [store, setStore] = useState<StoreApi<WordbookStore> | null>(null);
     const [rerender, setRerender] = useState(false);
-    // console.log("WordbookStoreProvider: userId > ")
-    // console.log(userId)
-    // console.log("WordbookStoreProvider: url > ")
-    // console.log(url)
-    // console.log("WordbookStoreProvider: userName > ")
-    // console.log(userName)
+    // console.log(`WordbookStoreProvider: userId > ${userId}`)
+    // console.log(`WordbookStoreProvider: url > ${url}`)
+    // console.log(`WordbookStoreProvider: userName > ${userName}`)
 
     useEffect(() => {
         // let isMounted = true;
         let cancelled = false; // This flag is to prevent state update after unmount
 
         const initialize = async (userId: string | undefined | null, url: string | undefined | null, userName: string | undefined | null) => {
-            if (!storeRef.current) {
+            // ユーザーがログアウトしても、storeRef.currentは存在するので、
+            // storeは更新されず、userInfoは引き続き保持されてしまう。
+            // それを避けるために、userIdがundefinedになった場合も再度イニシャライズを行う
+            if (!storeRef.current || (storeRef.current && userId === undefined)) {
                 const initializedStore = await initWordbookStore(userId, url, userName);
                 if (!cancelled) {
                     storeRef.current = createWordbookStore(initializedStore);
@@ -48,7 +48,7 @@ export const WordbookStoreProvider = ({
                 console.log(initializedStore)
             }
         }
-        console.log("WordbookStoreProvider内のuseEffectが実行されたようだ")
+        console.log("※※※※※※※※※※※※※※※WordbookStoreProvider内のuseEffectが実行されたようだ※※※※※※※※※※※※※※※")
 
         initialize(userId, url, userName).catch(e => console.error(e))
 

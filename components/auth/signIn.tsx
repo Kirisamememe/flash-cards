@@ -28,15 +28,17 @@ export default function SignIn({ open, setOpen }: { open: boolean, setOpen: Reac
     if (isSmallDevice) {
         return (
             <Drawer shouldScaleBackground={false} noBodyStyles open={open} onOpenChange={setOpen}>
-                <DrawerContent className={"h-80 px-6 focus-visible:outline-none"}>
-                    <DrawerHeader className={"pt-8 pb-4"}>
-                        <DrawerTitle>{t("signIn")}</DrawerTitle>
-                        <DrawerDescription></DrawerDescription>
+                <DrawerContent className={"h-fit px-6 focus-visible:outline-none"}>
+                    <DrawerHeader className={"pt-8 pb-4 gap-4"}>
+                        <DrawerTitle className={"text-2xl"}>{t("signIn")}</DrawerTitle>
+                        <DrawerDescription className={"text-xs leading-relaxed whitespace-pre-wrap"}>
+                            {t("description")}
+                        </DrawerDescription>
                     </DrawerHeader>
                     <Social/>
                     <Separator className={"my-6"}/>
                     <DrawerClose asChild>
-                        <Button className={"w-full"} type={"button"} variant={"secondary"}>
+                        <Button className={"w-full mb-8"} type={"button"} variant={"secondary"}>
                             {t("cancel")}
                         </Button>
                     </DrawerClose>
@@ -53,9 +55,13 @@ export default function SignIn({ open, setOpen }: { open: boolean, setOpen: Reac
                 </Button>
             </DialogTrigger>
             <DialogContent className={"max-w-[25rem] w-full p-6 rounded-4 shadow-2xl"}>
-                <DialogHeader>
-                    <DialogTitle>{t("signIn")}</DialogTitle>
-                    <DialogDescription></DialogDescription>
+                <DialogHeader className={"gap-2 mb-1"}>
+                    <DialogTitle>
+                        {t("signIn")}
+                    </DialogTitle>
+                    <DialogDescription className={"text-xs leading-relaxed whitespace-pre-wrap"}>
+                        {t("description")}
+                    </DialogDescription>
                 </DialogHeader>
                 <Social/>
                 <Separator className={"my-2"}/>

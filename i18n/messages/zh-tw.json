@@ -16,6 +16,7 @@
     "User": {
         "signUp": "註冊",
         "signIn": "登入",
+        "description": "登入後可解鎖同步功能。\nAilingo不會保存您的電子郵箱、用戶名、頭貼之外的任何資料。",
         "signOut": "登出",
         "signInWithGithub": "使用 GitHub 登入",
         "signInWithGoogle": "使用 Google 登入",

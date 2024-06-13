@@ -16,6 +16,7 @@
     "User": {
         "signUp": "Sign up",
         "signIn": "Sign in",
+        "description": "Registration enables synchronization. \nOnly your email address, username, and avatar will be stored.",
         "signOut": "Sign out",
         "signInWithGithub": "Sign in with GitHub",
         "signInWithGoogle": "Sign in with Google",

@@ -370,12 +370,9 @@ export default function FlashCard() {
                     </div>
                 </> :
                 <>
-                    {t('Index.description').split('\n').map((line, index) => (
-                        <h1 className={"text-4xl lg:text-5xl font-bold text-center leading-normal my-2 lg:my-2.5"}
-                            key={index}>
-                            {line}
-                        </h1>
-                    ))}
+                    <p className={"text-3xl sm:text-4xl lg:text-5xl font-bold text-center my-2 lg:my-2.5 whitespace-pre-wrap leading-snug sm:leading-snug lg:leading-snug"}>
+                        {t('Index.description')}
+                    </p>
                     <AddWordBtn>
                         <Button className={cn("mt-4 z-30 rounded-full")} size={"lg"}>
                             {t("Index.createBtn")}

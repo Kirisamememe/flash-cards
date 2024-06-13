@@ -10,16 +10,16 @@ import AvatarMenu from "@/components/nav/avatar-menu";
 import SignIn from "@/components/auth/signIn";
 import * as React from "react";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { useWordbookStore } from "@/providers/wordbook-store-provider";
 import { SetStateAction } from "react";
 import { useTranslations } from "next-intl";
+import { useWordbookStore } from "@/providers/wordbook-store-provider";
 
 export default function Header({ className, open, setOpen }: { className?:string, open: boolean, setOpen: React.Dispatch<SetStateAction<boolean>> }) {
 
+    // const { data: session } = useSession()
+    const userInfo = useWordbookStore((state) => state.userInfo)
     const isSmallDevice = useMediaQuery('(max-width:640px)');
     const t = useTranslations()
-
-    const userInfo = useWordbookStore((state) => state.userInfo)
 
     return (
         <nav
@@ -51,7 +51,7 @@ export default function Header({ className, open, setOpen }: { className?:string
                 <Separator className={"h-6 mr-1.5 hidden lg:block"} orientation="vertical"/>
                 <ModeToggle className={"lg:mr-2"}/>
                 <div className={cn(isSmallDevice && "hidden")}>
-                    {userInfo ? <AvatarMenu/> : <SignIn open={open} setOpen={setOpen}/>}
+                    {userInfo?.id ? <AvatarMenu/> : <SignIn open={open} setOpen={setOpen}/>}
                 </div>
             </div>
         </nav>

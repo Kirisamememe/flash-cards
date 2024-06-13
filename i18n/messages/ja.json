@@ -16,6 +16,7 @@
     "User": {
         "signUp": "登録",
         "signIn": "ログイン",
+        "description": "登録すると同期機能が使えるようになります。\nメールアドレス、ユーザー名、プロフィール画像以外の情報はストックされません。",
         "signOut": "ログアウト",
         "signInWithGithub": "GitHub でログイン",
         "signInWithGoogle": "Google でログイン",
