@@ -11,7 +11,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { sync } from "@/app/lib/sync";
 import { useToast } from "@/components/ui/use-toast";
 import { SignOut } from "@/components/auth/signOut";
-import { useSession } from "next-auth/react";
+
 
 export default function Profile() {
 

@@ -71,8 +71,8 @@
         "definition_valid_max": "定義不能超过 200 個字符",
         "example_valid_max": "例句不能超過 200 個字符",
         "notes_valid_max": "筆記不能超過 500 個字符",
-        "partOfSpeech_valid_min": "詞性不能少於 1 个字符",
-        "partOfSpeech_valid_max": "詞性不能超過 20 个字符",
+        "partOfSpeech_valid_min": "詞性不能少於 1 個字符",
+        "partOfSpeech_valid_max": "詞性不能超過 20 個字符",
         "delete_confirm_title": "確定要刪除嗎",
         "delete_confirm_description": "刪除後將無法復原",
         "edit_permission_error": "您不能編輯其他用戶建立的卡片"
