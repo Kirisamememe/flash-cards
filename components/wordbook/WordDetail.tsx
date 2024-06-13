@@ -18,12 +18,15 @@ import { fetchFromWordsAPI } from "@/app/lib/fetcher";
 import OnlineDic from "@/components/wordbook/OnlineDic";
 import { saveEN2ENItemToLocal } from "@/app/lib/indexDB/saveToLocal";
 import Loading from "@/components/ui/loading";
+import { useSession } from "next-auth/react";
 
 export default function WordDetail({ wordData }: { wordData: WordDataMerged }) {
 
     const t = useTranslations()
     const locale = useLocale();
     const { toast } = useToast()
+
+    const { data: session } = useSession()
 
     const correctDiv = useRef<HTMLDivElement>(null)
     const incorrectDiv = useRef<HTMLDivElement>(null)
@@ -185,7 +188,7 @@ export default function WordDetail({ wordData }: { wordData: WordDataMerged }) {
             </div>
 
             {/*Web辞書*/}
-            {isEnglish(wordData.word) &&
+            {isEnglish(wordData.word) && session?.user.role === "ADMIN" &&
                 <>
                     <Separator className={"my-6"}/>
                     <div className={"flex flex-col w-full"}>
