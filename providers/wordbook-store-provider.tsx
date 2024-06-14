@@ -39,6 +39,7 @@ export const WordbookStoreProvider = ({
             // ユーザーがログアウトしても、storeRef.currentは存在するので、
             // storeは更新されず、userInfoは引き続き保持されてしまう。
             // それを避けるために、userIdがundefinedになった場合も再度イニシャライズを行う
+            // ただ、これは一時的な対策であり、ログアウト時にページは強制的にリロードされるべきだ
             if (!storeRef.current || (storeRef.current && userId === undefined)) {
                 const initializedStore = await initWordbookStore(userId, url, userName);
                 if (!cancelled) {
