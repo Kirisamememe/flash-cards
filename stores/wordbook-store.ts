@@ -33,7 +33,7 @@ export type WordbookActions = {
     deleteWord: (wordId: string) => void
     setPos: (pos: PartOfSpeechLocal) => void
     addPos: (pos: PartOfSpeechLocal) => void
-    setUserInfo: (userInfo: UserInfo) => void
+    setUserInfo: (userInfo: UserInfo) => Promise<{ isSuccess: boolean }>
     setCurrentIndex: (num: number) => void
     setFilterText: (text: string) => void
     setIsEditing: (value: boolean) => void
@@ -181,7 +181,21 @@ export const createWordbookStore = (initState: WordbookState = defaultInitState)
         deleteWord: (wordId: string) => set((state) => ({ words: state.words.filter(val => val.id !== wordId)})),
         setPos: (pos: PartOfSpeechLocal) => set((state) => ({ poses: state.poses?.map(prev => prev.id === pos.id ? pos : prev) })) ,
         addPos: (pos: PartOfSpeechLocal) => set((state) => ({ poses: [pos, ...state.poses] })) ,
-        setUserInfo: (userInfo: UserInfo) => set(() => ({ userInfo: userInfo })),
+        setUserInfo: (userInfo: UserInfo) => {
+            return new Promise(async (resolve, reject) => {
+                await saveUserInfoToLocal(userInfo)
+                    .then((res) => {
+                        if (res.isSuccess) {
+                            set(() => ({ userInfo: userInfo }))
+                            resolve({ isSuccess: true })
+                        }
+                    })
+                    .catch((err) => {
+                        alert(`Index Database Error: ${err.error?.detail}`)
+                        reject({ isSuccess: false })
+                    })
+            })
+        },
         setCurrentIndex: (num: number) => set(() => ({ currentIndex: num })),
         setFilterText: (text: string) => set(() => ({ filterText: text, currentIndex: 0 })),
         setIsEditing: (value: boolean) => set(() => ({ isEditing: value })),
@@ -192,9 +206,15 @@ export const createWordbookStore = (initState: WordbookState = defaultInitState)
                 localStorage.setItem("blindMode", value ? "1" : "0")
 
                 const data: UserInfo = { ...userInfo, blind_mode: value, updated_at: new Date() }
-                await saveUserInfoToLocal(data).then()
-
-                set(() => ({ userInfo: data }))
+                await saveUserInfoToLocal(data)
+                    .then((res) => {
+                    if (res.isSuccess) {
+                        set(() => ({ userInfo: data }))
+                    }
+                    })
+                    .catch((err) => {
+                        alert(`Index Database Error: ${err.error?.detail}`)
+                    })
             }
             else {
                 localStorage.setItem("blindMode", value ? "1" : "0")

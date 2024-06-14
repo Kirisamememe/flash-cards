@@ -37,23 +37,22 @@ export default function Profile() {
     const handleSync = useCallback( () => {
         if (userInfo) {
             startTransition(async () => {
-                await sync(words, setWords, setPos, userInfo, setProgressMessage, setProgressVal, t, toast)
+                await sync(words, setWords, setPos, userInfo, setUserInfo, setProgressMessage, setProgressVal, t, toast)
             })
         }
-    },[setPos, setWords, t, toast, userInfo, words])
+    },[setPos, setUserInfo, setWords, t, toast, userInfo, words])
 
 
     useEffect(() => {
         // 自動同期
         if (userInfo && userInfo.auto_sync) {
-            if (userInfo.synced_at){
-                if (new Date().getTime() - userInfo.synced_at.getTime() > 24 * 60 * 60 * 1000) {
-                    handleSync()
-                }
+            if (!!userInfo.synced_at){
+                const needSync = ((new Date().getTime() - userInfo.synced_at.getTime()) > (24 * 60 * 60 * 1000))
+                if (needSync) handleSync()
             }
             else handleSync()
         }
-    }, [userInfo, handleSync]);
+    }, [handleSync, userInfo]);
 
     if (!userInfo) return null
 
@@ -77,8 +76,8 @@ export default function Profile() {
                         {userInfo && <div className={"h-8 flex w-full justify-between items-center gap-6 mb-3"}>
                             <h4 className="font-medium leading-none">{t("auto_sync")}</h4>
                             <Switch
-                                checked={userInfo.auto_sync || false}
-                                defaultChecked={userInfo.auto_sync || false}
+                                checked={userInfo.auto_sync}
+                                defaultChecked={userInfo.auto_sync}
                                 onCheckedChange={(value) => setUserInfo({
                                     ...userInfo,
                                     auto_sync: value,

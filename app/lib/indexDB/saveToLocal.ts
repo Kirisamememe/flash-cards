@@ -238,21 +238,21 @@ export async function saveCardToLocal(
     });
 }
 
-export function savePartOfSpeechToLocal(value: z.infer<typeof partOfSpeech>, forSync: boolean = false): Promise<UpdatePromiseCommonResult<IDBValidKey>> | UpdatePromiseCommonResult<IDBValidKey> {
-    const validatedFields = partOfSpeech.safeParse(value);
-
-    if (!validatedFields.success) {
-        return {
-            isSuccess: false,
-            error: {
-                message: validatedFields.error.message,
-                detail: validatedFields.error.message
-            }
-
-        };
-    }
-
+export function savePartOfSpeechToLocal(value: z.infer<typeof partOfSpeech>, forSync: boolean = false): Promise<UpdatePromiseCommonResult<IDBValidKey>> {
     return new Promise<UpdatePromiseCommonResult<IDBValidKey>>(async (resolve, reject) => {
+        const validatedFields = partOfSpeech.safeParse(value);
+
+        if (!validatedFields.success) {
+            reject({
+                isSuccess: false,
+                error: {
+                    message: validatedFields.error.message,
+                    detail: validatedFields.error.message
+                }
+
+            })
+        }
+
         const db = await openDB()
         const transaction = db.transaction(['partOfSpeech'], 'readwrite')
         const store = transaction.objectStore('partOfSpeech')
