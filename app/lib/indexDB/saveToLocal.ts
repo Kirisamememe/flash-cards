@@ -2,7 +2,7 @@ import { SaveCardsResults, UpdatePromiseCommonResult } from "@/types/ActionsResu
 import {
     EN2ENItem,
     PartOfSpeechLocal,
-    RecordIndexDB,
+    RecordIndexDB, TTSObj,
     WordDataMerged,
     WordIndexDB,
     WordRemote
@@ -352,6 +352,42 @@ export function saveEN2ENItemToLocal(en2enItem: EN2ENItem) {
         }
 
         transaction.oncomplete = () => {}
+
+        transaction.onerror = (e) => {
+            reject({
+                isSuccess: false,
+                error: {
+                    message: `Transaction error: ${(e.target as IDBTransaction).error?.message}`,
+                    detail: e
+                }
+            })
+        }
+    })
+}
+
+export function saveTTStoLocal(ttsObj: TTSObj) {
+    return new Promise<UpdatePromiseCommonResult<IDBValidKey>>( async (resolve, reject) => {
+        const db = await openDB()
+        const transaction = db.transaction(['TTSStore'], 'readwrite')
+        const store = transaction.objectStore('TTSStore')
+        const request = store.put(ttsObj)
+
+        request.onsuccess = () => {
+            resolve({
+                isSuccess: true,
+                data: request.result
+            })
+        }
+
+        request.onerror = (e) => {
+            reject({
+                isSuccess: false,
+                error: {
+                    message: `音声ファイルを保存できませんでした`,
+                    detail: e
+                }
+            })
+        }
 
         transaction.onerror = (e) => {
             reject({

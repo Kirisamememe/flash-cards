@@ -1,6 +1,6 @@
 import { GetPromiseCommonResult, UpdatePromiseCommonResult } from "@/types/ActionsResult";
 import { openDB } from "@/app/lib/indexDB/indexDB";
-import { EN2ENItem, PartOfSpeechLocal, RecordIndexDB, WordDataMerged, WordIndexDB } from "@/types/WordIndexDB";
+import { EN2ENItem, PartOfSpeechLocal, RecordIndexDB, TTSObj, WordDataMerged, WordIndexDB } from "@/types/WordIndexDB";
 
 export async function getUserInfoFromLocal(userId: string): Promise<UpdatePromiseCommonResult<UserInfo>> {
     return new Promise<UpdatePromiseCommonResult<UserInfo>>(async (resolve, reject) => {
@@ -256,6 +256,42 @@ export function getEN2ENItemFromLocal(word: string) {
         }
 
         transaction.oncomplete = () => {}
+
+        transaction.onerror = (e) => {
+            reject({
+                isSuccess: false,
+                error: {
+                    message: `Transaction Error: ${(e.target as IDBRequest).error?.message}`,
+                    detail: e
+                }
+            })
+        }
+    })
+}
+
+export function getTTSFromLocal(wordId: string, type: "word" | "example") {
+    return new Promise<GetPromiseCommonResult<TTSObj>>( async (resolve, reject) => {
+        const db = await openDB()
+        const transaction = db.transaction(['TTSStore'], 'readwrite')
+        const store = transaction.objectStore('TTSStore')
+        const request = store.get(`${type}_${wordId}`)
+
+        request.onsuccess = () => {
+            resolve({
+                isSuccess: true,
+                data: request.result
+            })
+        }
+
+        request.onerror = (e) => {
+            reject({
+                isSuccess: false,
+                error: {
+                    message: `Error fetching item: ${(e.target as IDBRequest).error?.message}`,
+                    detail: e
+                }
+            })
+        }
 
         transaction.onerror = (e) => {
             reject({

@@ -12,7 +12,7 @@ export const handleError = (error: unknown) => {
 }
 
 export function animateElement(
-    element: HTMLElement,
+    element: HTMLElement | SVGElement,
     keyframes: PropertyIndexedKeyframes | Keyframe[] | null,
     options?: number | KeyframeAnimationOptions | undefined
 ) {

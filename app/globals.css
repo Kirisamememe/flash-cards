@@ -347,3 +347,36 @@
     transform: rotate(360deg);
   }
 }
+
+.circle-spin-8 {
+  --size: 20px;
+  --color: hsl(var(--primary));
+  --animation-timing-function: linear;
+  --animation-duration: 2s;
+  width: var(--size);
+  height: var(--size);
+  mask-image: radial-gradient(circle at 50% 50%, transparent calc(var(--size) / 3), black calc(var(--size) / 3));
+  background-image: conic-gradient(transparent, transparent 135deg, currentColor);
+  border-radius: 50%;
+  animation: var(--animation-timing-function) var(--animation-duration) infinite circle-spin-8-animation;
+}
+
+@keyframes circle-spin-8-animation {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.progress-circle {
+  fill: none;
+  stroke: hsl(var(--primary)); /* 円の色。必要に応じて変更できます */
+  stroke-width: 6; /* ストロークの幅 */
+  stroke-dasharray: 100.53; /* 2 * π * r (直径が設定された円の周長) */
+  stroke-dashoffset: 100.53; /* 開始時点では完全に隠れた状態 */
+  transform-origin: 50% 50%;
+  transform: rotate(-90deg);
+}

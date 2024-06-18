@@ -42,6 +42,7 @@ export interface WordDataMerged {
     retention_rate: number
     author: string | undefined
     is_deleted: boolean
+    ttsUrl?: string
 }
 
 
@@ -101,6 +102,11 @@ interface EN2ENResult {
     definition: string
     partOfSpeech?: string
     examples?: string[]
+}
+
+export interface TTSObj {
+    id: string
+    binary: Uint8Array
 }
 
 export interface WordRemote {

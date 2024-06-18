@@ -4,7 +4,7 @@ const dbName = 'flashcards_db';
 
 export function openDB():Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open(dbName, 5);
+        const request = indexedDB.open(dbName, 6);
 
         request.onupgradeneeded = (event) => {
             const db = (event.target as IDBOpenDBRequest).result;
@@ -22,6 +22,9 @@ export function openDB():Promise<IDBDatabase> {
             }
             if (!db.objectStoreNames.contains('EN2ENDictionary')) {
                 db.createObjectStore('EN2ENDictionary', { keyPath: 'word' });
+            }
+            if (!db.objectStoreNames.contains('TTSStore')) {
+                db.createObjectStore('TTSStore', { keyPath: 'id' });
             }
         };
 
