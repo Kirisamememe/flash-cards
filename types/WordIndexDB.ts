@@ -42,7 +42,10 @@ export interface WordDataMerged {
     retention_rate: number
     author: string | undefined
     is_deleted: boolean
-    ttsUrl?: string
+    ttsUrl?: {
+        word?: string
+        example?: string
+    }
 }
 
 

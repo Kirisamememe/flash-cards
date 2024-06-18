@@ -1,8 +1,9 @@
 'use server'
 
 import * as sdk from "microsoft-cognitiveservices-speech-sdk"
+import { auth } from "@/app/lib/auth";
 
-type Result = {
+export type Result = {
     isSuccess: true,
     data: string
 } | {
@@ -10,6 +11,9 @@ type Result = {
 }
 
 export async function synthesizeSpeech(text: string): Promise<Result> {
+    const session = await auth()
+    if (!session || session?.user.role !== "ADMIN") throw new Error("権限がありません")
+
     try {
         if (!process.env.SPEECH_KEY || !process.env.SPEECH_REGION) {
             console.error("環境変数が設定されていません")

@@ -348,8 +348,21 @@
   }
 }
 
-.circle-spin-8 {
+.circle-spin-8-20 {
   --size: 20px;
+  --color: hsl(var(--primary));
+  --animation-timing-function: linear;
+  --animation-duration: 2s;
+  width: var(--size);
+  height: var(--size);
+  mask-image: radial-gradient(circle at 50% 50%, transparent calc(var(--size) / 3), black calc(var(--size) / 3));
+  background-image: conic-gradient(transparent, transparent 135deg, currentColor);
+  border-radius: 50%;
+  animation: var(--animation-timing-function) var(--animation-duration) infinite circle-spin-8-animation;
+}
+
+.circle-spin-8-24 {
+  --size: 24px;
   --color: hsl(var(--primary));
   --animation-timing-function: linear;
   --animation-duration: 2s;
@@ -379,4 +392,52 @@
   stroke-dashoffset: 100.53; /* 開始時点では完全に隠れた状態 */
   transform-origin: 50% 50%;
   transform: rotate(-90deg);
+}
+
+
+.line-2-vertical {
+  --size: 24px;
+  --stroke-width: calc(var(--size) / 6);
+  --color: hsl(var(--primary));
+  --animation-timing-function: linear;
+  --animation-duration: 1s;
+  position: relative;
+  width: var(--size);
+  height: var(--size);
+}
+
+.line-2-vertical::before,
+.line-2-vertical::after {
+  content: '';
+  position: absolute;
+  transform: scaleY(1);
+  animation: var(--animation-timing-function) var(--animation-duration) infinite line-2-vertical-animation;
+}
+
+.line-2-vertical::before {
+  inset: 0;
+  border-right: var(--stroke-width) solid var(--color);
+  border-left: var(--stroke-width) solid var(--color);
+}
+
+.line-2-vertical::after {
+  top: 0;
+  bottom: 0;
+  left: calc(50% - var(--stroke-width) / 2);
+  border-left: var(--stroke-width) solid var(--color);
+  animation-delay: calc(var(--animation-duration) / 2);
+}
+
+@keyframes line-2-vertical-animation {
+  0% {
+    transform: scaleY(1);
+  }
+
+  50% {
+    transform: scaleY(.5);
+  }
+
+  100% {
+    transform: scaleY(1);
+  }
 }

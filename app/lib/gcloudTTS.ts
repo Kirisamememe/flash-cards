@@ -5,6 +5,7 @@ import textToSpeech from '@google-cloud/text-to-speech';
 
 // Import other required libraries
 import * as protos from "@google-cloud/text-to-speech/build/protos/protos";
+import { auth } from "@/app/lib/auth";
 
 type Result = {
     isSuccess: true,
@@ -15,7 +16,10 @@ type Result = {
 
 // Creates a client
 const client = new textToSpeech.TextToSpeechClient();
-export async function generateSpeech(text: string): Promise<Result> {
+export async function synthesizeSpeech(text: string): Promise<Result> {
+    const session = await auth()
+    if (!session || session?.user.role !== "ADMIN") throw new Error("権限がありません")
+
     try {
         // Construct the request
         const request: protos.google.cloud.texttospeech.v1.ISynthesizeSpeechRequest | undefined = {
@@ -50,5 +54,5 @@ export async function generateSpeech(text: string): Promise<Result> {
     }
 }
 
-// generateSpeech("Movies, oh my gosh, I just, just absolutely love them. They're like time machines taking you to different worlds and landscapes, and um, and I just can't get enough of it.")
+// synthesizeSpeech("Movies, oh my gosh, I just, just absolutely love them. They're like time machines taking you to different worlds and landscapes, and um, and I just can't get enough of it.")
 

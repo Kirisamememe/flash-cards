@@ -1,154 +1,158 @@
 import { Badge } from "@/components/ui/badge";
 import { animateElement, cn } from "@/app/lib/utils";
-import { WordDataMerged } from "@/types/WordIndexDB";
+import { TTSObj, WordDataMerged } from "@/types/WordIndexDB";
 import { Separator } from "@/components/ui/separator";
 import { Volume2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
-import { useEffect, useRef, useState } from "react";
+import React, { SetStateAction, useRef, useState } from "react";
 import { saveTTStoLocal } from "@/app/lib/indexDB/saveToLocal";
 import { getTTSFromLocal } from "@/app/lib/indexDB/getFromLocal";
 import { useToast } from "@/components/ui/use-toast";
 import { useWordbookStore } from "@/providers/wordbook-store-provider";
-import { synthesizeSpeech } from "@/app/lib/azureTSS";
+import { Result, synthesizeSpeech } from "@/app/lib/azureTSS";
+import { useSession } from "next-auth/react";
+import { UpdatePromiseCommonResult } from "@/types/ActionsResult";
 
 export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) {
 
+    const { data: session } = useSession()
     const t = useTranslations()
     const { toast } = useToast()
     const setWord = useWordbookStore((state) => state.setWord)
-    const [loading, setLoading] = useState(false)
-    const [isPlaying, setIsPlaying] = useState(false)
-    const [duration, setDuration] = useState(0)
+    const [loadingWord, setLoadingWord] = useState(false)
+    const [loadingExample, setLoadingExample] = useState(false)
+    const [isPlayingWord, setIsPlayingWord] = useState(false)
+    const [isPlayingExample, setIsPlayingExample] = useState(false)
 
     const audioRef = useRef<HTMLAudioElement>(null)
     const progressCircle = useRef<SVGCircleElement>(null)
 
-    const handleSpeechExample = async () => {
-        if (isPlaying){
-            setIsPlaying(false)
-
-            if (progressCircle.current && audioRef.current) {
-                progressCircle.current.getAnimations().map(a => a.cancel())
-                audioRef.current.pause()
-                audioRef.current.currentTime = 0
-            }
+    const handleSpeechWord = async () => {
+        if (wordData?.ttsUrl?.word && audioRef.current) {
+            await playAudioWithAnimation(wordData?.ttsUrl.word, setIsPlayingWord)
         }
         else {
-            if (wordData?.ttsUrl && progressCircle.current && audioRef.current) {
-                setIsPlaying(true)
-                console.log(`Duration: ${duration}`)
-
-                Promise.all([
-                    animateElement(progressCircle.current,[
-                        { strokeDashoffset: 100.53 },
-                        { strokeDashoffset: 0 }
-                    ],{
-                        duration: duration * 1000 + 500,
-                        fill: "forwards"
-                    }),
-                    await audioRef.current.play()
-                ]).finally(() => setIsPlaying(false))
-
-                console.log("[TTS] Clicked")
-                // await audioRef.current.play().finally(() => setIsPlaying(false))
-                return
-            }
-
-            if (wordData.example && wordData.example.length > 5) {
-                setLoading(true)
-
-                let blob, url
-                const request = await getTTSFromLocal(wordData.id, "example")
-
-                if (request.isSuccess && request.data) {
-                    blob = new Blob([request.data.binary], { type: 'audio/mp3' })
-                }
-                else {
-                    await synthesizeSpeech(wordData.example).then((res) => {
-                        if (res.isSuccess && res.data) {
-                            // console.log(`res.data: ${res.data}`)
-                            const byteCharacters = atob(res.data)
-                            // console.log(byteCharacters)
-                            const byteNumbers = new Array(byteCharacters.length);
-                            for (let i = 0; i < byteCharacters.length; i++) {
-                                byteNumbers[i] = byteCharacters.charCodeAt(i)
-                            }
-                            // console.log(byteNumbers)
-                            const byteArray = new Uint8Array(byteNumbers)
-
-                            saveTTStoLocal({
-                                id: `example_${wordData.id}`,
-                                binary: byteArray
-                            })
-                            // console.log(byteArray)
-                            blob = new Blob([byteArray], { type: 'audio/mp3' })
-                        }
-                    })
-                }
-
-                if (!blob) {
-                    toast({
-                        title: "Synthesize Error",
-                        description: "Synthesize Error",
-                        variant: "destructive"
-                    })
-
-                    setLoading(false)
-                    return
-                }
-
-                url = URL.createObjectURL(blob)
-
-                setLoading(false)
-                if (audioRef.current && progressCircle.current) {
-                    audioRef.current.src = url
-
-                    setIsPlaying(true)
-                    // console.log(`Duration: ${audioRef.current.duration}`)
-
-                    Promise.all([
-                        await audioRef.current.play(),
-                        animateElement(progressCircle.current,[
-                            { strokeDashoffset: 100.53 },
-                            { strokeDashoffset: 0 }
-                        ],{
-                            duration: audioRef.current.duration * 1000 + 500,
-                            fill: "forwards"
-                        })
-                    ]).finally(() => {
-                        setIsPlaying(false)
-                        setWord({...wordData, ttsUrl: url})
-                    })
-                }
-            }
+            await fetchAndPlayWord()
         }
-        // const speechExample = new SpeechSynthesisUtterance(wordData.example)
-        // const voices = speechSynthesis.getVoices()
-        //
-        // speechExample.voice = voices[156]
-        // speechSynthesis.speak(speechExample)
     }
 
-    const handleLoadedMetadata = () => {
-        if (audioRef.current) setDuration(audioRef.current.duration)
+    const fetchAndPlayWord = async () => {
+        setLoadingWord(true)
+
+        try {
+            const res = await getTTSFromLocal(wordData.id, "word")
+            let url
+
+            if (res.isSuccess && res.data && audioRef.current) {
+                url = URL.createObjectURL(new Blob([res.data.binary], { type: 'audio/mp3' }))
+            } else {
+                url = await synthesizeAndSetExample(wordData.word, "word")
+            }
+
+            if (url) {
+                await playAudioWithAnimation(url, setIsPlayingWord)
+                setWord({ ...wordData, ttsUrl: { word: url } })
+            }
+        } catch (error) {
+            handleFetchError(error)
+        } finally {
+            setLoadingWord(false)
+        }
     }
 
-    useEffect(() => {
-        const audioElement = audioRef.current
-
-        if (audioElement) {
-            audioElement.addEventListener("loadedmetadata", handleLoadedMetadata)
+    const handleSpeechExample = async () => {
+        if (isPlayingExample){
+            pauseExample()
         }
-
-        if (wordData?.ttsUrl && audioElement) {
-            audioElement.src = wordData.ttsUrl
+        else {
+            await playOrFetchExample()
         }
+    }
 
-        return () => {
-            if (audioElement) audioElement.removeEventListener('loadedmetadata', handleLoadedMetadata)
+    const pauseExample = () => {
+        setIsPlayingExample(false);
+        if (progressCircle.current && audioRef.current) {
+            progressCircle.current.getAnimations().map(a => a.cancel())
+            audioRef.current.pause()
+            audioRef.current.currentTime = 0
         }
-    }, [wordData?.ttsUrl]);
+    }
+
+    const playOrFetchExample = async () => {
+        if (wordData?.ttsUrl?.example && progressCircle.current && audioRef.current) {
+            await playAudioWithAnimation(wordData?.ttsUrl.example, setIsPlayingExample)
+        }
+        else if (wordData.example && wordData.example.length > 5) {
+            await fetchAndPlayExample()
+        }
+    }
+
+    const playAudioWithAnimation = async (url: string, setPlay: React.Dispatch<SetStateAction<boolean>>) => {
+        console.log(url)
+
+        if (!progressCircle.current || !audioRef.current) return
+
+        audioRef.current.src = url
+        setPlay(true)
+
+        console.log(`Duration: ${audioRef.current.duration}`)
+        Promise.all([
+            await audioRef.current.play(),
+            animateElement(progressCircle.current, [
+                { strokeDashoffset: 100.53 },
+                { strokeDashoffset: 0 }
+            ], {
+                duration: audioRef.current.duration * 1000,
+                fill: "forwards"
+            })
+        ]).finally(() => setPlay(false))
+    }
+
+    const fetchAndPlayExample = async () => {
+        setLoadingExample(true)
+
+        try {
+            const res = await getTTSFromLocal(wordData.id, "example")
+            let url
+
+            if (res.isSuccess && res.data && audioRef.current) {
+                url = URL.createObjectURL(new Blob([res.data.binary], { type: 'audio/mp3' }))
+            } else if (wordData.example) {
+                url = await synthesizeAndSetExample(wordData.example, "example")
+            }
+
+            if (url) {
+                await playAudioWithAnimation(url, setIsPlayingExample)
+                setWord({ ...wordData, ttsUrl: { example: url } })
+            }
+        } catch (error) {
+            handleFetchError(error)
+        } finally {
+            setLoadingExample(false)
+        }
+    }
+
+    const synthesizeAndSetExample = async (text: string, type: "word" | "example") => {
+        const request = await synthesizeSpeechAndSaveToLocal(text, wordData.id, type, synthesizeSpeech, saveTTStoLocal)
+        if (request.isSuccess && request.data && audioRef.current) {
+            const url = URL.createObjectURL(request.data)
+            audioRef.current.src = url
+            return url
+        } else {
+            throw new Error("Synthesize Error")
+        }
+    }
+
+    const handleFetchError = (error: any) => {
+        toast({
+            title: error?.message || "Synthesize Error",
+            description: "データを取得できませんでした",
+            variant: "destructive"
+        })
+    }
+
+    // このコンポーネントにおいてuseEffectはいらない。
 
     return (
         <>
@@ -156,9 +160,14 @@ export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) 
                 <p className={"px-1.5 scroll-m-20 font-bold text-3xl sm:text-4xl lg:text-5xl select-all"}>
                     {wordData?.word}
                 </p>
-                <Button disabled className={"mt-1.5 lg:mt-2 p-1.5 sm:size-10 lg:size-11"} variant={"ghost"}
-                        size={"icon"}>
-                    <Volume2 className={""} size={32}/>
+                <Button disabled={loadingWord || session?.user.role !== "ADMIN"}
+                        className={"mt-1.5 lg:mt-2 p-1.5 sm:size-10 lg:size-11 text-primary hover:text-primary hover:bg-primary/10 active:text-primary active:bg-primary/10"}
+                        variant={"ghost"}
+                        size={"icon"}
+                        onClick={handleSpeechWord}>
+                    {isPlayingWord ? <div className={"line-2-vertical"}></div> :
+                        loadingWord ? <div className={"circle-spin-8-24"}/> : <Volume2 size={32}/>
+                    }
                 </Button>
             </div>
 
@@ -183,20 +192,20 @@ export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) 
             {wordData?.example && wordData?.example?.length > 0 &&
                 <p className={"px-1.5 mb-4 text-foreground text-lg sm:text-xl lg:text-2xl font-medium sm:leading-normal lg:leading-normal"}>
                     {wordData?.example || ""}
-                    <Button disabled={loading}
+                    <Button disabled={loadingExample || session?.user.role !== "ADMIN"}
                             className={cn(
                                 "rounded-full size-8 p-0 ml-2 align-middle text-primary hover:text-primary active:text-primary hover:bg-primary/10 active:bg-primary/10 overflow-clip",
-                                isPlaying ? "shadow-primary/30 dark:shadow-primary/30" : "shadow-primary dark:shadow-primary")}
+                                isPlayingExample ? "shadow-primary/30 dark:shadow-primary/30" : "shadow-primary dark:shadow-primary")}
                             variant={"outline"}
                             size={"icon"}
                             onClick={handleSpeechExample}>
-                        {loading ?
-                            <div className={"circle-spin-8"}/> :
-                            <Volume2 className={cn(isPlaying && "hidden")} size={20}/>
+                        {loadingExample ?
+                            <div className={"circle-spin-8-20"}/> :
+                            <Volume2 className={cn(isPlayingExample && "hidden")} size={20}/>
                         }
-                        <svg className={cn(!isPlaying && "hidden")} width="32" height="32">
+                        <svg className={cn(!isPlayingExample && "hidden")} width="32" height="32">
                             <rect x={11} y={11} width={10} height={10} className={"fill-primary"}/>
-                            <circle ref={progressCircle} className={"progress-circle"} cx="16" cy="16" r="16" />
+                            <circle ref={progressCircle} className={"progress-circle"} cx="16" cy="16" r="16"/>
                         </svg>
                     </Button>
                 </p>
@@ -207,7 +216,46 @@ export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) 
                     {wordData?.notes || t("WordsBook.note_null")}
                 </p>
             </div>
+            {/*<audio ref={audioRef}/>*/}
             <audio ref={audioRef}/>
         </>
     )
+}
+
+function synthesizeSpeechAndSaveToLocal(
+    text: string,
+    wordId: string,
+    type: "word" | "example",
+    synthesizeSpeech: (text: string) => Promise<Result>,
+    saveTTStoLocal: (ttsObj: TTSObj) => Promise<UpdatePromiseCommonResult<IDBValidKey>>,
+): Promise<{ isSuccess: true, data: Blob } | { isSuccess: false }> {
+    return new Promise(async (resolve, reject) => {
+        await synthesizeSpeech(text).then((res) => {
+            if (res.isSuccess && res.data) {
+                // console.log(`res.data: ${res.data}`)
+                const byteCharacters = atob(res.data)
+                // console.log(byteCharacters)
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i)
+                }
+                // console.log(byteNumbers)
+                const byteArray = new Uint8Array(byteNumbers)
+
+                saveTTStoLocal({
+                    id: `${type}_${wordId}`,
+                    binary: byteArray
+                })
+                // console.log(byteArray)
+                resolve({
+                    isSuccess: true,
+                    data: new Blob([byteArray], { type: 'audio/mp3' })
+                })
+            } else {
+                reject({ isSuccess: false })
+            }
+        }).catch(() => {
+            reject({ isSuccess: false })
+        })
+    })
 }
