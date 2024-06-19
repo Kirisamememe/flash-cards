@@ -95,11 +95,8 @@ export default function FlashCard() {
             }
 
             Promise.all(promiseArray).then((results) => {
-                let allFinished = true
-                results.forEach(res => {
-                    allFinished = (res.finish && allFinished && !!flashcard.current)
-                    // flashcard.currentの存在を判定しないと、他のページに行ってもTrueになってしまう
-                })
+                const allFinished = results.reduce((acc, res) => acc && res.finish, !!flashcard.current)
+                // flashcard.currentの存在を判定しないと、他のページに行ってもTrueになってしまう
 
                 if (allFinished) {
                     switchAnimation(

@@ -32,32 +32,25 @@ export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) 
         if (wordData?.ttsUrl?.word && audioRef.current) {
             await playAudioWithAnimation(wordData?.ttsUrl.word, setIsPlayingWord)
         }
-        else {
-            await fetchAndPlayWord()
+        else if (audioRef.current) {
+            await fetchAndPlayText(
+                wordData.word,
+                wordData,
+                "word",
+                audioRef.current,
+                playAudioWithAnimation,
+                setWord,
+                setLoadingWord,
+                setIsPlayingWord,
+                toast
+            )
         }
-    }
-
-    const fetchAndPlayWord = async () => {
-        setLoadingWord(true)
-
-        try {
-            const res = await getTTSFromLocal(wordData.id, "word")
-            let url
-
-            if (res.isSuccess && res.data && audioRef.current) {
-                url = URL.createObjectURL(new Blob([res.data.binary], { type: 'audio/mp3' }))
-            } else {
-                url = await synthesizeAndSetExample(wordData.word, "word")
-            }
-
-            if (url) {
-                await playAudioWithAnimation(url, setIsPlayingWord)
-                setWord({ ...wordData, ttsUrl: { word: url } })
-            }
-        } catch (error) {
-            handleFetchError(error)
-        } finally {
-            setLoadingWord(false)
+        else {
+            toast({
+                title: "Synthesize Error",
+                description: "不明なエラー",
+                variant: "destructive"
+            })
         }
     }
 
@@ -83,73 +76,47 @@ export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) 
         if (wordData?.ttsUrl?.example && progressCircle.current && audioRef.current) {
             await playAudioWithAnimation(wordData?.ttsUrl.example, setIsPlayingExample)
         }
-        else if (wordData.example && wordData.example.length > 5) {
-            await fetchAndPlayExample()
+        else if (wordData.example && wordData.example.length > 5 && audioRef.current) {
+            await fetchAndPlayText(
+                wordData.example,
+                wordData,
+                "example",
+                audioRef.current,
+                playAudioWithAnimation,
+                setWord,
+                setLoadingExample,
+                setIsPlayingExample,
+                toast
+            )
+        }
+        else {
+            toast({
+                title: "Synthesize Error",
+                description: "不明なエラー",
+                variant: "destructive"
+            })
         }
     }
 
     const playAudioWithAnimation = async (url: string, setPlay: React.Dispatch<SetStateAction<boolean>>) => {
-        console.log(url)
-
         if (!progressCircle.current || !audioRef.current) return
 
         audioRef.current.src = url
         setPlay(true)
 
-        console.log(`Duration: ${audioRef.current.duration}`)
-        Promise.all([
-            await audioRef.current.play(),
-            animateElement(progressCircle.current, [
+        try {
+            await audioRef.current.play()
+            await animateElement(progressCircle.current, [
                 { strokeDashoffset: 100.53 },
                 { strokeDashoffset: 0 }
             ], {
                 duration: audioRef.current.duration * 1000,
                 fill: "forwards"
             })
-        ]).finally(() => setPlay(false))
-    }
-
-    const fetchAndPlayExample = async () => {
-        setLoadingExample(true)
-
-        try {
-            const res = await getTTSFromLocal(wordData.id, "example")
-            let url
-
-            if (res.isSuccess && res.data && audioRef.current) {
-                url = URL.createObjectURL(new Blob([res.data.binary], { type: 'audio/mp3' }))
-            } else if (wordData.example) {
-                url = await synthesizeAndSetExample(wordData.example, "example")
-            }
-
-            if (url) {
-                await playAudioWithAnimation(url, setIsPlayingExample)
-                setWord({ ...wordData, ttsUrl: { example: url } })
-            }
-        } catch (error) {
-            handleFetchError(error)
         } finally {
-            setLoadingExample(false)
+            setPlay(false)
         }
-    }
 
-    const synthesizeAndSetExample = async (text: string, type: "word" | "example") => {
-        const request = await synthesizeSpeechAndSaveToLocal(text, wordData.id, type, synthesizeSpeech, saveTTStoLocal)
-        if (request.isSuccess && request.data && audioRef.current) {
-            const url = URL.createObjectURL(request.data)
-            audioRef.current.src = url
-            return url
-        } else {
-            throw new Error("Synthesize Error")
-        }
-    }
-
-    const handleFetchError = (error: any) => {
-        toast({
-            title: error?.message || "Synthesize Error",
-            description: "データを取得できませんでした",
-            variant: "destructive"
-        })
     }
 
     // このコンポーネントにおいてuseEffectはいらない。
@@ -216,7 +183,6 @@ export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) 
                     {wordData?.notes || t("WordsBook.note_null")}
                 </p>
             </div>
-            {/*<audio ref={audioRef}/>*/}
             <audio ref={audioRef}/>
         </>
     )
@@ -258,4 +224,50 @@ function synthesizeSpeechAndSaveToLocal(
             reject({ isSuccess: false })
         })
     })
+}
+
+export async function fetchAndPlayText(
+    text: string,
+    wordData: WordDataMerged,
+    type: "word" | "example",
+    audioRef: HTMLAudioElement,
+    playAudioWithAnimation: (url: string, setPlaying: React.Dispatch<SetStateAction<boolean>>) => Promise<any>,
+    setWord: (word: WordDataMerged) => void,
+    setLoading: React.Dispatch<SetStateAction<boolean>>,
+    setPlaying: React.Dispatch<SetStateAction<boolean>>,
+    toast: any
+) {
+    setLoading(true)
+
+    try {
+        const res = await getTTSFromLocal(wordData.id, type)
+        let url
+
+        if (res.isSuccess && res.data && audioRef) {
+            url = URL.createObjectURL(new Blob([res.data.binary], { type: 'audio/mp3' }))
+        } else {
+            const request = await synthesizeSpeechAndSaveToLocal(text, wordData.id, type, synthesizeSpeech, saveTTStoLocal)
+            if (request.isSuccess && audioRef) {
+                const newUrl = URL.createObjectURL(request.data)
+                audioRef.src = newUrl
+                url = newUrl
+            } else {
+                throw new Error("Synthesize Error")
+            }
+        }
+
+        if (url) {
+            setLoading(false)
+            await playAudioWithAnimation(url, setPlaying)
+            console.log("実行されたあああああああ")
+            setWord({ ...wordData, ttsUrl: { [type]: url } })
+        }
+    } catch (error: any) {
+        setLoading(false)
+        toast({
+            title: error?.message || "Synthesize Error",
+            description: "データを取得できませんでした",
+            variant: "destructive"
+        })
+    }　
 }
