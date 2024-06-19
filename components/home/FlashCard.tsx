@@ -1,5 +1,5 @@
 import React, { SetStateAction, useCallback, useEffect, useRef, useState } from "react";
-import { cn } from "@/app/lib/utils";
+import { cn, playAudio } from "@/app/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useWordbookStore } from "@/providers/wordbook-store-provider";
 import { useTranslations } from "next-intl";
@@ -12,6 +12,7 @@ import { CircleX, CircleCheck } from 'lucide-react';
 import { animateElement } from "@/app/lib/utils";
 import { saveRecordToLocal } from "@/app/lib/indexDB/saveToLocal";
 import { createId } from "@paralleldrive/cuid2";
+import { fetchAndPlayAudio } from "@/components/wordbook/WordDisplay";
 
 export default function FlashCard() {
 
@@ -27,9 +28,12 @@ export default function FlashCard() {
     const countDownBar = useRef<HTMLDivElement>(null)
     const editBtn = useRef<HTMLButtonElement>(null)
     const btnArea = useRef<HTMLDivElement>(null)
+    const audioRef = useRef<HTMLAudioElement>(null)
 
-    const words = useWordbookStore((state) => state.words).filter(word => !word.is_learned)
+    const words = useWordbookStore((state) => state.words)
     const blindMode = useWordbookStore((state) => state.blindMode)
+    const isMute = useWordbookStore((state) => state.isMute)
+    const learningCount = useWordbookStore((state) => state.learningCount)
     const currentIndex = useWordbookStore((state) => state.currentIndex)
     const setCurrentIndex = useWordbookStore((state) => state.setCurrentIndex)
     const userInterval = useWordbookStore((state) => state.userInterval)
@@ -93,6 +97,68 @@ export default function FlashCard() {
                     })
                 )
             }
+            if (!isMute) {
+                promiseArray.push(
+                    new Promise<{ finish: boolean }>(async (resolve, reject) => {
+                        // 音声再生中にエラーが発生しても、そのまま進みたいから、rejectはしないし、finishも常にtrue
+                        if (!audioRef.current) {
+                            reject({ finish: false })
+                            return
+                        }
+
+                        const wordUrl = words[currentIndex]?.ttsUrl?.word
+                        if (wordUrl) {
+                            try {
+                                await playAudio(audioRef.current, wordUrl)
+                            } catch (error) {
+                                console.error(error)
+                            }
+                        }
+                        else {
+                            try {
+                                await fetchAndPlayAudio(
+                                    words[currentIndex].word,
+                                    words[currentIndex],
+                                    "word",
+                                    audioRef.current,
+                                    playAudio
+                                )
+                            } catch (error) {
+                                console.error(error)
+                            }
+                        }
+
+                        const example = words[currentIndex]?.example
+                        if (!example){
+                            resolve({ finish: true })
+                            return
+                        }
+
+                        const exampleUrl = words[currentIndex]?.ttsUrl?.example
+                        if (exampleUrl) {
+                            try {
+                                await playAudio(audioRef.current, exampleUrl)
+                            } catch (error) {
+                                console.error(error)
+                            }
+                        } else {
+                            try {
+                                await fetchAndPlayAudio(
+                                    example,
+                                    words[currentIndex],
+                                    "example",
+                                    audioRef.current,
+                                    playAudio
+                                )
+                                resolve({ finish: true })
+                            } catch (error) {
+                                console.error(error)
+                                resolve({ finish: true })
+                            }
+                        }
+                    })
+                )
+            }
 
             Promise.all(promiseArray).then((results) => {
                 const allFinished = results.reduce((acc, res) => acc && res.finish, !!flashcard.current)
@@ -102,7 +168,7 @@ export default function FlashCard() {
                     switchAnimation(
                         currentIndex,
                         setCurrentIndex,
-                        words.length,
+                        learningCount,
                         flashcardRef,
                         btnAreaRef,
                         forgotBtnRef,
@@ -139,7 +205,7 @@ export default function FlashCard() {
         // 変更があればuseEffectの中身を再実行する
         // （ただし、クリーンアップ関数がある場合、再実行される前にまずクリーンアップ関数を実行する
 
-    }, [currentIndex, setCurrentIndex, words.length, userInterval, switchAnimation, blindMode])
+    }, [currentIndex, setCurrentIndex, userInterval, switchAnimation, blindMode, isMute, words, learningCount])
 
 
     const handleForgot = () => {
@@ -377,6 +443,7 @@ export default function FlashCard() {
                     </AddWordBtn>
                 </>
             }
+            <audio ref={audioRef}/>
         </div>
     )
 }

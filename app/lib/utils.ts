@@ -18,8 +18,7 @@ export function animateElement(
 ) {
     return new Promise<{ finish: boolean }>( (resolve, reject) => {
         if (!element) {
-            reject({ finish: false });
-            return;
+            reject({ finish: false })
         }
         const animation = element.animate(keyframes, options)
 
@@ -31,6 +30,25 @@ export function animateElement(
         }
         animation.onremove = () => {
             resolve({ finish: false })
+        }
+    })
+}
+
+export function playAudio(element: HTMLAudioElement, url: string) {
+    return new Promise<{ finish: boolean }>((resolve, reject) => {
+        if (!element) reject({ finish: false })
+
+        element.src = url
+        element.play().catch(() => {
+            reject({ finish: false })
+        })
+
+        element.onended = () => {
+            resolve({ finish: true })
+        }
+
+        element.onerror = () => {
+            reject({ finish: false })
         }
     })
 }

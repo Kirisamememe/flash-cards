@@ -33,11 +33,12 @@ export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) 
             await playAudioWithAnimation(wordData?.ttsUrl.word, setIsPlayingWord)
         }
         else if (audioRef.current) {
-            await fetchAndPlayText(
+            await fetchAndPlayAudio(
                 wordData.word,
                 wordData,
                 "word",
                 audioRef.current,
+                undefined,
                 playAudioWithAnimation,
                 setWord,
                 setLoadingWord,
@@ -77,11 +78,12 @@ export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) 
             await playAudioWithAnimation(wordData?.ttsUrl.example, setIsPlayingExample)
         }
         else if (wordData.example && wordData.example.length > 5 && audioRef.current) {
-            await fetchAndPlayText(
+            await fetchAndPlayAudio(
                 wordData.example,
                 wordData,
                 "example",
                 audioRef.current,
+                undefined,
                 playAudioWithAnimation,
                 setWord,
                 setLoadingExample,
@@ -116,7 +118,6 @@ export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) 
         } finally {
             setPlay(false)
         }
-
     }
 
     // このコンポーネントにおいてuseEffectはいらない。
@@ -226,18 +227,19 @@ function synthesizeSpeechAndSaveToLocal(
     })
 }
 
-export async function fetchAndPlayText(
+export async function fetchAndPlayAudio(
     text: string,
     wordData: WordDataMerged,
     type: "word" | "example",
     audioRef: HTMLAudioElement,
-    playAudioWithAnimation: (url: string, setPlaying: React.Dispatch<SetStateAction<boolean>>) => Promise<any>,
-    setWord: (word: WordDataMerged) => void,
-    setLoading: React.Dispatch<SetStateAction<boolean>>,
-    setPlaying: React.Dispatch<SetStateAction<boolean>>,
-    toast: any
+    playAudio?: (element: HTMLAudioElement, url: string) => Promise<{ finish: boolean }>,
+    playAudioWithAnimation?: (url: string, setPlaying: React.Dispatch<SetStateAction<boolean>>) => Promise<any>,
+    setWord?: (word: WordDataMerged) => void,
+    setLoading?: React.Dispatch<SetStateAction<boolean>>,
+    setPlaying?: React.Dispatch<SetStateAction<boolean>>,
+    toast?: any
 ) {
-    setLoading(true)
+    if (setLoading) setLoading(true)
 
     try {
         const res = await getTTSFromLocal(wordData.id, type)
@@ -257,13 +259,18 @@ export async function fetchAndPlayText(
         }
 
         if (url) {
-            setLoading(false)
-            await playAudioWithAnimation(url, setPlaying)
-            console.log("実行されたあああああああ")
-            setWord({ ...wordData, ttsUrl: { [type]: url } })
+            if (setLoading) setLoading(false)
+            if (playAudio) await playAudio(audioRef, url)
+            if (playAudioWithAnimation && setPlaying) await playAudioWithAnimation(url, setPlaying)
+            if (setWord) {
+                setWord({ ...wordData, ttsUrl: { [type]: url } })
+            }
+            else {
+                URL.revokeObjectURL(url)
+            }
         }
     } catch (error: any) {
-        setLoading(false)
+        if (setLoading) setLoading(false)
         toast({
             title: error?.message || "Synthesize Error",
             description: "データを取得できませんでした",

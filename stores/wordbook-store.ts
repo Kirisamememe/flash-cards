@@ -9,6 +9,7 @@ import { animateElement, sortWords } from "@/app/lib/utils";
 
 export type WordbookState = {
     words: WordDataMerged[] | []
+    learningCount: number
     poses: PartOfSpeechLocal[] | []
     userInfo: UserInfo | undefined
     currentIndex: number
@@ -21,7 +22,7 @@ export type WordbookState = {
     overlayIsOpen: boolean
     isTransition: boolean
     isAddingPos: boolean
-    reload: boolean
+    isMute: boolean
 }
 
 export type WordbookActions = {
@@ -44,7 +45,7 @@ export type WordbookActions = {
     setOverlayIsOpen: (value: boolean) => void
     setIsTransition: (value: boolean) => void
     setIsAddingPos: (value: boolean) => void
-    setReload: () => void
+    setIsMute: (value: boolean) => void
 }
 
 export type WordbookStore = WordbookState & WordbookActions
@@ -56,8 +57,10 @@ export const initWordbookStore = async (userId: string | undefined | null, url: 
 
     const loggedOutUseFromLocalStorage = localStorage.getItem("loggedOutUse")
     const blindModeFromLocalStorage = localStorage.getItem("blindMode")
+    const isMuteFromLocalStorage = localStorage.getItem("isMute")
     const localInterval = localStorage.getItem("interval")
 
+    if (!isMuteFromLocalStorage) localStorage.setItem("isMute", "1")
     if (!localInterval) localStorage.setItem("interval", "10000")
 
     const fetchedWords = await getCardsFromLocal(userId, !loggedOutUseFromLocalStorage ? true : loggedOutUseFromLocalStorage === "1")
@@ -110,6 +113,7 @@ export const initWordbookStore = async (userId: string | undefined | null, url: 
 
     return {
         words: words || [],
+        learningCount: words?.filter(word => !word.is_learned).length || 0,
         poses: poses || [],
         userInfo: userInfo,
         currentIndex: 0,
@@ -122,12 +126,13 @@ export const initWordbookStore = async (userId: string | undefined | null, url: 
         overlayIsOpen: false,
         isTransition: false,
         isAddingPos: false,
-        reload: false
+        isMute: !!isMuteFromLocalStorage ? isMuteFromLocalStorage === "1" : true
     }
 }
 
 export const defaultInitState: WordbookState = {
     words: [],
+    learningCount: 0,
     poses: [],
     userInfo: undefined,
     currentIndex: 0,
@@ -140,7 +145,7 @@ export const defaultInitState: WordbookState = {
     overlayIsOpen: false,
     isTransition: false,
     isAddingPos: false,
-    reload: false
+    isMute: true
 }
 
 export const createWordbookStore = (initState: WordbookState = defaultInitState) => {
@@ -160,6 +165,7 @@ export const createWordbookStore = (initState: WordbookState = defaultInitState)
                 }).then((res) => {
                     if (res.isSuccess) {
                         set((state) => ({ words: sortWords(state.words?.map(prev => prev.id === word.id ? word : prev)) }))
+                        set((state) => ({ learningCount: state.words.filter(word => !word.is_learned).length }))
 
                         resolve({
                             isSuccess: true,
@@ -258,6 +264,6 @@ export const createWordbookStore = (initState: WordbookState = defaultInitState)
             }
         },
         setIsAddingPos: (value: boolean) => set(() => ({ isAddingPos: value })),
-        setReload: () => set((state) => ({ reload: !state.reload }))
+        setIsMute: (value: boolean) => set(() => ({ isMute: value }))
     }))
 }

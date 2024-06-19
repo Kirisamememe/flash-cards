@@ -1,11 +1,11 @@
-import { CaptionsOff, Captions } from "lucide-react";
+import { CaptionsOff, Captions, Disc3, CirclePause } from "lucide-react";
 import { useWordbookStore } from "@/providers/wordbook-store-provider";
 import { Slider } from "@/components/ui/slider";
 import { Toggle } from "@/components/ui/toggle"
 import { useState } from "react";
 import { useDebouncedCallback } from 'use-debounce';
 import { flipAnimator } from "@/components/home/FlashCard";
-import { animateElement } from "@/app/lib/utils";
+import { cn } from "@/app/lib/utils";
 
 export default function Setting() {
 
@@ -13,6 +13,8 @@ export default function Setting() {
 
     const blindMode = useWordbookStore((state) => state.blindMode)
     const setBlindMode = useWordbookStore((state) => state.setBlindMode)
+    const isMute = useWordbookStore((state) => state.isMute)
+    const setIsMute = useWordbookStore((state) => state.setIsMute)
     const userInterval = useWordbookStore((state) => state.userInterval)
     const setUserInterval = useWordbookStore((state) => state.setUserInterval)
     const setCurrentIndex = useWordbookStore((state) => state.setCurrentIndex)
@@ -44,12 +46,16 @@ export default function Setting() {
         const flashcard = document.getElementById("flashcard")
         const btnArea = document.getElementById("btnArea")
         flipAnimator(flashcard, btnArea, null, null, setBlindMode, value).then()
+    }
 
+    const handleMute = (value: boolean) => {
+        setIsMute(value)
+        localStorage.setItem("isMute", value ? "1" : "0")
     }
 
     return (
         <div className={"flex flex-col w-svw h-40 sm:h-24 sm:max-w-[32rem] lg:max-w-[48rem] items-center justify-start flex-none"} >
-            <div className={"w-full h-20 flex items-center justify-center gap-2 sm:gap-4 pl-6 pr-12 sm:pr-16"} >
+            <div className={"w-full h-20 flex items-center justify-center gap-2 sm:gap-4 pl-6 pr-6"} >
                 <Toggle pressed={blindMode} onPressedChange={handleBlindModeSwitchChange} className={"group flex-none rounded-full p-0 size-14 text-muted-foreground hover:scale-110 hover:bg-primary/10 hover:text-primary active:bg-primary/10 active:scale-90 data-[state=on]:bg-transparent data-[state=on]:text-primary data-[state=on]:hover:bg-primary/10 data-[state=on]:hover:text-primary data-[state=off]:bg-transparent data-[state=off]:text-primary data-[state=off]:hover:bg-primary/10 data-[state=off]:hover:text-primary transition-all"} type={"button"} >
                     <CaptionsOff className={"group-data-[state=on]:hidden"} size={28}/>
                     <Captions className={"group-data-[state=off]:hidden"} size={28}/>
@@ -57,12 +63,25 @@ export default function Setting() {
 
                 <Slider
                     value={[sliderValue >= 1000 ? sliderValue / 1000 : 2]}
-                    max={30} min={2} step={1}
+                    max={30} min={2} step={2}
                     onValueChange={(value) => {
                         setSliderValue(value[0] * 1000)
                         handleSlider(value) }}>
                     {`${sliderValue / 1000}秒`}
                 </Slider>
+
+                <Toggle pressed={isMute} onPressedChange={handleMute}
+                        className={cn(
+                            "group flex-none rounded-full p-0 size-14 text-muted-foreground hover:scale-110 hover:bg-primary/10 hover:text-primary active:bg-primary/10 active:scale-90 data-[state=on]:bg-transparent data-[state=on]:text-primary/50 data-[state=on]:hover:bg-primary/10 data-[state=on]:hover:text-primary data-[state=off]:bg-transparent data-[state=off]:text-primary data-[state=off]:hover:bg-primary/10 data-[state=off]:hover:text-primary transition-all",
+                            isMute && "text-muted-foreground")}
+                        type={"button"}>
+                    <CirclePause
+                        className={cn("hidden", !isMute && "group-hover:block")}
+                        size={28}/>
+                    <Disc3
+                        className={cn(isMute ? "group-hover:animate-spin" : "animate-spin group-hover:hidden")}
+                        size={28}/>
+                </Toggle>
             </div>
         </div>
 

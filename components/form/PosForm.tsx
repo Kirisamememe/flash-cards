@@ -85,7 +85,6 @@ export default function PosForm({
                 console.log("newPos1:")
                 console.log(newPOS)
 
-                // setReload(prev => !prev)
                 partOfSpeechForm.reset({
                     id: undefined,
                     partOfSpeech: "",

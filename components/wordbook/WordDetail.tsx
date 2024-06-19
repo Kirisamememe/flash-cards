@@ -74,11 +74,15 @@ export default function WordDetail({ wordData }: { wordData: WordDataMerged }) {
 
     const handleLearned = () => {
         if (!wordData.is_learned) {
+            // TODO ここのi18n
             toast({
                 title: ("Marked as Mastered"),
                 description: ("The word has been marked as Mastered. Click the button again to undo."),
                 action:
-                    <ToastAction onClick={() => setWordToINDB(userInfo?.id,{...wordData, is_learned: wordData.is_learned}).catch(err => console.error(err))} altText={("Undo")}>
+                    <ToastAction onClick={() => {
+                        setWordToINDB(userInfo?.id, { ...wordData, is_learned: wordData.is_learned })
+                            .catch(err => console.error(err))
+                    }} altText={("Undo")}>
                     {"Undo"}
                     </ToastAction>,
                 duration: 5000
@@ -167,8 +171,12 @@ export default function WordDetail({ wordData }: { wordData: WordDataMerged }) {
                             variant={"outline"} type={"button"}
                             onClick={handleLearned}>
                         <CircleCheckBig size={16}/>
-                        <span className={cn(wordData.is_learned && "group-hover:hidden")}>{wordData.is_learned ? t("WordsBook.word_mastered") : t("WordsBook.word_mark_as_mastered")}</span>
-                        <span className={cn("hidden", wordData.is_learned && "group-hover:block text-destructive-foreground")}>{wordData.is_learned && t('WordsBook.word_unmastered')}</span>
+                        <span className={cn(wordData.is_learned && "group-hover:hidden")}>
+                            {wordData.is_learned ? t("WordsBook.word_mastered") : t("WordsBook.word_mark_as_mastered")}
+                        </span>
+                        <span className={cn("hidden", wordData.is_learned && "group-hover:block text-destructive-foreground")}>
+                            {wordData.is_learned && t('WordsBook.word_unmastered')}
+                        </span>
                     </Button>
                 </div>
                 <div className={"bg-foreground/[0.03] p-5 rounded-lg"}>
