@@ -316,24 +316,14 @@ export default function FlashCard() {
 
     const handlePlayTTS = async (e: React.MouseEvent<HTMLParagraphElement>) => {
         if (!audioElement.current || !e.currentTarget.textContent) return
+        if (!forgotBtnBG.current || !rememberedBtnBG.current || !countDownBar.current) return
 
-        if (forgotBtnBG.current) {
-            forgotBtnBG.current.getAnimations().map(a => {
-                a.cancel()
-            })
-        }
-        if (rememberedBtnBG.current) {
-            rememberedBtnBG.current.getAnimations().map(a => {
-                a.cancel()
-            })
-        }
-        if (countDownBar.current) {
-            countDownBar.current.getAnimations().map(a => {
-                a.cancel()
-            })
-        }
+        forgotBtnBG.current.getAnimations().map(a => a.pause())
+        rememberedBtnBG.current.getAnimations().map(a => a.pause())
+        countDownBar.current.getAnimations().map(a => a.pause())
 
         const id = e.currentTarget.id
+        audioElement.current.pause()
 
         await fetchAndPlayAudio(
             e.currentTarget.textContent,
@@ -341,7 +331,13 @@ export default function FlashCard() {
             id === "flashcard-word" ? "word" : "example",
             audioElement.current,
             playAudio
-        )
+        ).finally(() => {
+            if (forgotBtnBG.current && rememberedBtnBG.current && countDownBar.current) {
+                forgotBtnBG.current.getAnimations().map(a => a.play())
+                rememberedBtnBG.current.getAnimations().map(a => a.play())
+                countDownBar.current.getAnimations().map(a => a.play())
+            }
+        })
     }
 
     return (

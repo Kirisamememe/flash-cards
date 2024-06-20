@@ -47,6 +47,10 @@ export function playAudio(element: HTMLAudioElement, url: string) {
             resolve({ finish: true })
         }
 
+        element.onpause = () => {
+            resolve({ finish: true })
+        }
+
         element.oncancel = () => {
             resolve({ finish: true })
         }
