@@ -75,6 +75,7 @@ export default async function LocaleLayout({ children, params: { locale } }: Rea
         </ThemeProvider>
         <SpeedInsights />
         <Analytics/>
+        <audio id={"sound-effect"} preload={"auto"}/>
         </body>
         </html>
     )

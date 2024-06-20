@@ -22,7 +22,8 @@ export type WordbookState = {
     overlayIsOpen: boolean
     isTransition: boolean
     isAddingPos: boolean
-    isMute: boolean
+    playTTS: boolean
+    playSE: boolean
 }
 
 export type WordbookActions = {
@@ -45,7 +46,8 @@ export type WordbookActions = {
     setOverlayIsOpen: (value: boolean) => void
     setIsTransition: (value: boolean) => void
     setIsAddingPos: (value: boolean) => void
-    setIsMute: (value: boolean) => void
+    setPlayTTS: (value: boolean) => void
+    setPlaySE: (value: boolean) => void
 }
 
 export type WordbookStore = WordbookState & WordbookActions
@@ -57,10 +59,12 @@ export const initWordbookStore = async (userId: string | undefined | null, url: 
 
     const loggedOutUseFromLocalStorage = localStorage.getItem("loggedOutUse")
     const blindModeFromLocalStorage = localStorage.getItem("blindMode")
-    const isMuteFromLocalStorage = localStorage.getItem("isMute")
+    const playTTSFromLocalStorage = localStorage.getItem("playTTS")
+    const playSEFromLocalStorage = localStorage.getItem("playSE")
     const localInterval = localStorage.getItem("interval")
 
-    if (!isMuteFromLocalStorage) localStorage.setItem("isMute", "1")
+    if (!playTTSFromLocalStorage) localStorage.setItem("playTTS", "0")
+    if (!playSEFromLocalStorage) localStorage.setItem("playSE", "0")
     if (!localInterval) localStorage.setItem("interval", "10000")
 
     const fetchedWords = await getCardsFromLocal(userId, !loggedOutUseFromLocalStorage ? true : loggedOutUseFromLocalStorage === "1")
@@ -126,7 +130,8 @@ export const initWordbookStore = async (userId: string | undefined | null, url: 
         overlayIsOpen: false,
         isTransition: false,
         isAddingPos: false,
-        isMute: !!isMuteFromLocalStorage ? isMuteFromLocalStorage === "1" : true
+        playTTS: !!playTTSFromLocalStorage ? playTTSFromLocalStorage === "1" : false,
+        playSE: !!playSEFromLocalStorage ? playSEFromLocalStorage === "1" : false,
     }
 }
 
@@ -145,7 +150,8 @@ export const defaultInitState: WordbookState = {
     overlayIsOpen: false,
     isTransition: false,
     isAddingPos: false,
-    isMute: true
+    playTTS: false,
+    playSE: false,
 }
 
 export const createWordbookStore = (initState: WordbookState = defaultInitState) => {
@@ -264,6 +270,10 @@ export const createWordbookStore = (initState: WordbookState = defaultInitState)
             }
         },
         setIsAddingPos: (value: boolean) => set(() => ({ isAddingPos: value })),
-        setIsMute: (value: boolean) => set(() => ({ isMute: value }))
+        setPlayTTS: (value: boolean) => set(() => ({ playTTS: value })),
+        setPlaySE: (value: boolean) => {
+            localStorage.setItem("playSE", value ? "1" : "0")
+            set(() => ({ playSE: value }))
+        },
     }))
 }

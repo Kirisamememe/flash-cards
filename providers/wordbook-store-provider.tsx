@@ -46,7 +46,7 @@ export const WordbookStoreProvider = ({
                     storeRef.current = createWordbookStore(initializedStore);
                     setRerender(p => !p)
                 }
-                console.log(initializedStore)
+                // console.log(initializedStore)
             }
         }
         console.log("※※※※※※※※※※※※※※※WordbookStoreProvider内のuseEffectが実行されたようだ※※※※※※※※※※※※※※※")

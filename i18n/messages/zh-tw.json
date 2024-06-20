@@ -44,6 +44,7 @@
         "learning": "學習中",
         "auto_sync": "自動同步",
         "blind_mode": "隱藏定義",
+        "play_sound_effect": "音效",
         "use_when_logged_out": "離線使用"
     },
     "WordSubmitForm": {

@@ -78,6 +78,7 @@ export default function DestructiveDialog({
                     className={cn("group hover:bg-destructive/10 px-2 w-11 transition-all active:bg-destructive/10 active:text-destructive", className)}
                     variant={"ghost"}
                     size={"lg"}
+                    se={"/alert.mp3"}
                     type={"button"}
                 >
                     <Trash2 className={"group-hover:text-destructive transition-all"} width={20} height={20}/>

@@ -53,6 +53,20 @@ export function playAudio(element: HTMLAudioElement, url: string) {
     })
 }
 
+export function playSEAudio(url: string = "/button.mp3") {
+    const playSE = localStorage.getItem("playSE")
+    if (playSE === "1" && url) {
+        const audioElement = document.getElementById("sound-effect") as HTMLAudioElement
+        if (!audioElement) return
+
+        audioElement.autoplay = true
+
+        if (url === "/button.mp3") audioElement.volume = 0.3
+        audioElement.src = url
+        // audioElement.play().then()
+    }
+}
+
 export function sortWords(words: WordDataMerged[]) {
     return words.sort((a, b) => {
         if (a.is_learned !== b.is_learned) {

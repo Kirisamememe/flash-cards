@@ -40,7 +40,6 @@ export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) 
                 audioRef.current,
                 undefined,
                 playAudioWithAnimation,
-                setWord,
                 setLoadingWord,
                 setIsPlayingWord,
                 toast
@@ -74,10 +73,7 @@ export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) 
     }
 
     const playOrFetchExample = async () => {
-        if (wordData?.ttsUrl?.example && progressCircle.current && audioRef.current) {
-            await playAudioWithAnimation(wordData?.ttsUrl.example, setIsPlayingExample)
-        }
-        else if (wordData.example && wordData.example.length > 5 && audioRef.current) {
+        if (wordData.example && wordData.example.length > 5 && audioRef.current) {
             await fetchAndPlayAudio(
                 wordData.example,
                 wordData,
@@ -85,7 +81,6 @@ export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) 
                 audioRef.current,
                 undefined,
                 playAudioWithAnimation,
-                setWord,
                 setLoadingExample,
                 setIsPlayingExample,
                 toast
@@ -132,6 +127,7 @@ export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) 
                         className={"mt-1.5 lg:mt-2 p-1.5 sm:size-10 lg:size-11 text-primary hover:text-primary hover:bg-primary/10 active:text-primary active:bg-primary/10"}
                         variant={"ghost"}
                         size={"icon"}
+                        se={""}
                         onClick={handleSpeechWord}>
                     {isPlayingWord ? <div className={"line-2-vertical"}></div> :
                         loadingWord ? <div className={"circle-spin-8-24"}/> : <Volume2 size={32}/>
@@ -166,6 +162,7 @@ export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) 
                                 isPlayingExample ? "shadow-primary/30 dark:shadow-primary/30" : "shadow-primary dark:shadow-primary")}
                             variant={"outline"}
                             size={"icon"}
+                            se={""}
                             onClick={handleSpeechExample}>
                         {loadingExample ?
                             <div className={"circle-spin-8-20"}/> :
@@ -234,7 +231,6 @@ export async function fetchAndPlayAudio(
     audioRef: HTMLAudioElement,
     playAudio?: (element: HTMLAudioElement, url: string) => Promise<{ finish: boolean }>,
     playAudioWithAnimation?: (url: string, setPlaying: React.Dispatch<SetStateAction<boolean>>) => Promise<any>,
-    setWord?: (word: WordDataMerged) => void,
     setLoading?: React.Dispatch<SetStateAction<boolean>>,
     setPlaying?: React.Dispatch<SetStateAction<boolean>>,
     toast?: any
@@ -262,15 +258,11 @@ export async function fetchAndPlayAudio(
             if (setLoading) setLoading(false)
             if (playAudio) await playAudio(audioRef, url)
             if (playAudioWithAnimation && setPlaying) await playAudioWithAnimation(url, setPlaying)
-            if (setWord) {
-                setWord({ ...wordData, ttsUrl: { [type]: url } })
-            }
-            else {
-                URL.revokeObjectURL(url)
-            }
+            URL.revokeObjectURL(url)
         }
     } catch (error: any) {
         if (setLoading) setLoading(false)
+        if (toast)
         toast({
             title: error?.message || "Synthesize Error",
             description: "データを取得できませんでした",

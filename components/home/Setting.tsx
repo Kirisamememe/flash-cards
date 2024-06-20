@@ -5,7 +5,7 @@ import { Toggle } from "@/components/ui/toggle"
 import { useState } from "react";
 import { useDebouncedCallback } from 'use-debounce';
 import { flipAnimator } from "@/components/home/FlashCard";
-import { cn } from "@/app/lib/utils";
+import { cn, playSEAudio } from "@/app/lib/utils";
 
 export default function Setting() {
 
@@ -13,8 +13,8 @@ export default function Setting() {
 
     const blindMode = useWordbookStore((state) => state.blindMode)
     const setBlindMode = useWordbookStore((state) => state.setBlindMode)
-    const isMute = useWordbookStore((state) => state.isMute)
-    const setIsMute = useWordbookStore((state) => state.setIsMute)
+    const playTTS = useWordbookStore((state) => state.playTTS)
+    const setPlayTTS = useWordbookStore((state) => state.setPlayTTS)
     const userInterval = useWordbookStore((state) => state.userInterval)
     const setUserInterval = useWordbookStore((state) => state.setUserInterval)
     const setCurrentIndex = useWordbookStore((state) => state.setCurrentIndex)
@@ -24,10 +24,7 @@ export default function Setting() {
     const handleSlider = useDebouncedCallback((value: number[]) => {
         setUserInterval(value[0] * 1000)
         localStorage.setItem("interval", (value[0] * 1000).toString())
-        document.getAnimations().map(a => a.cancel())
-
-        // console.log("！！！setBlindModeが実行されました！！！")
-    },400)
+    },1000)
 
     const handleBlindModeSwitchChange = (value: boolean) => {
         if (blindMode) {
@@ -49,37 +46,38 @@ export default function Setting() {
     }
 
     const handleMute = (value: boolean) => {
-        setIsMute(value)
-        localStorage.setItem("isMute", value ? "1" : "0")
+        setPlayTTS(value)
+        localStorage.setItem("playTTS", value ? "1" : "0")
     }
 
     return (
         <div className={"flex flex-col w-svw h-40 sm:h-24 sm:max-w-[32rem] lg:max-w-[48rem] items-center justify-start flex-none"} >
             <div className={"w-full h-20 flex items-center justify-center gap-2 sm:gap-4 pl-6 pr-6"} >
                 <Toggle pressed={blindMode} onPressedChange={handleBlindModeSwitchChange} className={"group flex-none rounded-full p-0 size-14 text-muted-foreground hover:scale-110 hover:bg-primary/10 hover:text-primary active:bg-primary/10 active:scale-90 data-[state=on]:bg-transparent data-[state=on]:text-primary data-[state=on]:hover:bg-primary/10 data-[state=on]:hover:text-primary data-[state=off]:bg-transparent data-[state=off]:text-primary data-[state=off]:hover:bg-primary/10 data-[state=off]:hover:text-primary transition-all"} type={"button"} >
-                    <CaptionsOff className={"group-data-[state=on]:hidden"} size={28}/>
-                    <Captions className={"group-data-[state=off]:hidden"} size={28}/>
+                    <CaptionsOff className={cn("group-data-[state=off]:hidden", blindMode ? "group-hover:hidden" : "group-hover:block")} size={28}/>
+                    <Captions className={cn("group-data-[state=on]:hidden", blindMode ? "group-hover:block" : "group-hover:hidden")} size={28}/>
                 </Toggle>
 
                 <Slider
                     value={[sliderValue >= 1000 ? sliderValue / 1000 : 2]}
                     max={30} min={2} step={2}
                     onValueChange={(value) => {
+                        playSEAudio("/slider.mp3")
                         setSliderValue(value[0] * 1000)
                         handleSlider(value) }}>
                     {`${sliderValue / 1000}秒`}
                 </Slider>
 
-                <Toggle pressed={isMute} onPressedChange={handleMute}
+                <Toggle pressed={playTTS} onPressedChange={handleMute}
                         className={cn(
-                            "group flex-none rounded-full p-0 size-14 text-muted-foreground hover:scale-110 hover:bg-primary/10 hover:text-primary active:bg-primary/10 active:scale-90 data-[state=on]:bg-transparent data-[state=on]:text-primary/50 data-[state=on]:hover:bg-primary/10 data-[state=on]:hover:text-primary data-[state=off]:bg-transparent data-[state=off]:text-primary data-[state=off]:hover:bg-primary/10 data-[state=off]:hover:text-primary transition-all",
-                            isMute && "text-muted-foreground")}
+                            "group flex-none rounded-full p-0 size-14 text-muted-foreground hover:scale-110 hover:bg-primary/10 hover:text-primary active:bg-primary/10 active:scale-90 data-[state=on]:bg-transparent data-[state=on]:text-primary data-[state=on]:hover:bg-primary/10 data-[state=on]:hover:text-primary data-[state=off]:bg-transparent data-[state=off]:text-primary/50 data-[state=off]:hover:bg-primary/10 data-[state=off]:hover:text-primary transition-all",
+                            !playTTS && "text-muted-foreground")}
                         type={"button"}>
                     <CirclePause
-                        className={cn("hidden", !isMute && "group-hover:block")}
+                        className={cn("hidden", playTTS && "group-hover:block")}
                         size={28}/>
                     <Disc3
-                        className={cn(isMute ? "group-hover:animate-spin" : "animate-spin group-hover:hidden")}
+                        className={cn(playTTS ? "animate-spin group-hover:hidden" : "group-hover:animate-spin")}
                         size={28}/>
                 </Toggle>
             </div>

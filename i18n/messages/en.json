@@ -44,6 +44,7 @@
         "learning": "Learning",
         "auto_sync": "Auto Sync",
         "blind_mode": "Challenge Mode",
+        "play_sound_effect": "Sound Effect",
         "use_when_logged_out": "Use When Logged Out"
     },
     "WordSubmitForm": {

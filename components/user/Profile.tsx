@@ -24,7 +24,9 @@ export default function Profile() {
     const setWords = useWordbookStore((state) => state.setWords)
     const setPos = useWordbookStore((state) => state.setPos)
     const blindMode = useWordbookStore((state) => state.blindMode)
+    const playSE = useWordbookStore((state) => state.playSE)
     const setBlindMode = useWordbookStore((state) => state.setBlindMode)
+    const setPlaySE = useWordbookStore((state) => state.setPlaySE)
 
     const [progressVal, setProgressVal] = useState(0)
     const [progressMessage, setProgressMessage] = useState("")
@@ -72,8 +74,8 @@ export default function Profile() {
                         </div>
                         <Separator/>
                     </CardHeader>
-                    <CardContent className={"flex flex-col px-9 pb-6"}>
-                        {userInfo && <div className={"h-8 flex w-full justify-between items-center gap-6 mb-3"}>
+                    <CardContent className={"flex flex-col px-9 pb-6 space-y-3"}>
+                        {userInfo && <div className={"h-8 flex w-full justify-between items-center gap-6"}>
                             <h4 className="font-medium leading-none">{t("auto_sync")}</h4>
                             <Switch
                                 checked={userInfo.auto_sync}
@@ -91,6 +93,14 @@ export default function Profile() {
                                 checked={blindMode}
                                 defaultChecked={blindMode}
                                 onCheckedChange={(value) => setBlindMode(value)}
+                            />
+                        </div>
+                        <div className={"h-8 flex w-full justify-between items-center gap-6"}>
+                            <h4 className="font-medium leading-none">{t("play_sound_effect")}</h4>
+                            <Switch
+                                checked={playSE}
+                                defaultChecked={playSE}
+                                onCheckedChange={(value) => setPlaySE(value)}
                             />
                         </div>
                     </CardContent>
