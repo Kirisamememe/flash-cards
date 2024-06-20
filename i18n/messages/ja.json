@@ -11,7 +11,8 @@
         "forgot": "忘れた",
         "remembered": "覚えてる",
         "i_was_wrong": "違った",
-        "next": "次の単語へ"
+        "prev": "前の単語",
+        "next": "次の単語"
     },
     "User": {
         "signUp": "登録",

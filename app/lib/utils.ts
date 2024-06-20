@@ -40,15 +40,15 @@ export function playAudio(element: HTMLAudioElement, url: string) {
 
         element.src = url
         element.play().catch(() => {
-            reject({ finish: false })
+            resolve({ finish: true })
         })
 
         element.onended = () => {
             resolve({ finish: true })
         }
 
-        element.onerror = () => {
-            reject({ finish: false })
+        element.oncancel = () => {
+            resolve({ finish: true })
         }
     })
 }

@@ -9,7 +9,6 @@ import React, { SetStateAction, useRef, useState } from "react";
 import { saveTTStoLocal } from "@/app/lib/indexDB/saveToLocal";
 import { getTTSFromLocal } from "@/app/lib/indexDB/getFromLocal";
 import { useToast } from "@/components/ui/use-toast";
-import { useWordbookStore } from "@/providers/wordbook-store-provider";
 import { Result, synthesizeSpeech } from "@/app/lib/azureTSS";
 import { useSession } from "next-auth/react";
 import { UpdatePromiseCommonResult } from "@/types/ActionsResult";
@@ -19,7 +18,6 @@ export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) 
     const { data: session } = useSession()
     const t = useTranslations()
     const { toast } = useToast()
-    const setWord = useWordbookStore((state) => state.setWord)
     const [loadingWord, setLoadingWord] = useState(false)
     const [loadingExample, setLoadingExample] = useState(false)
     const [isPlayingWord, setIsPlayingWord] = useState(false)
@@ -35,7 +33,7 @@ export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) 
         else if (audioRef.current) {
             await fetchAndPlayAudio(
                 wordData.word,
-                wordData,
+                wordData.id,
                 "word",
                 audioRef.current,
                 undefined,
@@ -76,7 +74,7 @@ export default function WordDisplay({ wordData }: { wordData: WordDataMerged }) 
         if (wordData.example && wordData.example.length > 5 && audioRef.current) {
             await fetchAndPlayAudio(
                 wordData.example,
-                wordData,
+                wordData.id,
                 "example",
                 audioRef.current,
                 undefined,
@@ -226,7 +224,7 @@ function synthesizeSpeechAndSaveToLocal(
 
 export async function fetchAndPlayAudio(
     text: string,
-    wordData: WordDataMerged,
+    wordId: string,
     type: "word" | "example",
     audioRef: HTMLAudioElement,
     playAudio?: (element: HTMLAudioElement, url: string) => Promise<{ finish: boolean }>,
@@ -236,15 +234,15 @@ export async function fetchAndPlayAudio(
     toast?: any
 ) {
     if (setLoading) setLoading(true)
+    let url
 
     try {
-        const res = await getTTSFromLocal(wordData.id, type)
-        let url
+        const res = await getTTSFromLocal(wordId, type)
 
         if (res.isSuccess && res.data && audioRef) {
             url = URL.createObjectURL(new Blob([res.data.binary], { type: 'audio/mp3' }))
         } else {
-            const request = await synthesizeSpeechAndSaveToLocal(text, wordData.id, type, synthesizeSpeech, saveTTStoLocal)
+            const request = await synthesizeSpeechAndSaveToLocal(text, wordId, type, synthesizeSpeech, saveTTStoLocal)
             if (request.isSuccess && audioRef) {
                 const newUrl = URL.createObjectURL(request.data)
                 audioRef.src = newUrl
@@ -258,7 +256,7 @@ export async function fetchAndPlayAudio(
             if (setLoading) setLoading(false)
             if (playAudio) await playAudio(audioRef, url)
             if (playAudioWithAnimation && setPlaying) await playAudioWithAnimation(url, setPlaying)
-            URL.revokeObjectURL(url)
+            // URL.revokeObjectURL(url)
         }
     } catch (error: any) {
         if (setLoading) setLoading(false)
@@ -268,5 +266,7 @@ export async function fetchAndPlayAudio(
             description: "データを取得できませんでした",
             variant: "destructive"
         })
-    }　
+    } finally {
+        if (url) URL.revokeObjectURL(url)
+    }
 }

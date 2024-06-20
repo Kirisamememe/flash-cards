@@ -51,7 +51,7 @@ export default function Setting() {
     }
 
     return (
-        <div className={"flex flex-col w-svw h-40 sm:h-24 sm:max-w-[32rem] lg:max-w-[48rem] items-center justify-start flex-none"} >
+        <div className={"flex flex-col w-svw h-36 sm:h-24 sm:max-w-[32rem] lg:max-w-[48rem] items-center justify-start flex-none"} >
             <div className={"w-full h-20 flex items-center justify-center gap-2 sm:gap-4 pl-6 pr-6"} >
                 <Toggle pressed={blindMode} onPressedChange={handleBlindModeSwitchChange} className={"group flex-none rounded-full p-0 size-14 text-muted-foreground hover:scale-110 hover:bg-primary/10 hover:text-primary active:bg-primary/10 active:scale-90 data-[state=on]:bg-transparent data-[state=on]:text-primary data-[state=on]:hover:bg-primary/10 data-[state=on]:hover:text-primary data-[state=off]:bg-transparent data-[state=off]:text-primary data-[state=off]:hover:bg-primary/10 data-[state=off]:hover:text-primary transition-all"} type={"button"} >
                     <CaptionsOff className={cn("group-data-[state=off]:hidden", blindMode ? "group-hover:hidden" : "group-hover:block")} size={28}/>

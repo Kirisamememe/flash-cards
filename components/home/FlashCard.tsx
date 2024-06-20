@@ -6,9 +6,8 @@ import { useTranslations } from "next-intl";
 import EditWordBtn from "@/components/home/EditBtn";
 import { Button } from "@/components/ui/button";
 import AddWordBtn from "@/components/home/AddBtn";
-import useMediaQuery from "@mui/material/useMediaQuery";
 import { Separator } from "@/components/ui/separator";
-import { CircleX, CircleCheck } from 'lucide-react';
+import { CircleX, CircleCheck, ChevronRight, ChevronLeft } from 'lucide-react';
 import { animateElement } from "@/app/lib/utils";
 import { saveRecordToLocal } from "@/app/lib/indexDB/saveToLocal";
 import { createId } from "@paralleldrive/cuid2";
@@ -47,7 +46,6 @@ export default function FlashCard() {
     const [reviewedAt, setReviewedAt] = useState<Date | undefined>(undefined)
     const [time, setTime] = useState<number>(0)
 
-    const isSmallDevice = useMediaQuery('(max-width:640px)')
 
     const switchAnimation = useCallback(switchAnimator,[])
 
@@ -108,18 +106,13 @@ export default function FlashCard() {
                             return
                         }
 
-                        try {
-                            await fetchAndPlayAudio(
-                                words[currentIndex].word,
-                                words[currentIndex],
-                                "word",
-                                audioRef,
-                                playAudio
-                            )
-                        } catch (error) {
-                            console.error(error)
-                            resolve({ finish: true })
-                        }
+                        await fetchAndPlayAudio(
+                            words[currentIndex].word,
+                            words[currentIndex].id,
+                            "word",
+                            audioRef,
+                            playAudio
+                        )
 
                         const example = words[currentIndex]?.example
                         if (!example){
@@ -127,24 +120,21 @@ export default function FlashCard() {
                             return
                         }
 
-                        try {
-                            await fetchAndPlayAudio(
-                                example,
-                                words[currentIndex],
-                                "example",
-                                audioRef,
-                                playAudio
-                            )
+                        await fetchAndPlayAudio(
+                            example,
+                            words[currentIndex].id,
+                            "example",
+                            audioRef,
+                            playAudio
+                        ).finally(() => {
                             resolve({ finish: true })
-                        } catch (error) {
-                            console.error(error)
-                            resolve({ finish: true })
-                        }
+                        })
                     })
                 )
             }
 
             Promise.all(promiseArray).then((results) => {
+                console.log(results)
                 const allFinished = results.reduce((acc, res) => acc && res.finish, !!flashcard.current)
                 // flashcard.currentの存在を判定しないと、他のページに行ってもTrueになってしまう
 
@@ -159,6 +149,9 @@ export default function FlashCard() {
                         rememberedBtnRef,
                         editBtnRef
                     )
+                } else {
+                    console.log(`allFinished: ${allFinished}`)
+                    console.log(results)
                 }
             })
             // アニメーションが終わったら次のwordへ
@@ -222,7 +215,7 @@ export default function FlashCard() {
         }
     }
 
-    const handleForgotToNext = () => {
+    const handleToPrevOrNext = (toNext?: boolean) => {
         switchAnimation(
             currentIndex,
             setCurrentIndex,
@@ -232,7 +225,9 @@ export default function FlashCard() {
             forgotBtn.current,
             rememberedBtn.current,
             editBtn.current,
-            setIsPaused
+            setIsPaused,
+            undefined,
+            toNext
         )
     }
 
@@ -319,6 +314,36 @@ export default function FlashCard() {
         }
     }
 
+    const handlePlayTTS = async (e: React.MouseEvent<HTMLParagraphElement>) => {
+        if (!audioElement.current || !e.currentTarget.textContent) return
+
+        if (forgotBtnBG.current) {
+            forgotBtnBG.current.getAnimations().map(a => {
+                a.cancel()
+            })
+        }
+        if (rememberedBtnBG.current) {
+            rememberedBtnBG.current.getAnimations().map(a => {
+                a.cancel()
+            })
+        }
+        if (countDownBar.current) {
+            countDownBar.current.getAnimations().map(a => {
+                a.cancel()
+            })
+        }
+
+        const id = e.currentTarget.id
+
+        await fetchAndPlayAudio(
+            e.currentTarget.textContent,
+            words[currentIndex].id,
+            id === "flashcard-word" ? "word" : "example",
+            audioElement.current,
+            playAudio
+        )
+    }
+
     return (
         <div className={"flex flex-col items-center justify-center w-full h-full transition-all mt-20"}>
             {words.length > 0 && !!words[currentIndex] ?
@@ -331,7 +356,7 @@ export default function FlashCard() {
                             {words[currentIndex]?.phonetics || ""}
                         </p>
                         {/*単語*/}
-                        <p className={"scroll-m-20 w-fit font-bold text-3xl sm:text-4xl lg:text-5xl text-center mb-3 sm:mb-5"}>
+                        <p id={"flashcard-word"} className={"scroll-m-20 w-fit font-bold text-3xl sm:text-4xl lg:text-5xl text-center sm:mb-2 px-3 pt-2 pb-3 hover:bg-muted/50 rounded-xl transition-colors cursor-pointer"} onClick={handlePlayTTS}>
                             {words[currentIndex]?.word}
                         </p>
                         {/*品詞*/}
@@ -349,12 +374,12 @@ export default function FlashCard() {
                         <div className={"relative w-full my-6"}>
                             <div ref={countDownBar}
                                  className={cn(
-                                     "absolute left-0 top-0 w-full h-[1px]",
-                                     blindMode ? "hidden" : "bg-foreground/30")}/>
+                                     "absolute left-0 top-0 w-0 h-[1px]",
+                                     blindMode ? "hidden" : "bg-foreground/15")}/>
                             <Separator/>
                         </div>
                         {/*例文*/}
-                        <p className={"text-foreground/80 sm:text-xl lg:text-2xl text-center font-medium leading-tight mb-3"}>
+                        <p id={"flashcard-example"} className={"text-foreground/80 sm:text-xl lg:text-2xl text-center font-medium sm:leading-normal lg:leading-normal mb-2 px-2 py-1 hover:bg-muted/50 rounded-lg transition-colors cursor-pointer"} onClick={handlePlayTTS}>
                             {words[currentIndex]?.example}
                         </p>
                         {/*ノート*/}
@@ -366,7 +391,7 @@ export default function FlashCard() {
                         </p>
                     </div>
 
-                    <div ref={btnArea} id={"btnArea"}>
+                    <div ref={btnArea} id={"btnArea"} className={"mt-2"}>
                         <div className={cn("flex scale-90 sm:scale-100", (!blindMode || isPaused) && "hidden")}>
                             <Button ref={forgotBtn}
                                     className={`relative rounded-l-full p-0 text-destructive pr-6 pl-4 h-12 w-40 sm:w-48 diagonal-box-left justify-between ring-destructive hover:ring-destructive hover:text-destructive hover:bg-transparent active:text-destructive active:bg-destructive/10 overflow-hidden`}
@@ -374,7 +399,7 @@ export default function FlashCard() {
                                 <CircleX size={20}/>
                                 {t("Index.forgot")}
                                 <div ref={forgotBtnBG}
-                                     className={"absolute left-0 top-0 h-12 w-full bg-destructive/15"}></div>
+                                     className={"absolute left-0 top-0 h-12 w-0 bg-destructive/15"}></div>
                             </Button>
 
                             <Button ref={rememberedBtn}
@@ -414,13 +439,21 @@ export default function FlashCard() {
                             <Button className={"h-12 min-w-36 rounded-full"}
                                     variant={"coloredOutline"}
                                     se={"/button_2.mp3"}
-                                    onClick={handleForgotToNext}>
+                                    onClick={() => handleToPrevOrNext()}>
                                 {t("Index.next")}
                             </Button>
                         }
 
-                        {!blindMode && !isSmallDevice &&
-                            <EditWordBtn ref={editBtn} wordData={words[currentIndex]}/>
+                        {!blindMode &&
+                            <div className={"flex gap-6"}>
+                                <Button className={"rounded-full p-0 size-10"} variant={"coloredOutline"} onClick={() => handleToPrevOrNext(false)}>
+                                    <ChevronLeft/>
+                                </Button>
+                                <EditWordBtn ref={editBtn} wordData={words[currentIndex]}/>
+                                <Button className={"rounded-full p-0 size-10"} variant={"coloredOutline"} onClick={() => handleToPrevOrNext()}>
+                                    <ChevronRight/>
+                                </Button>
+                            </div>
                         }
                     </div>
                 </> :
@@ -527,6 +560,7 @@ function switchAnimator(
     editBtnRef: HTMLButtonElement | null,
     setIsPaused?: React.Dispatch<SetStateAction<boolean>>,
     setIsRemembered?: React.Dispatch<SetStateAction<boolean>>,
+    toNext: boolean = true
 ) {
 
     if (forgotBtnRef) forgotBtnRef.disabled = true
@@ -537,7 +571,7 @@ function switchAnimator(
         Promise.all([
             animateElement(flashcardRef, [
                 { opacity: '100%', transform: 'translateX(0)' },
-                { opacity: '0', transform: 'translateX(-200px)' }
+                { opacity: '0', transform: toNext ? 'translateX(-200px)' : 'translateX(200px)' }
             ], {
                 duration: 300,
                 easing: 'ease-in-out'
@@ -555,7 +589,7 @@ function switchAnimator(
             results.forEach(res => allFinished = res && allFinished)
 
             if (allFinished) {
-                const nextIndex = (currentIndex + 1) % wordsLength;
+                const nextIndex = toNext ? (currentIndex + 1) % wordsLength : (currentIndex - 1) % wordsLength
                 setCurrentIndex(nextIndex)
                 if (setIsPaused) setIsPaused(false)
                 if (setIsRemembered) setIsRemembered(false)
@@ -563,7 +597,7 @@ function switchAnimator(
                 if (flashcardRef && btnAreaRef) {
                     Promise.all([
                         animateElement(flashcardRef, [
-                            { opacity: '0', transform: 'translateX(200px)' },
+                            { opacity: '0', transform: toNext ? 'translateX(200px)' : 'translateX(-200px)' },
                             { opacity: '100%', transform: 'translateX(0)' }
                         ],{
                             duration: 300,
