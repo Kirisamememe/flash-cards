@@ -352,7 +352,9 @@ export default function FlashCard() {
                             {words[currentIndex]?.phonetics || ""}
                         </p>
                         {/*単語*/}
-                        <p id={"flashcard-word"} className={"scroll-m-20 w-fit font-bold text-3xl sm:text-4xl lg:text-5xl text-center sm:mb-2 px-3 pt-2 pb-3 hover:bg-muted/50 rounded-xl transition-colors cursor-pointer"} onClick={handlePlayTTS}>
+                        <p id={"flashcard-word"}
+                           className={"scroll-m-20 w-fit font-bold text-3xl sm:text-4xl lg:text-5xl text-center sm:mb-2 px-3 pt-2 pb-3 hover:bg-muted/50 rounded-xl transition-all cursor-pointer active:scale-95"}
+                           onClick={handlePlayTTS}>
                             {words[currentIndex]?.word}
                         </p>
                         {/*品詞*/}
@@ -375,7 +377,9 @@ export default function FlashCard() {
                             <Separator/>
                         </div>
                         {/*例文*/}
-                        <p id={"flashcard-example"} className={"text-foreground/80 sm:text-xl lg:text-2xl text-center font-medium sm:leading-normal lg:leading-normal mb-2 px-2 py-1 hover:bg-muted/50 rounded-lg transition-colors cursor-pointer"} onClick={handlePlayTTS}>
+                        <p id={"flashcard-example"}
+                           className={"text-foreground/80 sm:text-xl lg:text-2xl text-center font-medium sm:leading-normal lg:leading-normal mb-2 px-2 py-1 hover:bg-muted/50 rounded-lg transition-all cursor-pointer active:scale-95"}
+                           onClick={handlePlayTTS}>
                             {words[currentIndex]?.example}
                         </p>
                         {/*ノート*/}
