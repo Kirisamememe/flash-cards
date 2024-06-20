@@ -95,7 +95,7 @@ export default function Profile() {
                                 onCheckedChange={(value) => setBlindMode(value)}
                             />
                         </div>
-                        <div className={"h-8 flex w-full justify-between items-center gap-6"}>
+                        <div className={"h-8 hidden sm:flex w-full justify-between items-center gap-6"}>
                             <h4 className="font-medium leading-none">{t("play_sound_effect")}</h4>
                             <Switch
                                 checked={playSE}

@@ -39,7 +39,7 @@ const EditWordBtn = React.forwardRef<HTMLButtonElement, EditWordBtnProps>(({
 
     if (isSmallDevice) {
         return (
-            <Drawer noBodyStyles>
+            <Drawer noBodyStyles onOpenChange={handleOnChange}>
                 <DrawerTrigger asChild>
                     {children ? children :
                         <Button ref={ref} variant={"coloredOutline"}>
