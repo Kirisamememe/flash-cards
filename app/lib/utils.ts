@@ -39,19 +39,21 @@ export function playAudio(element: HTMLAudioElement, url: string) {
         if (!element) reject({ finish: false })
 
         element.src = url
-        element.play().catch(() => {
-            resolve({ finish: true })
-        })
+        element.play().then()
 
         element.onended = () => {
             resolve({ finish: true })
         }
 
-        element.onpause = () => {
+        // element.onpause = () => {
+        //     resolve({ finish: true })
+        // }
+
+        element.oncancel = () => {
             resolve({ finish: true })
         }
 
-        element.oncancel = () => {
+        element.onerror = () => {
             resolve({ finish: true })
         }
     })

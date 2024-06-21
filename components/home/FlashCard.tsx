@@ -331,7 +331,7 @@ export default function FlashCard() {
             id === "flashcard-word" ? "word" : "example",
             audioElement.current,
             playAudio
-        ).finally(() => {
+        ).then(() => {
             if (forgotBtnBG.current && rememberedBtnBG.current && countDownBar.current) {
                 forgotBtnBG.current.getAnimations().map(a => a.play())
                 rememberedBtnBG.current.getAnimations().map(a => a.play())
@@ -342,7 +342,7 @@ export default function FlashCard() {
 
     return (
         <div className={"flex flex-col items-center justify-center w-full h-full transition-all mt-20"}>
-            {words.length > 0 && !!words[currentIndex] ?
+            {learningCount > 0 && !!words[currentIndex] ?
                 <>
                     <div
                         className={cn("group flex flex-col items-center py-6 px-8 sm:px-12 w-fit max-w-[50rem] min-h-64 sm:min-h-[25rem] bg-background", blindMode && "preventTouch transition-all")}
@@ -589,7 +589,7 @@ function switchAnimator(
             results.forEach(res => allFinished = res && allFinished)
 
             if (allFinished) {
-                const nextIndex = toNext ? (currentIndex + 1) % wordsLength : (currentIndex - 1) % wordsLength
+                const nextIndex = toNext ? (currentIndex + 1) % wordsLength : currentIndex === 0 ? wordsLength - 1 : (currentIndex - 1) % wordsLength
                 setCurrentIndex(nextIndex)
                 if (setIsPaused) setIsPaused(false)
                 if (setIsRemembered) setIsRemembered(false)
