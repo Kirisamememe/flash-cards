@@ -33,11 +33,11 @@ export default function TabBar({ setOpen }: { setOpen: React.Dispatch<SetStateAc
                     <Cpu size={24}/>
                 </NavItemMobile>
                 <div autoFocus={false}
-                     className={"flex-auto inline-flex p-0 h-full justify-center items-center transition-all active:scale-110"}>
+                     className={"flex-auto inline-flex p-0 h-full justify-center items-center transition-all active:scale-110 outline-none"}>
                     {userInfo ?
                         <AvatarMenu/> :
                         <Button
-                            className={"text-muted-foreground w-full h-full rounded-none active:scale-110 active:bg-transparent"}
+                            className={"text-muted-foreground w-full h-full rounded-none active:scale-110 active:bg-transparent outline-none"}
                             variant={"ghost"}
                             onClick={() => setOpen(true)}
                         >

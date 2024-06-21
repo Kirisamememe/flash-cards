@@ -22,7 +22,7 @@ export default function AvatarMenu(){
         return (
             <Drawer noBodyStyles>
                 <DrawerTrigger asChild autoFocus={false}>
-                    <Button className={"w-full h-full rounded-none focus-visible:ring-0 focus-visible:outline-none focus-visible:ring-offset-0"} variant={"ghost"} autoFocus={false}>
+                    <Button className={"w-full h-full rounded-none focus-visible:ring-0 focus-visible:outline-none focus-visible:ring-offset-0 outline-none"} variant={"ghost"} autoFocus={false}>
                         <CircleUser className={"text-muted-foreground"} size={24}/>
                     </Button>
                 </DrawerTrigger>
