@@ -12,11 +12,13 @@ import { animateElement } from "@/app/lib/utils";
 import { saveRecordToLocal } from "@/app/lib/indexDB/saveToLocal";
 import { createId } from "@paralleldrive/cuid2";
 import { fetchAndPlayAudio } from "@/components/wordbook/WordDisplay";
+import { useSession } from "next-auth/react";
 
 export default function FlashCard() {
 
-    console.log("FlashCardがレンダリングされたようだ")
+    // console.log("FlashCardがレンダリングされたようだ")
 
+    const { data: session } = useSession()
     const t = useTranslations()
 
     const flashcard = useRef<HTMLDivElement>(null)
@@ -28,6 +30,7 @@ export default function FlashCard() {
     const editBtn = useRef<HTMLButtonElement>(null)
     const btnArea = useRef<HTMLDivElement>(null)
     const audioElement = useRef<HTMLAudioElement>(null)
+    const manualAudioElement = useRef<HTMLAudioElement>(null)
 
     const words = useWordbookStore((state) => state.words)
     const blindMode = useWordbookStore((state) => state.blindMode)
@@ -315,7 +318,9 @@ export default function FlashCard() {
     }
 
     const handlePlayTTS = async (e: React.MouseEvent<HTMLParagraphElement>) => {
-        if (!audioElement.current || !e.currentTarget.textContent) return
+        const userId = session?.user?.id
+        if (!userId) return
+        if (!audioElement.current || !e.currentTarget.textContent || !manualAudioElement.current) return
         if (!forgotBtnBG.current || !rememberedBtnBG.current || !countDownBar.current) return
 
         forgotBtnBG.current.getAnimations().map(a => a.pause())
@@ -329,7 +334,7 @@ export default function FlashCard() {
             e.currentTarget.textContent,
             words[currentIndex].id,
             id === "flashcard-word" ? "word" : "example",
-            audioElement.current,
+            manualAudioElement.current,
             playAudio
         ).then(() => {
             if (forgotBtnBG.current && rememberedBtnBG.current && countDownBar.current) {
@@ -353,8 +358,8 @@ export default function FlashCard() {
                         </p>
                         {/*単語*/}
                         <p id={"flashcard-word"}
-                           className={"scroll-m-20 w-fit font-bold text-3xl sm:text-4xl lg:text-5xl text-center sm:mb-2 px-3 pt-2 pb-3 hover:bg-muted/50 rounded-xl transition-all cursor-pointer active:scale-95"}
-                           onClick={handlePlayTTS}>
+                           className={cn("scroll-m-20 w-fit font-bold text-3xl sm:text-4xl lg:text-5xl text-center sm:mb-2 px-3 pt-2 pb-3 rounded-xl ", session?.user && "hover:bg-muted/50 transition-all cursor-pointer active:scale-95")}
+                           onClick={session?.user ? handlePlayTTS : undefined}>
                             {words[currentIndex]?.word}
                         </p>
                         {/*品詞*/}
@@ -378,8 +383,8 @@ export default function FlashCard() {
                         </div>
                         {/*例文*/}
                         <p id={"flashcard-example"}
-                           className={"text-foreground/80 sm:text-xl lg:text-2xl text-center font-medium sm:leading-normal lg:leading-normal mb-2 px-2 py-1 hover:bg-muted/50 rounded-lg transition-all cursor-pointer active:scale-95"}
-                           onClick={handlePlayTTS}>
+                           className={cn("text-foreground/80 sm:text-xl lg:text-2xl text-center font-medium sm:leading-normal lg:leading-normal mb-2 px-2 py-1 rounded-lg", session?.user && "hover:bg-muted/50 transition-all cursor-pointer active:scale-95")}
+                           onClick={session?.user ? handlePlayTTS : undefined}>
                             {words[currentIndex]?.example}
                         </p>
                         {/*ノート*/}
@@ -404,7 +409,8 @@ export default function FlashCard() {
 
                             <Button ref={rememberedBtn}
                                     className={"relative rounded-r-full p-0 text-green-600 pl-6 pr-4 h-12 w-40 sm:w-48 diagonal-box-right justify-between ring-green-600 hover:ring-green-600 hover:text-green-600 hover:bg-transparent active:ring-green-600 active:text-green-600 active:bg-green-600/10 overflow-hidden"}
-                                    size={"lg"} variant={"coloredOutline"} se={"/button_2.mp3"} onClick={handleRemembered}>
+                                    size={"lg"} variant={"coloredOutline"} se={"/button_2.mp3"}
+                                    onClick={handleRemembered}>
                                 {t("Index.remembered")}
                                 <CircleCheck size={20}/>
                                 <div ref={rememberedBtnBG}
@@ -446,11 +452,13 @@ export default function FlashCard() {
 
                         {!blindMode &&
                             <div className={"flex gap-6"}>
-                                <Button className={"rounded-full p-0 size-10"} variant={"coloredOutline"} onClick={() => handleToPrevOrNext(false)}>
+                                <Button className={"rounded-full p-0 size-10"} variant={"coloredOutline"}
+                                        onClick={() => handleToPrevOrNext(false)}>
                                     <ChevronLeft/>
                                 </Button>
                                 <EditWordBtn ref={editBtn} wordData={words[currentIndex]}/>
-                                <Button className={"rounded-full p-0 size-10"} variant={"coloredOutline"} onClick={() => handleToPrevOrNext()}>
+                                <Button className={"rounded-full p-0 size-10"} variant={"coloredOutline"}
+                                        onClick={() => handleToPrevOrNext()}>
                                     <ChevronRight/>
                                 </Button>
                             </div>
@@ -469,6 +477,7 @@ export default function FlashCard() {
                 </>
             }
             <audio ref={audioElement}/>
+            <audio ref={manualAudioElement}/>
         </div>
     )
 }

@@ -11,6 +11,7 @@ import { z } from "zod";
 import { partOfSpeech, saveWordCardRequest } from "@/types";
 import { createId } from "@paralleldrive/cuid2";
 import { openDB } from "@/app/lib/indexDB/indexDB";
+import { Material, MaterialIndexDB } from "@/types/AIBooster";
 
 export async function saveUserInfoToLocal(user: UserInfo): Promise<UpdatePromiseCommonResult<IDBValidKey>> {
     return new Promise<UpdatePromiseCommonResult<IDBValidKey>>(async (resolve, reject) => {
@@ -292,18 +293,14 @@ export function savePartOfSpeechToLocal(value: z.infer<typeof partOfSpeech>, for
 export function saveRecordToLocal(record: RecordIndexDB) {
     return new Promise<UpdatePromiseCommonResult<IDBValidKey>>(async (resolve, reject) => {
         const db = await openDB()
-        const transaction = db.transaction(['records'], 'readwrite')
+        const transaction = db.transaction(['records', 'words'], 'readwrite')
         const store = transaction.objectStore('records')
-        const request = store.put(record)
+        const wordStore = transaction.objectStore('words')
 
-        request.onsuccess = () => {
-            resolve({
-                isSuccess: true,
-                data: request.result
-            })
-        }
+        const putRecordReq = store.put(record)
 
-        request.onerror = (e) => {
+
+        putRecordReq.onerror = (e) => {
             reject({
                 isSuccess: false,
                 error: {
@@ -311,6 +308,68 @@ export function saveRecordToLocal(record: RecordIndexDB) {
                     detail: e
                 }
             })
+        }
+
+        putRecordReq.onsuccess = () => {
+            const recordsReq = store.getAll()
+
+            recordsReq.onsuccess = () => {
+                const wordReq = wordStore.get(record.word_id)
+
+                wordReq.onsuccess = () => {
+                    if (!wordReq.result) {
+                        reject({
+                            isSuccess: false,
+                            error: {
+                                message: "取得できませんでした",
+                                detail: ""
+                            }
+                        })
+                    }
+
+                    if (!recordsReq.result) {
+                        reject({
+                            isSuccess: false,
+                            error: {
+                                message: "取得できませんでした",
+                                detail: ""
+                            }
+                        })
+                    }
+
+                    const records: RecordIndexDB[] = recordsReq.result.filter(record => record.word_id === wordReq.result.id)
+
+                    const correctCount = records.reduce((prev, rec) => {
+                        if (rec.is_correct) {
+                            return prev + 1
+                        } else {
+                            return prev
+                        }
+                    }, 0)
+
+                    const updateRetention = wordStore.put({
+                        ...wordReq.result,
+                        retention_rate: Math.floor((correctCount / records.length) * 10000) / 10000
+                    })
+
+                    updateRetention.onsuccess = () => {
+                        resolve({
+                            isSuccess: true,
+                            data: putRecordReq.result
+                        })
+                    }
+
+                    updateRetention.onerror = (e) => {
+                        reject({
+                            isSuccess: false,
+                            error: {
+                                message: `Transaction error: ${(e.target as IDBTransaction).error?.message}`,
+                                detail: e
+                            }
+                        })
+                    }
+                }
+            }
         }
 
         transaction.oncomplete = () => {}
@@ -395,6 +454,40 @@ export function saveTTStoLocal(ttsObj: TTSObj) {
                 error: {
                     message: `Transaction error: ${(e.target as IDBTransaction).error?.message}`,
                     detail: e
+                }
+            })
+        }
+    })
+}
+
+export function saveMaterialToLocal(material: Material | MaterialIndexDB) {
+    return new Promise<UpdatePromiseCommonResult<IDBValidKey>>(async (resolve, reject) => {
+        const db = await openDB()
+        const transaction = db.transaction(['materials'], 'readwrite')
+        const store = transaction.objectStore('materials')
+        const hasId = 'id' in material
+        const request = store.put({
+            ...material,
+            id: hasId ? material.id : createId(),
+            created_at: hasId ? material.created_at : new Date(),
+            updated_at: hasId ? material.updated_at : new Date(),
+            bookmarked_at: hasId ? material?.bookmarked_at : undefined,
+            is_deleted: hasId ? material.is_deleted : false,
+        })
+
+        request.onsuccess = () => {
+            resolve({
+                isSuccess: true,
+                data: request.result
+            })
+        }
+
+        request.onerror = () => {
+            reject({
+                isSuccess: false,
+                error: {
+                    message: `保存できませんでした`,
+                    detail: ""
                 }
             })
         }

@@ -26,7 +26,7 @@ export const WordbookStoreProvider = ({
 }: WordbookStoreProviderProps) => {
     const storeRef = useRef<StoreApi<WordbookStore> | null>(null)
     // const [store, setStore] = useState<StoreApi<WordbookStore> | null>(null);
-    const [rerender, setRerender] = useState(false);
+    const [_, setRerender] = useState(false);
     // console.log(`WordbookStoreProvider: userId > ${userId}`)
     // console.log(`WordbookStoreProvider: url > ${url}`)
     // console.log(`WordbookStoreProvider: userName > ${userName}`)

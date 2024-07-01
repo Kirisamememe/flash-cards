@@ -90,6 +90,7 @@ const config = {
             addVariant('hover', ['@media(hover:hover){ &:hover }'])
             addVariant('active', '&:active');
             addVariant('group-hover', '@media(hover:hover){ .group:hover & }')
+            addVariant('HOVER', '&:hover');
         }),
     ],
 } satisfies Config

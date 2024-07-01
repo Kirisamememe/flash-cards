@@ -48,26 +48,26 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ({ className, animation = true, se, variant, size, asChild = false, ...props }, ref) => {
         const Comp = asChild ? Slot : "button"
-        const [isMoving, setIsMoving] = useState(false)
-
-        const handleTouchMove = () => {
-            setIsMoving(true);
-        }
-
-        const handleTouchEnd = (event: React.TouchEvent<HTMLButtonElement>) => {
-            if (!isMoving) {
-                event.preventDefault()
-                event.currentTarget.click()
-            }
-            setIsMoving(false);
-        }
+        // const [isMoving, setIsMoving] = useState(false)
+        //
+        // const handleTouchMove = () => {
+        //     setIsMoving(true);
+        // }
+        //
+        // const handleTouchEnd = (event: React.TouchEvent<HTMLButtonElement>) => {
+        //     if (!isMoving) {
+        //         event.preventDefault()
+        //         event.currentTarget.click()
+        //     }
+        //     setIsMoving(false);
+        // }
 
         return (
             <Comp
                 className={cn(buttonVariants({ variant, size, className }), animation && "hover:scale-105 active:scale-95")}
                 ref={ref}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
+                // onTouchMove={handleTouchMove}
+                // onTouchEnd={handleTouchEnd}
                 onMouseDown={() => playSEAudio(se)}
                 {...props}
             />

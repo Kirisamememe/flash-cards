@@ -1,29 +1,45 @@
 import { createStore } from 'zustand/vanilla'
 import { PartOfSpeechLocal, WordDataMerged } from "@/types/WordIndexDB";
-import { getCardsFromLocal, getPartOfSpeechesFromLocal, getUserInfoFromLocal } from "@/app/lib/indexDB/getFromLocal";
+import {
+    getCardsFromLocal,
+    getMaterialsFromLocal,
+    getPartOfSpeechesFromLocal,
+    getUserInfoFromLocal
+} from "@/app/lib/indexDB/getFromLocal";
 import { getUserInfoFromRemote } from "@/app/lib/remoteDB/getFromRemote";
 import { saveCardToLocal, saveUserInfoToLocal } from "@/app/lib/indexDB/saveToLocal";
 import { UpdatePromiseCommonResult } from "@/types/ActionsResult";
 import { animateElement, sortWords } from "@/app/lib/utils";
+import { exampleMaterial, Material, ModelList } from "@/types/AIBooster";
 
 
 export type WordbookState = {
     words: WordDataMerged[] | []
     learningCount: number
     poses: PartOfSpeechLocal[] | []
-    userInfo: UserInfo | undefined
     currentIndex: number
     filterText: string
+    filteredWords: WordDataMerged[] | []
     isEditing: boolean
+
+    userInfo: UserInfo | undefined
     blindMode: boolean
     loggedOutUse: boolean
-    filteredWords: WordDataMerged[] | []
     userInterval: number
+
     overlayIsOpen: boolean
     isTransition: boolean
     isAddingPos: boolean
+
     playTTS: boolean
     playSE: boolean
+
+    generatedMaterial: Material
+    atTop: boolean
+    hideHeader: boolean
+    carouselIndex: number
+
+    AIModel: ModelList
 }
 
 export type WordbookActions = {
@@ -48,6 +64,13 @@ export type WordbookActions = {
     setIsAddingPos: (value: boolean) => void
     setPlayTTS: (value: boolean) => void
     setPlaySE: (value: boolean) => void
+
+    setGeneratedMaterial: (material: Material) => void
+    setAtTop: (value: boolean) => void
+    setHideHeader: (value: boolean) => void
+    setCarouselIndex: (num: number) => void
+
+    setAIModel: (model: ModelList) => void
 }
 
 export type WordbookStore = WordbookState & WordbookActions
@@ -62,10 +85,12 @@ export const initWordbookStore = async (userId: string | undefined | null, url: 
     const playTTSFromLocalStorage = localStorage.getItem("playTTS")
     const playSEFromLocalStorage = localStorage.getItem("playSE")
     const localInterval = localStorage.getItem("interval")
+    const localAIModel = localStorage.getItem("AIModel")
 
     if (!playTTSFromLocalStorage) localStorage.setItem("playTTS", "0")
     if (!playSEFromLocalStorage) localStorage.setItem("playSE", "0")
     if (!localInterval) localStorage.setItem("interval", "10000")
+    if (!localAIModel) localStorage.setItem("AIModel", "models/gemini-1.5-pro-latest")
 
     const fetchedWords = await getCardsFromLocal(userId, !loggedOutUseFromLocalStorage ? true : loggedOutUseFromLocalStorage === "1")
     if (!fetchedWords.isSuccess) {
@@ -112,7 +137,9 @@ export const initWordbookStore = async (userId: string | undefined | null, url: 
             }
             await saveUserInfoToLocal(userInfo)
         }
+
     }
+
     console.log("initWordbookStoreが実行されたようだ")
 
     return {
@@ -132,6 +159,11 @@ export const initWordbookStore = async (userId: string | undefined | null, url: 
         isAddingPos: false,
         playTTS: !!playTTSFromLocalStorage ? playTTSFromLocalStorage === "1" : false,
         playSE: !!playSEFromLocalStorage ? playSEFromLocalStorage === "1" : false,
+        generatedMaterial: exampleMaterial,
+        atTop: true,
+        hideHeader: false,
+        carouselIndex: 0,
+        AIModel: localAIModel ? localAIModel as ModelList : "gemini-1.5-pro-latest" as ModelList
     }
 }
 
@@ -152,6 +184,11 @@ export const defaultInitState: WordbookState = {
     isAddingPos: false,
     playTTS: false,
     playSE: false,
+    generatedMaterial: exampleMaterial,
+    atTop: true,
+    hideHeader: false,
+    carouselIndex: 0,
+    AIModel: "gemini-1.5-pro-latest" as ModelList
 }
 
 export const createWordbookStore = (initState: WordbookState = defaultInitState) => {
@@ -275,5 +312,15 @@ export const createWordbookStore = (initState: WordbookState = defaultInitState)
             localStorage.setItem("playSE", value ? "1" : "0")
             set(() => ({ playSE: value }))
         },
+        setGeneratedMaterial: (material: Material) => {
+            set(() => ({ generatedMaterial: material }))
+        },
+        setAtTop: (value: boolean) => set(() => ({ atTop: value })),
+        setHideHeader: (value: boolean) => set(() => ({ hideHeader: value })),
+        setCarouselIndex: (num: number) => set(() => ({ carouselIndex: num })),
+        setAIModel: (model: ModelList) => {
+            localStorage.setItem("AIModel", model)
+            set(() => ({ AIModel: model }))
+        }
     }))
 }

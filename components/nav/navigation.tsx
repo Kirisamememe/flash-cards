@@ -13,7 +13,7 @@ export const localePrefix =
 export const pathnames = {
     '/': '/',
     '/words': '/words',
-    '/ai': '/ai',
+    '/ai-booster': '/ai-booster',
     '/docs': '/docs',
     '/user': '/user'
 } satisfies Pathnames<typeof locales>;

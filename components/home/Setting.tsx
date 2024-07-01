@@ -6,10 +6,12 @@ import { useState } from "react";
 import { useDebouncedCallback } from 'use-debounce';
 import { flipAnimator } from "@/components/home/FlashCard";
 import { cn, playSEAudio } from "@/app/lib/utils";
+import { useSession } from "next-auth/react";
 
 export default function Setting() {
 
-    console.log("Settingがレンダリングされたようだ")
+    // console.log("Settingがレンダリングされたようだ")
+    const { data: session } = useSession()
 
     const blindMode = useWordbookStore((state) => state.blindMode)
     const setBlindMode = useWordbookStore((state) => state.setBlindMode)
@@ -68,7 +70,7 @@ export default function Setting() {
                     {`${sliderValue / 1000}秒`}
                 </Slider>
 
-                <Toggle pressed={playTTS} onPressedChange={handleMute}
+                <Toggle pressed={playTTS} onPressedChange={handleMute} disabled={!session?.user}
                         className={cn(
                             "group flex-none rounded-full p-0 size-14 text-muted-foreground hover:scale-110 hover:bg-primary/10 hover:text-primary active:bg-primary/10 active:scale-90 data-[state=on]:bg-transparent data-[state=on]:text-primary data-[state=on]:hover:bg-primary/10 data-[state=on]:hover:text-primary data-[state=off]:bg-transparent data-[state=off]:text-primary/50 data-[state=off]:hover:bg-primary/10 data-[state=off]:hover:text-primary transition-all",
                             !playTTS && "text-muted-foreground")}

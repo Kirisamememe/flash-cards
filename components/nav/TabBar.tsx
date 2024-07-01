@@ -1,8 +1,7 @@
 import { NavItemMobile } from "@/components/nav/nav-item";
-import { BookA, Cpu, Tv2, UserCircle2 } from "lucide-react";
+import { BookA, Cpu, Tv2, UserCircle2, Plus } from "lucide-react";
 import AddWordBtn from "@/components/home/AddBtn";
 import { Button } from "@/components/ui/button";
-import { PlusIcon } from "@radix-ui/react-icons";
 import AvatarMenu from "@/components/nav/avatar-menu";
 import * as React from "react";
 import { SetStateAction } from "react";
@@ -24,12 +23,12 @@ export default function TabBar({ setOpen }: { setOpen: React.Dispatch<SetStateAc
                 </NavItemMobile>
                 <AddWordBtn>
                     <div className={"basis-1/4 flex flex-col items-center"}>
-                        <Button className={"rounded-full"}>
-                            <PlusIcon className={""} width={32} height={32}/>
+                        <Button className={"rounded-full text-primary ring-0 bg-primary/15"} variant={"coloredOutline"}>
+                            <Plus size={28}/>
                         </Button>
                     </div>
                 </AddWordBtn>
-                <NavItemMobile disabled className={"flex-auto"} href={"/ai"}>
+                <NavItemMobile className={"flex-auto"} href={"/ai-booster"}>
                     <Cpu size={24}/>
                 </NavItemMobile>
                 <div autoFocus={false}

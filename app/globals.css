@@ -108,6 +108,34 @@
   }
 }
 
+@keyframes popover {
+  0% {
+    transform: scale(0.5) translateY(20px);
+    opacity: 0;
+  }
+  40% {
+    transform: scale(1.1) translateY(-5px);
+    opacity: 0.7;
+  }
+  60% {
+    transform: scale(0.9) translateY(3px);
+    opacity: 0.9;
+  }
+  80% {
+    transform: scale(1.03) translateY(-2px);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.popover {
+  animation: popover 0.4s ease-out;
+}
+
+
 .faceIn {
   animation: faceIn 0.3s ease-in-out;
 }
@@ -321,6 +349,7 @@
   }
 }
 
+
 .square-spin-2 {
   --size: 32px;
   --stroke-width: calc(var(--size) / 6);
@@ -441,3 +470,7 @@
     transform: scaleY(1);
   }
 }
+
+/*.anchor {*/
+/*  anchor-name: "";*/
+/*}*/

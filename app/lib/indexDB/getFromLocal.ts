@@ -1,6 +1,7 @@
 import { GetPromiseCommonResult, UpdatePromiseCommonResult } from "@/types/ActionsResult";
 import { openDB } from "@/app/lib/indexDB/indexDB";
 import { EN2ENItem, PartOfSpeechLocal, RecordIndexDB, TTSObj, WordDataMerged, WordIndexDB } from "@/types/WordIndexDB";
+import { MaterialIndexDB, sentenceEndingRegex } from "@/types/AIBooster";
 
 export async function getUserInfoFromLocal(userId: string): Promise<UpdatePromiseCommonResult<UserInfo>> {
     return new Promise<UpdatePromiseCommonResult<UserInfo>>(async (resolve, reject) => {
@@ -35,17 +36,14 @@ export function getCardsFromLocal(
     useWhenLoggedOut: boolean = true,
     containDeleted: boolean = false
 ): Promise<GetPromiseCommonResult<WordDataMerged[]>>  {
-    // この関数は基本的には未習得の単語だけを返す
-    // 習得した場合、習得済み専用の配列にプッシュする
-
     return new Promise<GetPromiseCommonResult<WordDataMerged[]>>(async (resolve, reject) => {
         openDB().then(db => {
-            const transaction = db.transaction(['words', 'partOfSpeech'], 'readonly');
-            const wordsStore = transaction.objectStore('words');
-            const partOfSpeechStore = transaction.objectStore('partOfSpeech');
+            const transaction = db.transaction(['words', 'partOfSpeech'], 'readonly')
+            const wordsStore = transaction.objectStore('words')
+            const partOfSpeechStore = transaction.objectStore('partOfSpeech')
 
-            const wordsRequest = wordsStore.getAll();
-            const partOfSpeechRequest = partOfSpeechStore.getAll();
+            const wordsRequest = wordsStore.getAll()
+            const partOfSpeechRequest = partOfSpeechStore.getAll()
 
             transaction.oncomplete = () => {
                 const partOfSpeech = partOfSpeechRequest.result;
@@ -299,6 +297,114 @@ export function getTTSFromLocal(wordId: string, type: "word" | "example") {
                 error: {
                     message: `Transaction Error: ${(e.target as IDBRequest).error?.message}`,
                     detail: e
+                }
+            })
+        }
+    })
+}
+
+export function getPromptWords(limit: "random" | "recent" | "mostForgettable"): Promise<GetPromiseCommonResult<string[]>> {
+    return new Promise(async (resolve, reject) => {
+        const db = await openDB()
+        const transaction = db.transaction(['words'], 'readonly')
+        const wordsStore = transaction.objectStore('words')
+        const request = wordsStore.getAll()
+
+        request.onsuccess = () => {
+            if (!request.result) {
+                reject({
+                    isSuccess: false,
+                    error: {
+                        message: ``,
+                        detail: ""
+                    }
+                })
+                return
+            }
+
+            let wordlist: string[]
+            const fetchedWords = request.result.filter(word => !word.is_deleted && !word.is_learned)
+
+            switch (limit) {
+                case "random":
+                    wordlist = fetchedWords.map(word => word.word)
+                    for (let i = wordlist.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [wordlist[i], wordlist[j]] = [wordlist[j], wordlist[i]];
+                    }
+                    wordlist = wordlist.slice(0, 10)
+                    break
+                case "recent":
+                    wordlist = fetchedWords.sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
+                        .map(word => word.word).slice(0, 10)
+                    break
+                case "mostForgettable":
+                    wordlist = fetchedWords.map(word => word.word)
+                        .sort((a, b) =>  b.retention_rate - a.retention_rate)
+                        .slice(0, 10)
+                    break
+            }
+
+            resolve({
+                isSuccess: true,
+                data: wordlist
+            })
+        }
+
+        request.onerror = (e) => {
+            reject({
+                isSuccess: false,
+                error: {
+                    message: `Error fetching word: ${(e.target as IDBRequest).error?.message}`,
+                    detail: e
+                }
+            })
+        }
+
+        transaction.onerror = (e) => {
+            reject({
+                isSuccess: false,
+                error: {
+                    message: `Transaction Error: ${(e.target as IDBRequest).error?.message}`,
+                    detail: e
+                }
+            })
+        }
+    })
+}
+
+export function getMaterialsFromLocal(userId: string, length?: number, offset?: number) {
+    return new Promise<UpdatePromiseCommonResult<MaterialIndexDB[]>>(async (resolve, reject) => {
+        const db = await openDB()
+        const transaction = db.transaction(['materials'], 'readonly')
+        const store = transaction.objectStore('materials')
+        const request = store.getAll()
+
+        request.onsuccess = () => {
+            if (!request.result.length) {
+                reject({
+                    isSuccess: false,
+                    error: {
+                        message: `データがありません`,
+                        detail: ""
+                    }
+                })
+            }
+
+            const data = request.result.filter(val => val.author === userId).sort((a, b) => b.created_at - a.created_at).slice(length ? 0 : undefined, length ? length : undefined)
+
+            resolve({
+                isSuccess: true,
+                data: data
+            })
+        }
+
+        request.onerror = () => {
+            reject({
+                isSuccess: false,
+                error: {
+                    message: `取得できませんでした`,
+                    detail: ""
                 }
             })
         }

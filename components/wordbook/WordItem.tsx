@@ -73,32 +73,35 @@ export default function WordItem({ wordData, index }: { wordData: WordDataMerged
 
     return (
         <li className={cn("relative h-14 flex flex-col border-b hover:border-transparent last:border-transparent", index === currentIndex && "border-transparent")}>
-            <div
+            <button
                 className={cn(
-                    "flex gap-2 w-[calc(100%+1rem)] -translate-x-2.5 -translate-y-[1px] h-14 items-center px-4 rounded-lg active:-translate-y-[2px] hover:scale-103 hover:bg-border active:scale-100 cursor-pointer transition-all text-sm hover:text-base",
-                    wordData.is_learned && "text-muted-foreground",
-                    index === currentIndex && "scale-100 bg-primary/5 text-primary font-semibold ring-1 ring-primary hover:bg-primary/15 text-xl hover:text-xl hover:scale-100",
-                    // (index === currentIndex) && wordData.is_learned && "bg-foreground/5 text-foreground font-semibold ring-1 ring-border hover:bg-foreground/15 text-xl hover:text-xl scale-100 hover:scale-100"
+                    "flex gap-2 w-[calc(100%+1rem)] -translate-x-2.5 -translate-y-[1px] items-center h-14 px-4 rounded-lg active:-translate-y-[2px] hover:scale-103 hover:bg-border active:scale-100 cursor-pointer transition-all",
+                    index === currentIndex && "scale-100 bg-primary/5 ring-1 ring-primary hover:bg-primary/15 hover:scale-100",
                 )}
                 onClick={() => {
                     if (currentIndex !== index) setCurrentIndex(index)
                     if (isEditing) setIsEditing(false)
                     console.log("Clicked")
                 }}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
+                // onTouchMove={handleTouchMove}
+                // onTouchEnd={handleTouchEnd}
                 onMouseDown={() => playSEAudio("/button.mp3")}
                 // onClickだけだと、なぜかiPadでのタッチ操作がワンテンポ遅い
             >
-                <p>{wordData?.word}</p>
-                <Badge variant={"secondary"}
-                       className={cn("text-xs text-foreground/60 font-normal bg-foreground/5 hover:bg-foreground/10",
-                           index === currentIndex && "bg-primary/10 text-primary hover:bg-primary/15",
-                           wordData.is_learned && "")}>
-                    {wordData.partOfSpeech && wordData.partOfSpeech.partOfSpeech}
-                </Badge>
+                <p className={cn("transition-[font-size] text-sm group-hover:text-base leading-[0]", // leading-[0]は現時点（2024.06.25）でのSafari対策です。
+                    wordData.is_learned && "text-muted-foreground",
+                    index === currentIndex && "text-xl text-primary font-semibold leading-[0]"
+                )}>
+                    {wordData?.word}
+                </p>
+                {wordData.partOfSpeech && <Badge variant={"secondary"}
+                        className={cn("text-xs text-foreground/60 font-normal bg-foreground/5 hover:bg-foreground/10",
+                            index === currentIndex && "bg-primary/10 text-primary hover:bg-primary/15",
+                            wordData.is_learned && "")}>
+                    {wordData.partOfSpeech.partOfSpeech}
+                </Badge>}
                 {wordData.is_learned && <CircleCheckBig className={"absolute right-3"} size={20}/>}
-            </div>
+            </button>
         </li>
     )
 }

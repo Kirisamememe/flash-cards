@@ -17,7 +17,7 @@ interface EditWordBtnProps {
 const EditWordBtn = React.forwardRef<HTMLButtonElement, EditWordBtnProps>(({
     wordData, children
 }, ref) => {
-    console.log("EditWordBtnがレンダリングされたようだ")
+    // console.log("EditWordBtnがレンダリングされたようだ")
 
     const t = useTranslations()
 

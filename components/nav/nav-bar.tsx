@@ -8,6 +8,7 @@ import Header from "@/components/nav/Header";
 import ReactDOM from "react-dom";
 import { cn } from "@/app/lib/utils";
 import { useWordbookStore } from "@/providers/wordbook-store-provider";
+import { usePathname } from "next/navigation";
 
 function LoadingDiv({ isComing }: { isComing: boolean }) {
     return ReactDOM.createPortal(
@@ -18,7 +19,11 @@ function LoadingDiv({ isComing }: { isComing: boolean }) {
             )}
         />,
         document.body
-    );
+    )
+}
+
+const scrollMap = {
+    "": ""
 }
 
 export default function NavBar() {
@@ -27,50 +32,62 @@ export default function NavBar() {
     const [open, setOpen] = useState(false)
     const [atTop, setAtTop] = useState(true)
     const [lastScrollTop, setLastScrollTop] = useState(50)
-    const [hideHeader, setHideHeader] = useState(false)
+    // const [hideHeader, setHideHeader] = useState(false)
     const isTransition = useWordbookStore((state) => state.isTransition)
+    // const atTop = useWordbookStore((state) => state.atTop)
+    // const setAtTop = useWordbookStore((state) => state.setAtTop)
+    const hideHeader = useWordbookStore((state) => state.hideHeader)
+    const setHideHeader = useWordbookStore((state) => state.setHideHeader)
+    const carouselIndex = useWordbookStore((state) => state.carouselIndex)
 
+    const pathname = usePathname()
 
     useEffect(() => {
-        const scrollArea = document.getElementById('scrollArea')
-        if (scrollArea) {
-            const handleScroll = () => {
-                setAtTop( scrollArea.scrollTop <= 30)
-                const currentScrollTop = scrollArea.scrollTop
+        const scrollArea = document.getElementById(pathname.includes("/ai-booster") ? `carousel-${carouselIndex}` : 'scrollArea')
+        if (!scrollArea) return
 
-                if (currentScrollTop > lastScrollTop + 10) {
-                    // 下にスクロール
-                    setHideHeader(true)
+        setAtTop( scrollArea.scrollTop <= 30)
 
-                }
-                else if (currentScrollTop <= lastScrollTop - 10) {
-                    // 上にスクロール
-                    setHideHeader(false)
-                }
-                setLastScrollTop(Math.max(currentScrollTop, 30))
+        const handleScroll = () => {
+            const currentScrollTop = scrollArea.scrollTop
+
+            if (currentScrollTop > lastScrollTop + 10) {
+                // 下にスクロール
+                setHideHeader(true)
+
             }
-            console.log("スクロールしました")
-
-            scrollArea && scrollArea.addEventListener("scroll", handleScroll)
-
-            return () => {
-                scrollArea && scrollArea.removeEventListener("scroll", handleScroll)
+            else if (currentScrollTop <= lastScrollTop - 10) {
+                // 上にスクロール
+                setHideHeader(false)
             }
+            setLastScrollTop(Math.max(currentScrollTop, 30))
         }
-    }, [lastScrollTop])
+        // console.log("スクロールしました")
+
+        scrollArea && scrollArea.addEventListener("scroll", handleScroll)
+
+        return () => {
+            scrollArea && scrollArea.removeEventListener("scroll", handleScroll)
+        }
+
+    }, [carouselIndex, lastScrollTop, pathname, setHideHeader])
 
     useEffect(() => {
         if (atTop) {
             setHideHeader(false)
         }
-    }, [atTop])
+    }, [atTop, setHideHeader])
 
 
     return (
         <>
             <LoadingDiv isComing={isTransition} />
             {isSmallDevice && <TabBar setOpen={setOpen}/>}
-            <Header className={hideHeader ? "translate-y-[-100%]" : atTop ? "bg-transparent backdrop-blur-none" : "h-[3.75rem]"} open={open} setOpen={setOpen}/>
+            <Header className={cn(hideHeader ? "translate-y-[-100%] h-[0.03125rem] lg:h-[0.03125rem] opacity-0" : !atTop ? "h-[3.5rem] lg:h-16" : "")}
+                    open={open}
+                    setOpen={setOpen}
+                    atTop={atTop}
+            />
         </>
 
     )

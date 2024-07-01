@@ -54,7 +54,7 @@ export default async function LocaleLayout({ children, params: { locale } }: Rea
     // でもbodyをスクロールエリアにすると、Drawerの動きがおかしくなる…
     return (
         <html lang={locale}>
-        <body className={`${inter.className} h-dvh selection:bg-primary/50 selection:text-foreground`}>
+        <body className={`h-dvh selection:bg-primary/50 selection:text-foreground`}>
         <ThemeProvider
             attribute="class"
             defaultTheme="system"

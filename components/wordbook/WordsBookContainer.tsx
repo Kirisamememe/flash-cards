@@ -17,7 +17,7 @@ import { useTranslations } from "next-intl";
 
 export default function WordsBookContainer() {
 
-    const isSmallDevice = useMediaQuery('(max-width:640px)');
+    const isSmallDevice = useMediaQuery('(max-width:640px)')
 
     const words = useWordbookStore((state) => state.words)
     const filterText = useWordbookStore((state) => state.filterText)
@@ -37,7 +37,7 @@ export default function WordsBookContainer() {
                 exit={{ opacity: 0, y: 30 }}
                 transition={{ duration: 0.2 }}
             >
-                <div className={"flex flex-col w-full h-full px-4 pt-20 pb-20 items-center"}>
+                <div className={"flex flex-col w-full h-full px-4 pt-16 pb-20 items-center"}>
                     <Banner/>
                     <FindWord/>
                     <ul role={"list"}
@@ -66,7 +66,7 @@ export default function WordsBookContainer() {
             transition={{ duration: 0.2 }}
             className={"h-dvh"}
         >
-            <div className={"flex flex-col gap-4 w-full max-w-[72rem] h-full min-h-[48rem] sm:px-4 sm:pt-20 sm:pb-4 lg:px-8 lg:pt-24 lg:pb-6 mx-auto"}>
+            <div className={"flex flex-col gap-4 w-full max-w-[72rem] h-full min-h-[48rem] sm:px-4 sm:pt-16 sm:pb-4 lg:px-8 lg:pt-24 lg:pb-6 mx-auto"}>
 
                 <Banner />
 

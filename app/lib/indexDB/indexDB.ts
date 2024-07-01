@@ -4,7 +4,7 @@ const dbName = 'flashcards_db';
 
 export function openDB():Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open(dbName, 6);
+        const request = indexedDB.open(dbName, 7);
 
         request.onupgradeneeded = (event) => {
             const db = (event.target as IDBOpenDBRequest).result;
@@ -26,7 +26,10 @@ export function openDB():Promise<IDBDatabase> {
             if (!db.objectStoreNames.contains('TTSStore')) {
                 db.createObjectStore('TTSStore', { keyPath: 'id' });
             }
-        };
+            if (!db.objectStoreNames.contains('materials')) {
+                db.createObjectStore('materials', { keyPath: 'id' });
+            }
+        }
 
         request.onerror = (event) => {
             reject(`データベースに繋がりませんでした: ${(event.target as IDBOpenDBRequest).error?.message}`);

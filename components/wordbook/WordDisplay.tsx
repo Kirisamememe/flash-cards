@@ -9,7 +9,7 @@ import React, { SetStateAction, useRef, useState } from "react";
 import { saveTTStoLocal } from "@/app/lib/indexDB/saveToLocal";
 import { getTTSFromLocal } from "@/app/lib/indexDB/getFromLocal";
 import { useToast } from "@/components/ui/use-toast";
-import { Result, synthesizeSpeech } from "@/app/lib/azureTSS";
+import { Result, synthesizeSpeech } from "@/app/lib/azureTTS";
 import { useSession } from "next-auth/react";
 import { UpdatePromiseCommonResult } from "@/types/ActionsResult";
 
