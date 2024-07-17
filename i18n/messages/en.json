@@ -123,7 +123,7 @@
         "notes_valid_max": "The notes should be within 500 characters.",
         "partOfSpeech_valid_min": "Please enter a part of speech of at least 1 character.",
         "partOfSpeech_valid_max": "The part of speech should be within 20 characters.",
-        "prompt_valid_max": "The prompt should be within 200 characters.",
+        "prompt_valid_max": "The prompt should be within 500 characters.",
         "edit_permission_error": "You cannot edit cards created by other users."
     },
     "POS": {

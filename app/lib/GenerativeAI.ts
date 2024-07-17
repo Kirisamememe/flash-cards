@@ -76,7 +76,7 @@ class GenerativeAI {
                     text: z.string(),
                     translation: z.string()
                 }).describe("The example should have a translation.").default({ text: "", translation: "" }),
-                similarTo: z.array(z.string()).default([]).describe("Synonyms or similar expressions in the source language")
+                similarTo: z.array(z.string()).default([]).describe("Synonyms or similar expressions in the source language. Up to 5.")
             })).describe("If there are multiple definitions for this word, output up to 5 in order of frequency of use and store them in an Array.").default([])
         })
     }
@@ -108,7 +108,7 @@ class GenerativeAI {
                 if (!partialObject?.content) continue
 
                 stream.update(partialObject)
-                console.log(partialObject.content)
+                console.log(partialObject)
             }
 
         })().then(() => {

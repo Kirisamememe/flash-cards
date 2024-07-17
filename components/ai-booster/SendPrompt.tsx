@@ -4,9 +4,7 @@ import React, { useState, useTransition } from "react";
 import { useWordbookStore } from "@/providers/wordbook-store-provider";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/components/ui/use-toast";
-import { generateMaterial } from "@/app/lib/GenerativeAI";
-import { MaterialIndexDB, ModelList } from "@/types/AIBooster";
-import { readStreamableValue } from "ai/rsc";
+import { ModelList } from "@/types/AIBooster";
 import { modelListTuple, onlyProUserModelListTuple, prompts, selectWords } from "@/types/static";
 import { cn } from "@/app/lib/utils";
 import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -20,8 +18,15 @@ import { promptRequest } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 
-export function SendPrompt() {
-    const [isPending, startTransition] = useTransition()
+export function SendPrompt({ 
+    handleSend, 
+    handleSuspend,
+    setOpen
+}: { 
+    handleSend: (value: z.infer<typeof promptRequest>) => void, 
+    handleSuspend: () => void,
+    setOpen?: React.Dispatch<React.SetStateAction<boolean>>
+}) {
     const [currentPrompt, setCurrentPrompt] = useState<string>("-1")
     const [currentWordValue, setCurrentWordValue] = useState<string>("-1")
     const [promptWords, setPromptWords] = useState<string[]>([])
@@ -29,13 +34,10 @@ export function SendPrompt() {
     const [promptSelectOpen, setPromptSelectOpen] = useState(false)
     const [wordsSelectOpen, setWordsSelectOpen] = useState(false)
 
-    const userInfo = useWordbookStore((state) => state.userInfo)
     const AIModel = useWordbookStore((state) => state.AIModel)
     const indexDB = useWordbookStore((state) => state.indexDB)
     const setAIModel = useWordbookStore((state) => state.setAIModel)
-    const setGeneratedMaterial = useWordbookStore((state) => state.setGeneratedMaterial)
-    const upsertMaterialHistory = useWordbookStore((state) => state.upsertMaterialHistory)
-    const setIsPending = useWordbookStore((state) => state.setIsPending)
+    const isPending = useWordbookStore((state) => state.loadingMaterial)
 
     const form = useForm<z.infer<typeof promptRequest>>({
         resolver: zodResolver(promptRequest),
@@ -45,7 +47,6 @@ export function SendPrompt() {
         mode: "onChange"
     })
 
-    const [isSuspended, setIsSuspended] = useState(false)
 
     const { data: session } = useSession()
     const { toast } = useToast()
@@ -53,82 +54,6 @@ export function SendPrompt() {
     const userId = session?.user?.id
     const role = session?.user?.role
     if (!userId || !role) return
-
-    const handleSend = (value: z.infer<typeof promptRequest>) => {
-        startTransition(async () => {
-            setIsPending(true)
-
-            const { data } = await generateMaterial(value.prompt, AIModel, userInfo?.learning_lang || "EN", userInfo?.trans_lang)
-            const material: MaterialIndexDB = {
-                id: "",
-                title: "",
-                content: [],
-                translation: {
-                    lang: userInfo?.trans_lang || "JA",
-                    text: []
-                },
-                author: userId,
-                generated_by: AIModel,
-                created_at: new Date(),
-                updated_at: new Date(),
-            }
-            setGeneratedMaterial(material)
-
-            try {
-                for await (const delta of readStreamableValue(data)) {
-                    if (isSuspended) {
-                        console.log("Suspended")
-                        break
-                    }
-
-                    if (delta?.done) {
-                        console.log("＆＆＆＆＆＆　マテリアルを保存する　＆＆＆＆＆＆＆")
-                        indexDB.createMaterial(material)
-                            .then((res) => {
-                                if (res.isSuccess){
-                                    setGeneratedMaterial(res.data[0])
-                                    upsertMaterialHistory(res.data[0])
-                                }
-                            })
-                        break
-                    }
-
-                    if (!delta?.title || !delta?.content.length) {
-                        continue
-                    }
-
-                    material.title = delta.title
-                    material.content = delta?.content
-                    material.translation.text = delta?.translation
-                    material.updated_at = new Date()
-
-                    setGeneratedMaterial(material)
-                    // console.log(delta)
-                }
-            } catch (error) {
-                console.error(error)
-                const errorMessage = error as { error: string }
-
-                toast({
-                    title: ("generative_error"),
-                    description: errorMessage.error,
-                    variant: "destructive"
-                })
-
-                setGeneratedMaterial({ ...material, title: "Error", content: ["Error"] })
-            } finally {
-                setIsPending(false)
-            }
-        })
-    }
-
-    const handleSuspend = () => {
-        setIsPending(false)
-        setIsSuspended(true)
-        setTimeout(() => {
-            setIsSuspended(false)
-        }, 1000)
-    }
 
 
     const handlePromptWords = async (value: string) => {
@@ -365,7 +290,8 @@ export function SendPrompt() {
                                 onClick={handleSuspend}>
                             {"Suspend"}
                         </Button> :
-                        <Button className={"px-6 rounded-lg shrink-0 sticky bottom-3 mt-4"} type={"submit"}>
+                        <Button onClick={() => { setOpen && setOpen(false) }} 
+                                className={"px-6 rounded-lg shrink-0 sticky bottom-3 mt-4"} type={"submit"}>
                             {"Generate"}
                         </Button>
                     }

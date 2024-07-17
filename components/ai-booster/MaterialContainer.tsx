@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose, } from "@/components/ui/dialog"
 import { closePopover, TextPopover } from "./Popover";
+import { exampleMaterial } from "@/types/static";
   
 export const getLemma = (word: string) => {
     const doc = nlp(word)
@@ -39,6 +40,7 @@ export function MaterialContainer({ material }: { material: MaterialIndexDB}) {
     const deleteMaterial = useWordbookStore((state) => state.deleteMaterial)
     const AIBoosterAudio = useWordbookStore((state) => state.AIBoosterAudio)
     const isEditing = useWordbookStore((state) => state.isEditing)
+    const isPending = useWordbookStore((state) => state.loadingMaterial)
 
     const { data: session } = useSession()
     const { toast } = useToast()
@@ -265,38 +267,40 @@ export function MaterialContainer({ material }: { material: MaterialIndexDB}) {
         }
     }
     
-
-    return (
-        <div ref={container}
-            className={"appear relative pb-32 sm:pb-6 flex flex-col gap-7"}>
-            {material.title ? 
-                <div className={"appear flex flex-col gap-4 px-5"}>
-                    <h4 className={"text-2xl lg:text-3xl font-bold line-clamp-2 lg:leading-snug"}>
-                        {material.title}
-                    </h4>
-                    <div className={"flex gap-3"}>
-                        <Button variant={"coloredOutline"} 
-                                className={"p-0 size-8 align-middle"} 
-                                onClick={handlePlayAudio}>
-                            <Volume2 size={24}/>
-                        </Button>
-                        <Button variant={"bookmarked_at" in material && material?.bookmarked_at ? "default" : "coloredOutline"} 
-                                className={"p-0 size-8 align-middle"} 
-                                onClick={handleBookmark}>
-                            <Bookmark size={24}/>
-                        </Button>
-                    </div>
-                </div> :
+    if (!material.content.length && isPending) { // 内容がなくかつローディング中なら
+        return (
+            <div className={"appear relative px-4 pb-32 sm:pb-6 flex flex-col gap-7"}>
                 <Skeleton className={"w-full h-16 mb-3"}/>
-            }
-            {material.content.length ? 
-                <Paragraph id={material.id} content={material.content} translation={material.translation.text} handleClick={handleClick}/> : 
                 <div className={"flex flex-col gap-6"}>
                     {Array.from({ length: 10 }).map((_, key) => (
                         <Skeleton key={key} className={"w-full h-10"}/>
                     ))}
                 </div>
-            }
+            </div>
+        )
+    }
+
+    return (
+        <div ref={container}
+            className={"appear relative pb-32 sm:pb-6 flex flex-col gap-7"}>
+            <div className={"appear flex flex-col gap-4 px-5"}>
+                <h4 className={"text-2xl lg:text-3xl font-bold line-clamp-2 lg:leading-snug"}>
+                    {material?.title || exampleMaterial.title}
+                </h4>
+                <div className={"flex gap-3"}>
+                    <Button variant={"coloredOutline"} 
+                            className={"p-0 size-8 align-middle"} 
+                            onClick={handlePlayAudio}>
+                        <Volume2 size={24}/>
+                    </Button>
+                    <Button variant={"bookmarked_at" in material && material?.bookmarked_at ? "default" : "coloredOutline"} 
+                            className={"p-0 size-8 align-middle"} 
+                            onClick={handleBookmark}>
+                        <Bookmark size={24}/>
+                    </Button>
+                </div>
+            </div>
+            <Paragraph id={material?.id || exampleMaterial.id} content={material?.content || exampleMaterial.content} translation={material?.translation.text || exampleMaterial.translation.text} handleClick={handleClick}/>
             <div className="mt-6 mb-12 pl-4 pr-4 sm:pr-0">
                 <Separator className={"mb-3"}/>
 
@@ -357,8 +361,7 @@ export function MaterialContainer({ material }: { material: MaterialIndexDB}) {
 
 function Paragraph({ id, content, translation, handleClick }: { id: string, content: string[], translation: string[] , handleClick: React.MouseEventHandler }) {
 
-    const isPending = useWordbookStore((state) => state.isPending)
-    const words = new Set(useWordbookStore((state) => state.words).map(word => word.word))
+    const isPending = useWordbookStore((state) => state.loadingMaterial)
 
     return (
         <article
@@ -405,13 +408,17 @@ function Paragraph({ id, content, translation, handleClick }: { id: string, cont
                 }
                 </div>
             ))}
-            {isPending && <Skeleton className={"w-full h-10 mb-4"}/>}
+            {isPending && 
+                <div className={"flex flex-col w-full px-4"}>
+                    <Skeleton className={"h-10 mb-4"}/>
+                </div>
+            }
         </article>
     )
 }
 
 function Translation({ text }: { text: string }) {
-    const isPending = useWordbookStore((state) => state.isPending)
+    const isPending = useWordbookStore((state) => state.loadingMaterial)
 
     const containerRef = useRef<HTMLDivElement>(null)
     const buttonRef = useRef<HTMLButtonElement>(null)

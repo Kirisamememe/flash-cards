@@ -8,6 +8,7 @@ import { IndexDB } from "@/app/lib/indexDB/indexDB";
 import { LanguageCode, UserInfo } from "@/types/User";
 import { Toast, ToasterToast } from '@/components/ui/use-toast';
 import { updateUserInfoToRemote, upsertCardToRemote, upsertMaterialToRemote } from '@/app/lib/remoteDB/saveToRemote';
+import { exampleMaterial } from '@/types/static';
 
 
 export type WordbookState = {
@@ -33,7 +34,7 @@ export type WordbookState = {
     playSE: boolean
 
     materialHistory: MaterialIndexDB[]
-    generatedMaterial: MaterialIndexDB
+    generatedMaterial: MaterialIndexDB | undefined
     atTop: boolean
     hideHeader: boolean
     carouselIndex: number
@@ -41,7 +42,7 @@ export type WordbookState = {
     masteredWords: Set<string>
 
     AIModel: ModelList
-    isPending: boolean
+    loadingMaterial: boolean
 
     AIBoosterAudio: HTMLAudioElement | null
 
@@ -84,7 +85,7 @@ export type WordbookActions = {
     setMasteredWords: (words: string[]) => void
 
     setAIModel: (model: ModelList) => void
-    setIsPending: (value: boolean) => void
+    setLoadingMaterial: (value: boolean) => void
     setAIBoosterAudio: (audio: HTMLAudioElement) => void
 
     setProgress: (progress: { isSyncing: boolean, progress: number, message: string }) => void
@@ -190,22 +191,13 @@ export const initWordbookStore = async (userId: string | undefined | null, url: 
         playTTS: !!playTTSFromLocalStorage ? playTTSFromLocalStorage === "1" : false,
         playSE: !!playSEFromLocalStorage ? playSEFromLocalStorage === "1" : false,
         materialHistory: [],
-        generatedMaterial: { 
-            id: "",
-            title: "", 
-            content: [], 
-            translation: { lang: userInfo?.trans_lang || "JA", text: [] }, 
-            author: userInfo?.id || "",
-            generated_by: localAIModel ? localAIModel as ModelList : "gemini-1.5-pro-latest" as ModelList,
-            created_at: new Date(),
-            updated_at: new Date(),
-        },
+        generatedMaterial: undefined,
         atTop: true,
         hideHeader: false,
         carouselIndex: 0,
         masteredWords: new Set(),
         AIModel: localAIModel ? localAIModel as ModelList : "gemini-1.5-pro-latest" as ModelList,
-        isPending: false,
+        loadingMaterial: false,
         AIBoosterAudio: null,
         editDialogOpen: false,
         progress: {
@@ -232,22 +224,13 @@ export const defaultInitState: WordbookState = {
     playTTS: false,
     playSE: false,
     materialHistory: [],
-    generatedMaterial: { 
-        id: "",
-        title: "", 
-        content: [], 
-        translation: { lang: "JA", text: [] }, 
-        author: "",
-        generated_by: "gemini-1.5-flash-latest" as ModelList,
-        created_at: new Date(),
-        updated_at: new Date(),
-    },
+    generatedMaterial: undefined,
     atTop: true,
     hideHeader: false,
     carouselIndex: 0,
     masteredWords: new Set(),
     AIModel: "gemini-1.5-pro-latest" as ModelList,
-    isPending: false,
+    loadingMaterial: false,
     indexDB: indexDB,
     AIBoosterAudio: null,
     editDialogOpen: false,
@@ -395,7 +378,7 @@ export const createWordbookStore = (initState: WordbookState = defaultInitState)
             localStorage.setItem("AIModel", model)
             set(() => ({ AIModel: model }))
         },
-        setIsPending: (value: boolean) => set(() => ({ isPending: value })),
+        setLoadingMaterial: (value: boolean) => set(() => ({ loadingMaterial: value })),
         deleteMaterial: (id: string) => {
             const indexDB = getState().indexDB
             indexDB?.deleteMaterial(id)

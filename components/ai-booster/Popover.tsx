@@ -94,7 +94,7 @@ const TextPopover = React.forwardRef<
 
         ;(async () => {
             const localDicData = await indexDB.getGeneratedDicData(getLemma(selection))
-            if(localDicData.isSuccess) {
+            if(localDicData.isSuccess && localDicData.data[0]) {
                 setDicData(localDicData.data[0])
                 return
             }
@@ -109,13 +109,6 @@ const TextPopover = React.forwardRef<
         fetchAndPlayAudio(dicData.word, `AIDic_${dicData.word}`, AIBoosterAudio, playAudio)
     }
 
-    const handleAddToWordbook = (index: number) => {
-        if (!dicData) return
-        const result = dicData.results[index]
-        if (!result) return
-
-        
-    }
 
     return (
         <div 
@@ -202,16 +195,18 @@ const TextPopover = React.forwardRef<
                                     </div>
 
                                     {/* 類語 */}
-                                    <div className={"space-y-1.5 mt-1"}>
-                                        <label className={"flex items-center ml-0.5 gap-2 text-sm text-muted-foreground font-semibold"}>
-                                            {"Similar to"}
-                                        </label>
-                                        {result.similarTo.map((word, key) => (
-                                            <Badge className={"text-foreground font-medium px-1.5 mr-1 mb-0.5 rounded-sm bg-foreground/10 hover:bg-foreground/15 select-all"} variant={"secondary"} key={key}>
-                                                {word}
-                                            </Badge>
-                                        ))}
-                                    </div>
+                                    {result.similarTo && result.similarTo.length && 
+                                        <div className={"space-y-1.5 mt-1"}>
+                                            <label className={"flex items-center ml-0.5 gap-2 text-sm text-muted-foreground font-semibold"}>
+                                                {"Similar to"}
+                                            </label>
+                                            {result.similarTo.map((word, key) => (
+                                                <Badge className={"text-foreground font-medium px-1.5 mr-1 mb-0.5 rounded-sm bg-foreground/10 hover:bg-foreground/15 select-all"} variant={"secondary"} key={key}>
+                                                    {word}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    }
 
                                     {key !== arr.length - 1 && <Separator className={"mt-3 bg-foreground/10"}/>}
                                 </div>

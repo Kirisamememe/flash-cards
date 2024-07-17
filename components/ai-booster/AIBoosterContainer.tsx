@@ -13,6 +13,7 @@ import { History } from "@/components/ai-booster/History";
 import { MyBookmark } from "@/components/ai-booster/MyBookmark";
 import { ScrollArea } from "../ui/scroll-area";
 import { indexDB } from "@/stores/wordbook-store";
+import { Skeleton } from "../ui/skeleton";
 
 function MobileNav({ api }: { api: EmblaCarouselType | undefined }) {
     const header = document.getElementById("header")
@@ -48,20 +49,21 @@ export default function AIBoosterContainer() {
 
     const setCarouselIndex = useWordbookStore((state) => state.setCarouselIndex)
     const setHideHeader = useWordbookStore((state) => state.setHideHeader)
-
-    const generatedMaterial = useWordbookStore((state) => state.generatedMaterial)
+    
     const setGeneratedMaterial = useWordbookStore((state) => state.setGeneratedMaterial)
     const materialHistory = useWordbookStore((state) => state.materialHistory)
     const setMaterialHistory = useWordbookStore((state) => state.setMaterialHistory)
     const setAIBoosterAudio = useWordbookStore((state) => state.setAIBoosterAudio)
+    const setLoadingMaterial = useWordbookStore((state) => state.setLoadingMaterial)
 
     const { data: session } = useSession()
     const userId = session?.user?.id
 
     useEffect(() => {
-        if (!userId && !generatedMaterial.content.length) {
-            // ログインしてない場合
+        setAIBoosterAudio(document.getElementById("ai-booster-audio") as HTMLAudioElement)
+        if (!userId) {
             setGeneratedMaterial(exampleMaterial)
+            return
         }
 
         if (!materialHistory.length && userId) {
@@ -77,9 +79,7 @@ export default function AIBoosterContainer() {
                 })
         }
 
-        setAIBoosterAudio(document.getElementById("ai-booster-audio") as HTMLAudioElement)
-
-    }, [generatedMaterial.content.length, materialHistory.length, setAIBoosterAudio, setGeneratedMaterial, setMaterialHistory, userId])
+    }, [materialHistory.length, setAIBoosterAudio, setGeneratedMaterial, setLoadingMaterial, setMaterialHistory, userId])
 
     useEffect(() => {
         if (!api) return
@@ -97,7 +97,6 @@ export default function AIBoosterContainer() {
         return !(event instanceof MouseEvent) // macOSのSafariではTouchEventは存在しない。
     }
 
-
     return (
         <div id={"animation-container"} className={"w-screen h-dvh"}>
             <MobileNav api={api}/>
@@ -110,7 +109,7 @@ export default function AIBoosterContainer() {
                         <ScrollArea 
                             id={"carousel-0"} 
                             type="scroll"
-                            className="w-full sm:pl-2 sm:pr-3" 
+                            className="w-full sm:pl-2 sm:pr-3 min-h-[40rem]" 
                             barClass="pt-36 pb-20 sm:pb-1 px-0.5">
                             <Generate/>
                         </ScrollArea>

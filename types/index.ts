@@ -60,5 +60,5 @@ export const partOfSpeech = z.object({
 })
 
 export const promptRequest = z.object({
-    prompt: z.string().max(200, "prompt_valid_max").default("")
+    prompt: z.string().max(500, "prompt_valid_max").default("")
 })

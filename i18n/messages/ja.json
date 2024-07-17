@@ -123,7 +123,7 @@
         "notes_valid_max": "「メモ」は５００文字以内で入力してください",
         "partOfSpeech_valid_min": "「品詞」は１文字以上で入力してください",
         "partOfSpeech_valid_max": "「品詞」は２０文字以内で入力してください",
-        "prompt_valid_max": "The prompt should be within 200 characters.",
+        "prompt_valid_max": "The prompt should be within 500 characters.",
         "edit_permission_error": "他のユーザーが作成したカードは編集できません"
     },
     "POS": {
