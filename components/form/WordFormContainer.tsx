@@ -47,6 +47,7 @@ export function WordFormContainer({
             // ここの""がないと、Reactが「A component is changing an uncontrolled input to be controlled.」というエラーを出す。
             // 要はundefinedにしなければいい
             ...wordData,
+            word: wordData.word.toLowerCase()
         } : {},
         mode: "onChange"
     })

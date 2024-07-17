@@ -25,7 +25,7 @@ export function Generate() {
     const generatedMaterial = useWordbookStore((state) => state.generatedMaterial)
     const setLoadingMaterial = useWordbookStore((state) => state.setLoadingMaterial)
     const setGeneratedMaterial = useWordbookStore((state) => state.setGeneratedMaterial)
-    const upsertMaterialHistory = useWordbookStore((state) => state.upsertMaterialHistory)
+    const addMaterialHistory = useWordbookStore((state) => state.addMaterialHistory)
 
     const [isSuspended, setIsSuspended] = useState(false)
     
@@ -69,7 +69,7 @@ export function Generate() {
                         .then((res) => {
                             if (res.isSuccess){
                                 setGeneratedMaterial(res.data[0])
-                                upsertMaterialHistory(res.data[0])
+                                addMaterialHistory(res.data[0])
                             }
                         })
                     break
