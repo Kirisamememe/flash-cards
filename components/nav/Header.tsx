@@ -14,11 +14,12 @@ import { SetStateAction, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useWordbookStore } from "@/providers/wordbook-store-provider";
 import { useToast } from "../ui/use-toast";
+import { useSession } from "next-auth/react";
 
 
 export default function Header({ className, open, setOpen, atTop }: { className?:string, open: boolean, setOpen: React.Dispatch<SetStateAction<boolean>>, atTop: boolean }) {
 
-    // const { data: session } = useSession()
+    
     const userInfo = useWordbookStore((state) => state.userInfo)
     const sync = useWordbookStore((state) => state.sync)
     

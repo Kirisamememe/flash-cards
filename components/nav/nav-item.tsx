@@ -5,6 +5,7 @@ import { useSelectedLayoutSegment } from 'next/navigation';
 import React, { ComponentProps, SetStateAction, useEffect, useRef, useState } from 'react';
 import { useWordbookStore } from "@/providers/wordbook-store-provider";
 import { DebouncedState, useDebouncedCallback } from 'use-debounce';
+import { useSession } from 'next-auth/react';
 
 const handlePageSwitchAnimation = (
     setIsComing: React.Dispatch<SetStateAction<boolean>>,
@@ -111,6 +112,7 @@ export function NavItem<
     const isActive = pathname === href;
     const [isComing, setIsComing] = useState(false)
     const setIsTransition = useWordbookStore((state) => state.setIsTransition)
+    const { data: session } = useSession()
 
 
     const linkRef = useRef<HTMLAnchorElement>(null)
@@ -133,7 +135,7 @@ export function NavItem<
                 className)}
                     variant={"ghost"}
                     onClick={() => {
-                        if (setOpen && href === "/ai-booster") {
+                        if (setOpen && href === "/ai-booster" && !session?.user) {
                             setOpen(true)
                             return
                         }
