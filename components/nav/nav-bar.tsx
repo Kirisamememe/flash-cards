@@ -22,10 +22,6 @@ function LoadingDiv({ isComing }: { isComing: boolean }) {
     )
 }
 
-const scrollMap = {
-    "": ""
-}
-
 export default function NavBar() {
     const isSmallDevice = useMediaQuery('(max-width:640px)');
 

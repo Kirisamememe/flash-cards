@@ -9,10 +9,9 @@ import AddWordBtn from "@/components/home/AddBtn";
 import { Separator } from "@/components/ui/separator";
 import { CircleX, CircleCheck, ChevronRight, ChevronLeft } from 'lucide-react';
 import { animateElement } from "@/app/lib/utils";
-import { saveRecordToLocal } from "@/app/lib/indexDB/saveToLocal";
-import { createId } from "@paralleldrive/cuid2";
-import { fetchAndPlayAudio } from "@/components/wordbook/WordDisplay";
+import { fetchAndPlayAudio } from "@/app/lib/utils";
 import { useSession } from "next-auth/react";
+import { indexDB } from "@/stores/wordbook-store";
 
 export default function FlashCard() {
 
@@ -65,120 +64,120 @@ export default function FlashCard() {
         const btnAreaRef = btnArea.current
         const audioRef = audioElement.current
 
-        if (words.length > 0 && flashcardRef && audioRef) {
-            setReviewedAt(new Date())
+        if (words.length <= 0 || !flashcardRef || !audioRef) {
+            return
+        }
 
-            // fill(CSSではanimation-fill-mode)はアニメーション後の状態を定義する
-            // forwardsにすると終了時の状態が保持される
-            const promiseArray = []
+        setReviewedAt(new Date())
 
-            if (forgotBtnBGRef && rememberedBtnBGRef && blindMode) {
-                promiseArray.push(
-                    animateElement(forgotBtnBGRef, [
-                        { width: '200%' }, { width: '0' }
-                    ], {
-                        duration: userInterval,
-                        fill: "forwards"
-                    })
-                )
-                promiseArray.push(
-                    animateElement(rememberedBtnBGRef, [
-                        { width: '200%' }, { width: '0' }
-                    ], {
-                        duration: userInterval,
-                        fill: "forwards"
-                    })
-                )
-            }
-            if (countDownBarRef && !blindMode) {
-                promiseArray.push(
-                    animateElement(countDownBarRef,[
-                        { width: '100%' }, { width: '0' }
-                    ],{
-                        duration: userInterval,
-                        fill: "forwards"
-                    })
-                )
-            }
-            if (playTTS) {
-                promiseArray.push(
-                    new Promise<{ finish: boolean }>(async (resolve, reject) => {
-                        // 音声再生中にエラーが発生しても、そのまま進みたいから、rejectはしないし、finishも常にtrue
-                        if (!audioRef) {
-                            reject({ finish: false })
-                            return
-                        }
+        // fill(CSSではanimation-fill-mode)はアニメーション後の状態を定義する
+        // forwardsにすると終了時の状態が保持される
+        const promiseArray = []
 
-                        await fetchAndPlayAudio(
-                            words[currentIndex].word,
-                            words[currentIndex].id,
-                            "word",
-                            audioRef,
-                            playAudio
-                        )
+        if (forgotBtnBGRef && rememberedBtnBGRef && blindMode) {
+            promiseArray.push(
+                animateElement(forgotBtnBGRef, [
+                    { width: '200%' }, { width: '0' }
+                ], {
+                    duration: userInterval,
+                    fill: "forwards"
+                })
+            )
+            promiseArray.push(
+                animateElement(rememberedBtnBGRef, [
+                    { width: '200%' }, { width: '0' }
+                ], {
+                    duration: userInterval,
+                    fill: "forwards"
+                })
+            )
+        }
+        if (countDownBarRef && !blindMode) {
+            promiseArray.push(
+                animateElement(countDownBarRef,[
+                    { width: '100%' }, { width: '0' }
+                ],{
+                    duration: userInterval,
+                    fill: "forwards"
+                })
+            )
+        }
+        if (playTTS) {
+            promiseArray.push(
+                new Promise<{ finish: boolean }>(async (resolve, reject) => {
+                    // 音声再生中にエラーが発生しても、そのまま進みたいから、rejectはしないし、finishも常にtrue
+                    if (!audioRef) {
+                        reject({ finish: false })
+                        return
+                    }
 
-                        const example = words[currentIndex]?.example
-                        if (!example){
-                            resolve({ finish: true })
-                            return
-                        }
-
-                        await fetchAndPlayAudio(
-                            example,
-                            words[currentIndex].id,
-                            "example",
-                            audioRef,
-                            playAudio
-                        ).finally(() => {
-                            resolve({ finish: true })
-                        })
-                    })
-                )
-            }
-
-            Promise.all(promiseArray).then((results) => {
-                console.log(results)
-                const allFinished = results.reduce((acc, res) => acc && res.finish, !!flashcard.current)
-                // flashcard.currentの存在を判定しないと、他のページに行ってもTrueになってしまう
-
-                if (allFinished) {
-                    switchAnimation(
-                        currentIndex,
-                        setCurrentIndex,
-                        learningCount,
-                        flashcardRef,
-                        btnAreaRef,
-                        forgotBtnRef,
-                        rememberedBtnRef,
-                        editBtnRef
+                    await fetchAndPlayAudio(
+                        words[currentIndex].word,
+                        `word_${words[currentIndex].id}`,
+                        audioRef,
+                        playAudio
                     )
-                } else {
-                    console.log(`allFinished: ${allFinished}`)
-                    console.log(results)
-                }
-            })
-            // アニメーションが終わったら次のwordへ
-            // アニメーションの持続時間がuserInterval
-            return () => {
-                if (forgotBtnBGRef) {
-                    forgotBtnBGRef.getAnimations().map(a => {
-                        a.cancel()
+
+                    const example = words[currentIndex]?.example
+                    if (!example){
+                        resolve({ finish: true })
+                        return
+                    }
+
+                    await fetchAndPlayAudio(
+                        example,
+                        `example_${words[currentIndex].id}`,
+                        audioRef,
+                        playAudio
+                    ).finally(() => {
+                        resolve({ finish: true })
                     })
-                }
-                if (rememberedBtnBGRef) {
-                    rememberedBtnBGRef.getAnimations().map(a => {
-                        a.cancel()
-                    })
-                }
-                if (countDownBarRef) {
-                    countDownBarRef.getAnimations().map(a => {
-                        a.cancel()
-                    })
-                }
-                if (audioRef) {
-                    audioRef.pause()
-                    audioRef.currentTime = 0
-                }
+                })
+            )
+        }
+
+        Promise.all(promiseArray).then((results) => {
+            console.log(results)
+            const allFinished = results.reduce((acc, res) => acc && res.finish, !!flashcard.current)
+            // flashcard.currentの存在を判定しないと、他のページに行ってもTrueになってしまう
+
+            if (allFinished) {
+                switchAnimation(
+                    currentIndex,
+                    setCurrentIndex,
+                    learningCount,
+                    flashcardRef,
+                    btnAreaRef,
+                    forgotBtnRef,
+                    rememberedBtnRef,
+                    editBtnRef
+                )
+            } else {
+                console.log(`allFinished: ${allFinished}`)
+                console.log(results)
+            }
+        })
+        // アニメーションが終わったら次のwordへ
+        // アニメーションの持続時間がuserInterval
+        return () => {
+            if (forgotBtnBGRef) {
+                forgotBtnBGRef.getAnimations().map(a => {
+                    a.cancel()
+                })
+            }
+            if (rememberedBtnBGRef) {
+                rememberedBtnBGRef.getAnimations().map(a => {
+                    a.cancel()
+                })
+            }
+            if (countDownBarRef) {
+                countDownBarRef.getAnimations().map(a => {
+                    a.cancel()
+                })
+            }
+            if (audioRef) {
+                audioRef.pause()
+                audioRef.currentTime = 0
             }
         }
 
@@ -196,26 +195,25 @@ export default function FlashCard() {
         if (forgotBtnBG.current) forgotBtnBG.current.getAnimations().map(a => a.cancel())
         if (rememberedBtnBG.current) rememberedBtnBG.current.getAnimations().map(a => a.cancel())
 
-        if (flashcard.current && btnArea.current) {
-            flipAnimator(
-                flashcard.current,
-                btnArea.current,
-                setIsPaused
-            ).then(res => {
-                if (res.finish) {
-                    if (reviewedAt) {
-                        saveRecordToLocal({
-                            id: createId(),
-                            word_id: words[currentIndex].id,
-                            is_correct: false,
-                            reviewed_at: reviewedAt,
-                            time: (new Date().getTime() - reviewedAt.getTime()) / 1000,
-                            synced_at: undefined
-                        }).catch(err => console.error(err))
-                    }
-                }
-            })
+        if (!flashcard.current || !btnArea.current) {
+            return
         }
+
+        flipAnimator(
+            flashcard.current,
+            btnArea.current,
+            setIsPaused
+        ).then(res => {
+            if (!res.finish) return
+            if (!reviewedAt) return
+
+            indexDB.saveRecord(words[currentIndex].id, {
+                is_correct: false,
+                reviewed_at: reviewedAt,
+                time: (new Date().getTime() - reviewedAt.getTime()) / 1000,
+                synced_at: undefined
+            })
+        })
     }
 
     const handleToPrevOrNext = (toNext?: boolean) => {
@@ -238,83 +236,76 @@ export default function FlashCard() {
         if (forgotBtnBG.current) forgotBtnBG.current.getAnimations().map(a => a.cancel())
         if (rememberedBtnBG.current) rememberedBtnBG.current.getAnimations().map(a => a.cancel())
 
-        if (flashcard.current && btnArea.current) {
-            flipAnimator(
-                flashcard.current,
-                btnArea.current,
-                setIsPaused,
-                setIsRemembered
-            ).then(res => {
-                if (res.finish) {
-                    reviewedAt && setTime((new Date().getTime() - reviewedAt.getTime()) / 1000)
-                }
-            })
+        if (!flashcard.current || !btnArea.current) {
+            return
         }
+
+        flipAnimator(
+            flashcard.current,
+            btnArea.current,
+            setIsPaused,
+            setIsRemembered
+        ).then(res => {
+            if (res.finish) {
+                reviewedAt && setTime((new Date().getTime() - reviewedAt.getTime()) / 1000)
+            }
+        })
     }
 
     const handleCorrect = () => {
-        // if (!audioElement.current) return
-        //
-        // await playAudio(audioElement.current, "/success.mp3")
+        if (!reviewedAt) return
 
-        if (reviewedAt) {
-            saveRecordToLocal({
-                id: createId(),
-                word_id: words[currentIndex].id,
-                is_correct: true,
-                reviewed_at: reviewedAt,
-                time: time,
-                synced_at: undefined
-            }).then(res => {
-                if (res.isSuccess) {
-                    switchAnimation(
-                        currentIndex,
-                        setCurrentIndex,
-                        learningCount,
-                        flashcard.current,
-                        btnArea.current,
-                        forgotBtn.current,
-                        rememberedBtn.current,
-                        editBtn.current,
-                        setIsPaused,
-                        setIsRemembered
-                    )
-                }
-            }).catch(err => {
-                console.error(err)
-            })
-        }
+        indexDB.saveRecord(words[currentIndex].id, {
+            is_correct: true,
+            reviewed_at: reviewedAt,
+            time: time,
+            synced_at: undefined
+        }).then(res => {
+            if (!res.isSuccess) return
+
+            switchAnimation(
+                currentIndex,
+                setCurrentIndex,
+                learningCount,
+                flashcard.current,
+                btnArea.current,
+                forgotBtn.current,
+                rememberedBtn.current,
+                editBtn.current,
+                setIsPaused,
+                setIsRemembered
+            )
+        }).catch(err => {
+            console.error(err)
+        })
     }
 
     const handleIncorrect = () => {
-        if (reviewedAt) {
-            saveRecordToLocal({
-                id: createId(),
-                word_id: words[currentIndex].id,
-                is_correct: false,
-                reviewed_at: reviewedAt,
-                time: time,
-                synced_at: undefined
-            }).then(res => {
-                console.log(`finish: ${res.isSuccess}`)
-                if (res.isSuccess) {
-                    switchAnimation(
-                        currentIndex,
-                        setCurrentIndex,
-                        learningCount,
-                        flashcard.current,
-                        btnArea.current,
-                        forgotBtn.current,
-                        rememberedBtn.current,
-                        editBtn.current,
-                        setIsPaused,
-                        setIsRemembered
-                    )
-                }
-            }).catch(err => {
-                console.error(err)
-            })
-        }
+        if (!reviewedAt) return
+
+        indexDB.saveRecord(words[currentIndex].id, {
+            is_correct: false,
+            reviewed_at: reviewedAt,
+            time: time,
+            synced_at: undefined
+        }).then(res => {
+            if (!res.isSuccess) return
+
+            switchAnimation(
+                currentIndex,
+                setCurrentIndex,
+                learningCount,
+                flashcard.current,
+                btnArea.current,
+                forgotBtn.current,
+                rememberedBtn.current,
+                editBtn.current,
+                setIsPaused,
+                setIsRemembered
+            )
+        }).catch(err => {
+            console.error(err)
+        })
     }
 
     const handlePlayTTS = async (e: React.MouseEvent<HTMLParagraphElement>) => {
@@ -332,8 +323,7 @@ export default function FlashCard() {
 
         await fetchAndPlayAudio(
             e.currentTarget.textContent,
-            words[currentIndex].id,
-            id === "flashcard-word" ? "word" : "example",
+            id === "flashcard-word" ? `word_${words[currentIndex].id}` : `example_${words[currentIndex].id}`,
             manualAudioElement.current,
             playAudio
         ).then(() => {
@@ -363,9 +353,11 @@ export default function FlashCard() {
                             {words[currentIndex]?.word}
                         </p>
                         {/*品詞*/}
-                        <Badge variant={"coloredSecondary"} className={"mb-3 sm:mb-5"}>
-                            {words[currentIndex]?.partOfSpeech?.partOfSpeech && words[currentIndex]?.partOfSpeech?.partOfSpeech || ""}
-                        </Badge>
+                        {words[currentIndex].pos !== "UNDEFINED" && 
+                            <Badge variant={"coloredSecondary"} className={"mb-3 sm:mb-5"}>
+                                {t(`POS.${words[currentIndex].pos}`)}
+                            </Badge>
+                        }
                         {/*定義*/}
                         <p className={cn(blindMode && !isPaused ?
                                 "text-transparent bg-foreground/10 active:text-foreground/50 hover:text-foreground/50 active:scale-105 hover:scale-105 active:bg-transparent hover:bg-transparent" :
@@ -492,69 +484,73 @@ export function flipAnimator(
     state?: boolean
 ) {
     return new Promise<{ finish: boolean }>((resolve, reject) => {
-        if (containerRef && container2Ref) {
+        if (!containerRef || !container2Ref) {
+            reject({ finish: false })
+            return
+        }
+
+        Promise.all([
+            animateElement(containerRef, [
+                { transform: 'rotateY(0deg) translateZ(100px)', offset: 0 },
+                { transform: 'rotateY(30deg) translateZ(100px)', offset: 0.4 },
+                { transform: 'rotateY(-90deg) translateZ(100px)', offset: 1 },
+            ], {
+                duration: 300,
+                easing: 'ease-in',
+                fill: "forwards"
+            }),
+            animateElement(container2Ref, [
+                { opacity: '1.0', scale: '1.0' },
+                { opacity: '0', scale: '0.8' },
+            ], {
+                duration: 200,
+                easing: 'ease-in',
+                fill: "forwards"
+            })
+        ])
+        .then(results => {
+            let allFinished = true
+            results.forEach(res => allFinished = res && allFinished)
+
+            if (!allFinished) {
+                reject({ finish: false })
+                return
+            }
+
+            if (stateSetter1) stateSetter1(true)
+            if (stateSetter2) stateSetter2(true)
+            if (!!stateSetter3 && state !== undefined) stateSetter3(state)
+
             Promise.all([
                 animateElement(containerRef, [
-                    { transform: 'rotateY(0deg) translateZ(100px)', offset: 0 },
-                    { transform: 'rotateY(30deg) translateZ(100px)', offset: 0.4 },
-                    { transform: 'rotateY(-90deg) translateZ(100px)', offset: 1 },
+                    { transform: 'rotateY(90deg) translateZ(100px) translateX(50px)', offset: 0 },
+                    { transform: 'rotateY(-15deg) translateZ(100px)', offset: 0.5 },
+                    { transform: 'rotateY(10deg) translateZ(100px)', offset: 0.75 },
+                    { transform: 'rotateY(0deg) translateZ(100px) translateX(0)', offset: 1 },
                 ], {
-                    duration: 300,
-                    easing: 'ease-in',
+                    duration: 800,
+                    easing: "ease-out",
                     fill: "forwards"
                 }),
                 animateElement(container2Ref, [
-                    { opacity: '1.0', scale: '1.0' },
-                    { opacity: '0', scale: '0.8' },
+                    { opacity: '0', scale: '0.8', offset: 0 },
+                    { opacity: '0.9', scale: '1.05', offset: 0.5 },
+                    { opacity: '0.9', scale: '0.95', offset: 0.75 },
+                    { opacity: '1.0', scale: '1.0', offset: 1 },
                 ], {
-                    duration: 200,
-                    easing: 'ease-in',
+                    duration: 300,
+                    easing: 'ease-out',
                     fill: "forwards"
                 })
-            ]).then(results => {
+            ]).then(results2 => {
                 let allFinished = true
-                results.forEach(res => allFinished = res && allFinished)
+                results2.forEach(res => allFinished = res && allFinished)
 
-                if (allFinished) {
-                    if (stateSetter1) stateSetter1(true)
-                    if (stateSetter2) stateSetter2(true)
-                    if (!!stateSetter3 && state !== undefined) stateSetter3(state)
-
-                    Promise.all([
-                        animateElement(containerRef, [
-                            { transform: 'rotateY(90deg) translateZ(100px) translateX(50px)', offset: 0 },
-                            { transform: 'rotateY(-15deg) translateZ(100px)', offset: 0.5 },
-                            { transform: 'rotateY(10deg) translateZ(100px)', offset: 0.75 },
-                            { transform: 'rotateY(0deg) translateZ(100px) translateX(0)', offset: 1 },
-                        ], {
-                            duration: 800,
-                            easing: "ease-out",
-                            fill: "forwards"
-                        }),
-                        animateElement(container2Ref, [
-                            { opacity: '0', scale: '0.8', offset: 0 },
-                            { opacity: '0.9', scale: '1.05', offset: 0.5 },
-                            { opacity: '0.9', scale: '0.95', offset: 0.75 },
-                            { opacity: '1.0', scale: '1.0', offset: 1 },
-                        ], {
-                            duration: 300,
-                            easing: 'ease-out',
-                            fill: "forwards"
-                        })
-                    ]).then(results2 => {
-                        let allFinished = true
-                        results2.forEach(res => allFinished = res && allFinished)
-
-                        resolve({ finish: allFinished })
-                    }).catch(() => {
-                        reject({ finish: false })
-                    })
-                }
+                resolve({ finish: allFinished })
+            }).catch(() => {
+                reject({ finish: false })
             })
-        }
-        else {
-            reject({ finish: false })
-        }
+        })
     })
 }
 
@@ -575,65 +571,70 @@ function switchAnimator(
     if (forgotBtnRef) forgotBtnRef.disabled = true
     if (rememberedBtnRef) rememberedBtnRef.disabled = true
     if (editBtnRef) editBtnRef.disabled = true
+    if (!flashcardRef || !btnAreaRef) {
+        return
+    }
 
-    if (flashcardRef && btnAreaRef) {
+    Promise.all([
+        animateElement(flashcardRef, [
+            { opacity: '100%', transform: 'translateX(0)' },
+            { opacity: '0', transform: toNext ? 'translateX(-200px)' : 'translateX(200px)' }
+        ], {
+            duration: 300,
+            easing: 'ease-in-out'
+        }),
+        animateElement(btnAreaRef, [
+            { opacity: '1.0', scale: '1.0' },
+            { opacity: '0', scale: '0.8' },
+        ], {
+            duration: 200,
+            easing: 'ease-in',
+            fill: "forwards"
+        })
+    ]).then(results => {
+        let allFinished = true
+        results.forEach(res => allFinished = res && allFinished)
+
+        if (!allFinished) {
+            return
+        }
+
+        const nextIndex = toNext ? (currentIndex + 1) % wordsLength : currentIndex === 0 ? wordsLength - 1 : (currentIndex - 1) % wordsLength
+        setCurrentIndex(nextIndex)
+        if (setIsPaused) setIsPaused(false)
+        if (setIsRemembered) setIsRemembered(false)
+
+        if (!flashcardRef || !btnAreaRef) {
+            return
+        }
+
         Promise.all([
             animateElement(flashcardRef, [
-                { opacity: '100%', transform: 'translateX(0)' },
-                { opacity: '0', transform: toNext ? 'translateX(-200px)' : 'translateX(200px)' }
-            ], {
+                    { opacity: '0', transform: toNext ? 'translateX(200px)' : 'translateX(-200px)' },
+                    { opacity: '100%', transform: 'translateX(0)' }
+                ],{
+                    duration: 300,
+                    easing: 'ease-in-out'
+                }),
+                animateElement(btnAreaRef, [
+                    { opacity: '0', scale: '0.8', offset: 0 },
+                    { opacity: '0.9', scale: '1.05', offset: 0.5 },
+                    { opacity: '0.9', scale: '0.95', offset: 0.75 },
+                    { opacity: '1.0', scale: '1.0', offset: 1 },
+                ], {
                 duration: 300,
-                easing: 'ease-in-out'
-            }),
-            animateElement(btnAreaRef, [
-                { opacity: '1.0', scale: '1.0' },
-                { opacity: '0', scale: '0.8' },
-            ], {
-                duration: 200,
-                easing: 'ease-in',
+                easing: 'ease-out',
                 fill: "forwards"
             })
-        ]).then(results => {
+        ]).then((results2) => {
             let allFinished = true
-            results.forEach(res => allFinished = res && allFinished)
+            results2.forEach(res => allFinished = res && allFinished)
 
             if (allFinished) {
-                const nextIndex = toNext ? (currentIndex + 1) % wordsLength : currentIndex === 0 ? wordsLength - 1 : (currentIndex - 1) % wordsLength
-                setCurrentIndex(nextIndex)
-                if (setIsPaused) setIsPaused(false)
-                if (setIsRemembered) setIsRemembered(false)
-
-                if (flashcardRef && btnAreaRef) {
-                    Promise.all([
-                        animateElement(flashcardRef, [
-                            { opacity: '0', transform: toNext ? 'translateX(200px)' : 'translateX(-200px)' },
-                            { opacity: '100%', transform: 'translateX(0)' }
-                        ],{
-                            duration: 300,
-                            easing: 'ease-in-out'
-                        }),
-                        animateElement(btnAreaRef, [
-                            { opacity: '0', scale: '0.8', offset: 0 },
-                            { opacity: '0.9', scale: '1.05', offset: 0.5 },
-                            { opacity: '0.9', scale: '0.95', offset: 0.75 },
-                            { opacity: '1.0', scale: '1.0', offset: 1 },
-                        ], {
-                            duration: 300,
-                            easing: 'ease-out',
-                            fill: "forwards"
-                        })
-                    ]).then((results2) => {
-                        let allFinished = true
-                        results2.forEach(res => allFinished = res && allFinished)
-
-                        if (allFinished) {
-                            if (forgotBtnRef) forgotBtnRef.disabled = false
-                            if (rememberedBtnRef) rememberedBtnRef.disabled = false
-                            if (editBtnRef) editBtnRef.disabled = false
-                        }
-                    })
-                }
+                if (forgotBtnRef) forgotBtnRef.disabled = false
+                if (rememberedBtnRef) rememberedBtnRef.disabled = false
+                if (editBtnRef) editBtnRef.disabled = false
             }
         })
-    }
+    })
 }

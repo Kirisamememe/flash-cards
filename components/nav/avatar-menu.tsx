@@ -47,7 +47,7 @@ export default function AvatarMenu(){
                     </Avatar>
                 </Button>
             </SheetTrigger>
-            <SheetContent side={isSmallDevice ? "left" : "right"}>
+            <SheetContent className={"overflow-auto"}>
                 <Profile />
             </SheetContent>
         </Sheet>

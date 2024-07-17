@@ -69,18 +69,8 @@
         "example_description": "請輸入例句",
         "notes_description": "這裡可以輸入例句的翻譯，或該單字的記憶法",
         "no_part_of_speech": "請先添加詞性",
-        "phonetics_valid_max": "發音不能超過 80 個字符",
-        "word_valid-min": "單字不能少於 1 個字符",
-        "word_valid_max": "單字不能超過 50 個字符",
-        "definition_valid_min": "定義不能少於 1 個字符",
-        "definition_valid_max": "定義不能超过 200 個字符",
-        "example_valid_max": "例句不能超過 200 個字符",
-        "notes_valid_max": "筆記不能超過 500 個字符",
-        "partOfSpeech_valid_min": "詞性不能少於 1 個字符",
-        "partOfSpeech_valid_max": "詞性不能超過 20 個字符",
         "delete_confirm_title": "確定要刪除嗎",
-        "delete_confirm_description": "刪除後將無法復原",
-        "edit_permission_error": "您不能編輯其他用戶建立的卡片"
+        "delete_confirm_description": "刪除後將無法復原"
     },
     "LocaleSwitcher": {
         "label": "Change language",
@@ -122,5 +112,32 @@
         "filter_words": "檢索單字",
         "no_word": "尚未添加單字",
         "note_null": "或許可以填寫一些能夠輔助記憶的資訊？"
+    },
+    "Error": {
+        "phonetics_valid_max": "發音不能超過 80 個字符",
+        "word_valid-min": "單字不能少於 1 個字符",
+        "word_valid_max": "單字不能超過 50 個字符",
+        "definition_valid_min": "定義不能少於 1 個字符",
+        "definition_valid_max": "定義不能超过 200 個字符",
+        "example_valid_max": "例句不能超過 200 個字符",
+        "notes_valid_max": "筆記不能超過 500 個字符",
+        "partOfSpeech_valid_min": "詞性不能少於 1 個字符",
+        "partOfSpeech_valid_max": "詞性不能超過 20 個字符",
+        "prompt_valid_max": "The prompt should be within 200 characters.",
+        "edit_permission_error": "您不能編輯其他用戶建立的卡片"
+    },
+    "POS": {
+        "NOUN": "名詞",
+        "VERB": "動詞",
+        "TRANSITIVE_VERB": "他動詞",
+        "INTRANSITIVE_VERB": "自動詞",
+        "ADJECTIVE": "形容詞",
+        "ADVERB": "副詞",
+        "PREPOSITION": "前置詞",
+        "CONJUNCTION": "接続詞",
+        "PHRASE": "短語",
+        "IDIOM": "俚語",
+        "OTHER": "其他",
+        "UNDEFINED": "未定義"
     }
 }

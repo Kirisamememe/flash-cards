@@ -5,7 +5,7 @@ export default function IntlProvider({ children }: { children: React.ReactNode }
     const messages = useMessages();
 
     return (
-        <NextIntlClientProvider messages={pick(messages, 'Index', 'LocaleSwitcher', 'WordSubmitForm', 'IndexDB', 'User', 'WordsBook')}>
+        <NextIntlClientProvider messages={pick(messages, 'Index', 'LocaleSwitcher', 'WordSubmitForm', 'IndexDB', 'User', 'WordsBook', 'Error', 'POS')}>
             {children}
         </NextIntlClientProvider>
     )

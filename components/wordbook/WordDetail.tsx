@@ -1,7 +1,7 @@
 import { Separator } from "@/components/ui/separator";
 import { useLocale, useTranslations } from "next-intl";
 import DestructiveDialog from "@/components/dialog/DestructiveDialog";
-import { EN2ENItem, RecordIndexDB, WordDataMerged } from "@/types/WordIndexDB";
+import { EN2ENItem, AnswerRecord, WordData } from "@/types/WordIndexDB";
 import { Button } from "@/components/ui/button";
 import { CloudDownload } from 'lucide-react';
 import { CircleCheckBig } from 'lucide-react';
@@ -16,11 +16,11 @@ import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast"
 import { fetchFromWordsAPI } from "@/app/lib/fetcher";
 import OnlineDic from "@/components/wordbook/OnlineDic";
-import { saveEN2ENItemToLocal } from "@/app/lib/indexDB/saveToLocal";
 import Loading from "@/components/ui/loading";
 import { useSession } from "next-auth/react";
+import { indexDB } from "@/stores/wordbook-store";
 
-export default function WordDetail({ wordData }: { wordData: WordDataMerged }) {
+export default function WordDetail({ wordData }: { wordData: WordData }) {
 
     const t = useTranslations()
     const locale = useLocale();
@@ -37,29 +37,32 @@ export default function WordDetail({ wordData }: { wordData: WordDataMerged }) {
     const userInfo = useWordbookStore((state) => state.userInfo)
     const setCurrentIndex = useWordbookStore((state) => state.setCurrentIndex)
 
-    const [correctRecords, setCorrectRecords] = useState<RecordIndexDB[]>([])
-    const [incorrectRecords, setIncorrectRecords] = useState<RecordIndexDB[]>([])
+    const [correctRecords, setCorrectRecords] = useState<AnswerRecord[]>([])
+    const [incorrectRecords, setIncorrectRecords] = useState<AnswerRecord[]>([])
     const [dicData, setDicData] = useState<EN2ENItem | null>(null)
     const [isFetching, setIsFetching] = useState(false)
 
     useEffect(() => {
-        if (wordData?.id) {
-            getRecordsFromLocal(wordData.id).then((res) => {
-                if (res.isSuccess) {
-                    setCorrectRecords(res.data.filter(record => record.is_correct))
-                    setIncorrectRecords(res.data.filter(record => !record.is_correct))
-                }
-            })
+        if (!wordData?.id) return
 
-            getEN2ENItemFromLocal(wordData.word).then((res) => {
-                if (res.isSuccess && res.data) {
-                    setDicData(res.data)
-                }
-                else {
-                    setDicData(null)
-                }
-            })
-        }
+        indexDB.getAllRecordsOfWord(wordData.id).then((res) => {
+            if (res.isSuccess && res.data[0]) {
+                setCorrectRecords(res.data[0].records.filter(record => record.is_correct))
+                setIncorrectRecords(res.data[0].records.filter(record => !record.is_correct))
+            } else {
+                setCorrectRecords([])
+                setIncorrectRecords([])
+            }
+        })
+
+        getEN2ENItemFromLocal(wordData.word).then((res) => {
+            if (res.isSuccess && res.data) {
+                setDicData(res.data)
+            }
+            else {
+                setDicData(null)
+            }
+        })
 
         if (correctDiv.current) {
             correctDiv.current.style.width = `${(correctRecords.length / (correctRecords.length + incorrectRecords.length)) * 100}%`
@@ -73,25 +76,25 @@ export default function WordDetail({ wordData }: { wordData: WordDataMerged }) {
 
 
     const handleLearned = () => {
-        if (!wordData.is_learned) {
+        if (!wordData.learned_at) {
             // TODO ここのi18n
             toast({
                 title: ("Marked as Mastered"),
                 description: ("The word has been marked as Mastered. Click the button again to undo."),
                 action:
                     <ToastAction onClick={() => {
-                        setWordToINDB(userInfo?.id, { ...wordData, is_learned: wordData.is_learned })
+                        setWordToINDB({ ...wordData, learned_at: undefined })
                             .catch(err => console.error(err))
                     }} altText={("Undo")}>
                     {"Undo"}
                     </ToastAction>,
-                duration: 5000
+                duration: 3000
             })
         }
 
-        setWordToINDB(userInfo?.id,{...wordData, is_learned: !wordData.is_learned})
+        setWordToINDB({...wordData, learned_at: wordData.learned_at ? undefined : new Date()})
             .then((res) => {
-                if (res.isSuccess && wordData.is_learned) {
+                if (res.isSuccess && wordData.learned_at) {
                     setCurrentIndex(res.data)
                 }
             })
@@ -105,7 +108,7 @@ export default function WordDetail({ wordData }: { wordData: WordDataMerged }) {
                 .then(res => {
                     console.log(res)
                     setDicData(res)
-                    saveEN2ENItemToLocal(res).catch((error) => {
+                    indexDB.saveEN2ENItem(res).catch((error) => {
                         console.error(error)
                     })
                 })
@@ -165,17 +168,17 @@ export default function WordDetail({ wordData }: { wordData: WordDataMerged }) {
                 <div className={"pl-1.5 flex justify-between items-center mb-4"}>
                     <h1 className={"text-lg sm:text-xl lg:text-2xl font-bold"}>{t("WordsBook.retention_rate")}</h1>
                     <Button className={cn("group gap-2 h-9 sm:h-10 px-3 sm:px-4",
-                            wordData.is_learned &&
+                            wordData.learned_at &&
                                 "text-primary hover:bg-destructive shadow-primary hover:shadow-destructive hover:text-destructive-foreground")
                             }
                             variant={"outline"} type={"button"}
                             onClick={handleLearned}>
                         <CircleCheckBig size={16}/>
-                        <span className={cn(wordData.is_learned && "group-hover:hidden")}>
-                            {wordData.is_learned ? t("WordsBook.word_mastered") : t("WordsBook.word_mark_as_mastered")}
+                        <span className={cn(wordData.learned_at && "group-hover:hidden")}>
+                            {wordData.learned_at ? t("WordsBook.word_mastered") : t("WordsBook.word_mark_as_mastered")}
                         </span>
-                        <span className={cn("hidden", wordData.is_learned && "group-hover:block text-destructive-foreground")}>
-                            {wordData.is_learned && t('WordsBook.word_unmastered')}
+                        <span className={cn("hidden", wordData.learned_at && "group-hover:block text-destructive-foreground")}>
+                            {wordData.learned_at && t('WordsBook.word_unmastered')}
                         </span>
                     </Button>
                 </div>

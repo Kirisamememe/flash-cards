@@ -30,14 +30,8 @@ export default function WordsBookContainer() {
 
     if (isSmallDevice) {
         return (
-            <motion.div
-                id={"animation-container"}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 30 }}
-                transition={{ duration: 0.2 }}
-            >
-                <div className={"flex flex-col w-full h-full px-4 pt-16 pb-20 items-center"}>
+            <div id={"animation-container"}>
+                <div className={"appear flex flex-col w-full h-full px-4 pt-16 pb-20 items-center"}>
                     <Banner/>
                     <FindWord/>
                     <ul role={"list"}
@@ -52,20 +46,13 @@ export default function WordsBookContainer() {
                         }
                     </ul>
                 </div>
-            </motion.div>
+            </div>
         )
     }
 
 
     return (
-        <motion.div
-            id={"animation-container"}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -30 }}
-            transition={{ duration: 0.2 }}
-            className={"h-dvh"}
-        >
+        <div id={"animation-container"} className={"h-dvh appear"}>
             <div className={"flex flex-col gap-4 w-full max-w-[72rem] h-full min-h-[48rem] sm:px-4 sm:pt-16 sm:pb-4 lg:px-8 lg:pt-24 lg:pb-6 mx-auto"}>
 
                 <Banner />
@@ -118,7 +105,6 @@ export default function WordsBookContainer() {
                     </ResizablePanel>
                 </ResizablePanelGroup>
             </div>
-        </motion.div>
-
+        </div>
     )
 }

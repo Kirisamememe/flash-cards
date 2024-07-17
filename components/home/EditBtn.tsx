@@ -1,17 +1,18 @@
-import { Dialog, DialogClose, DialogContent, DialogTrigger } from "@/components/dialog/dialog";
+import { Dialog, DialogClose, DialogContent, DialogTrigger, DialogTitle } from "@/components/dialog/dialog";
 import { Button } from "@/components/ui/button";
 import { WordFormContainer } from "@/components/form/WordFormContainer";
 import React, { useState } from "react";
-import { WordDataMerged } from "@/types/WordIndexDB";
+import { WordData } from "@/types/WordIndexDB";
 import { useTranslations } from "next-intl";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { Drawer, DrawerClose, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useWordbookStore } from "@/providers/wordbook-store-provider";
+import { DialogDescription } from "../ui/dialog";
 
 interface EditWordBtnProps {
     children?: React.ReactNode
-    wordData?: WordDataMerged
+    wordData?: WordData
 }
 
 const EditWordBtn = React.forwardRef<HTMLButtonElement, EditWordBtnProps>(({
@@ -72,6 +73,7 @@ const EditWordBtn = React.forwardRef<HTMLButtonElement, EditWordBtnProps>(({
                 }
             </DialogTrigger>
             <DialogContent className="p-0 pt-10 shadow-2xl rounded-6 h-[calc(100vh-2rem)] -translate-y-[calc(50%)] lg:max-w-[60rem] max-h-[49rem] lg:max-h-[31rem]">
+                <DialogTitle className="hidden" >{"TITLE"}</DialogTitle>
                 <ScrollArea barClass={"mr-0.5 py-1"}>
                     <WordFormContainer setOpen={setOpen} wordData={wordData} setCurrentIndex={setCurrentIndex}>
                         <DialogClose asChild>
@@ -81,6 +83,7 @@ const EditWordBtn = React.forwardRef<HTMLButtonElement, EditWordBtnProps>(({
                         </DialogClose>
                     </WordFormContainer>
                 </ScrollArea>
+                <DialogDescription className="hidden">{"A dialog to edit flashcard"}</DialogDescription>
             </DialogContent>
         </Dialog>
     )

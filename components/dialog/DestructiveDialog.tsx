@@ -10,10 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Trash2 } from 'lucide-react';
 import React, { SetStateAction, useState, useTransition } from "react";
 import { cn } from "@/app/lib/utils";
-import { deleteByIdFromLocal } from "@/app/lib/indexDB/indexDB";
 import { useToast } from "@/components/ui/use-toast"
 import { useTranslations } from "next-intl";
 import { useWordbookStore } from "@/providers/wordbook-store-provider";
+import { indexDB } from "@/stores/wordbook-store";
 
 export default function DestructiveDialog({
     className,
@@ -27,7 +27,7 @@ export default function DestructiveDialog({
 
     const [isPending, startTransition] = useTransition();
     const { toast } = useToast()
-    const t = useTranslations('WordSubmitForm')
+    const t = useTranslations()
     const [open, setOpen] = useState(false)
 
     const words = useWordbookStore((state) => state.words)
@@ -38,37 +38,38 @@ export default function DestructiveDialog({
     const setUserInterval = useWordbookStore((state) => state.setUserInterval)
 
     const handleDelete = () => {
-        if (words[currentIndex].id && deleteWord) {
-            startTransition(async () => {
-                const result = await deleteByIdFromLocal(userInfo?.id, words[currentIndex].id)
-                if (!result.isSuccess) {
-                    toast({
-                        variant: "destructive",
-                        title: t('edit_permission_error'),
-                        description: t('edit_permission_error')
-                        // TODO 適切なローカライズが必要
-                    });
-                    return
-                }
+        if (!words[currentIndex].id || !deleteWord) return
+        if (words[currentIndex].id && words[currentIndex].id !== userInfo?.id) throw new Error("User ID does not match")
 
-                deleteWord(words[currentIndex].id)
-
+        startTransition(async () => {
+            const result = await indexDB.deleteWord(words[currentIndex].id)
+            if (!result.isSuccess) {
                 toast({
-                    variant: "default",
-                    title: ('単語を削除しました'),
-                    description: ('単語を削除しました')
+                    variant: "destructive",
+                    title: t('Error.edit_permission_error'),
+                    description: t('Error.edit_permission_error')
                     // TODO 適切なローカライズが必要
-                })
+                });
+                return
+            }
 
-                if (userInterval > 99999) {
-                    const localInterval = localStorage.getItem("interval")
-                    localInterval && setUserInterval(parseInt(localInterval))
-                }
+            deleteWord(words[currentIndex].id)
 
-                setOpen(false)
-                setParentOpen && setParentOpen(false)
+            toast({
+                variant: "default",
+                title: ('単語を削除しました'),
+                description: ('単語を削除しました')
+                // TODO 適切なローカライズが必要
             })
-        }
+
+            if (userInterval > 99999) {
+                const localInterval = localStorage.getItem("interval")
+                localInterval && setUserInterval(parseInt(localInterval))
+            }
+
+            setOpen(false)
+            setParentOpen && setParentOpen(false)
+        })
     }
 
     return (
@@ -86,10 +87,10 @@ export default function DestructiveDialog({
             </DialogTrigger>
             <DialogContent className="sm:max-w-[25rem] w-[calc(100%-2rem)] rounded-6 -translate-x-[50%]">
                 <DialogHeader>
-                    <DialogTitle className={"text-center mt-2"}>{t("delete_confirm_title")}</DialogTitle>
+                    <DialogTitle className={"text-center mt-2"}>{t("WordSubmitForm.delete_confirm_title")}</DialogTitle>
                 </DialogHeader>
                 <DialogDescription className={"text-center mt-1 mb-2"}>
-                    { t('delete_confirm_description') }
+                    { t('WordSubmitForm.delete_confirm_description') }
                 </DialogDescription>
                 <div className={"flex w-full justify-stretch gap-3"}>
                     <Button
@@ -99,14 +100,14 @@ export default function DestructiveDialog({
                         type={"button"}
                         disabled={ isPendingParent || isPending }
                     >
-                        { t('yes') }
+                        { t('WordSubmitForm.yes') }
                     </Button>
                     <DialogClose asChild>
                         <Button
                             className={"w-full"}
                             variant={"ghost"}
                             type={"button"}>
-                            { t('no') }
+                            { t('WordSubmitForm.no') }
                         </Button>
                     </DialogClose>
                 </div>

@@ -55,6 +55,6 @@ export type UpdatePromiseCommonResult<T> = {
     isSuccess: false,
     error: {
         message: string
-        detail: any
+        detail?: any
     }
 }

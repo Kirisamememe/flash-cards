@@ -10,16 +10,32 @@ import AvatarMenu from "@/components/nav/avatar-menu";
 import SignIn from "@/components/auth/signIn";
 import * as React from "react";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { SetStateAction } from "react";
+import { SetStateAction, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useWordbookStore } from "@/providers/wordbook-store-provider";
+import { useToast } from "../ui/use-toast";
+
 
 export default function Header({ className, open, setOpen, atTop }: { className?:string, open: boolean, setOpen: React.Dispatch<SetStateAction<boolean>>, atTop: boolean }) {
 
     // const { data: session } = useSession()
     const userInfo = useWordbookStore((state) => state.userInfo)
+    const sync = useWordbookStore((state) => state.sync)
+    
     const isSmallDevice = useMediaQuery('(max-width:640px)');
     const t = useTranslations()
+    const { toast } = useToast()
+
+    useEffect(() => {
+        // 自動同期
+        if (userInfo && userInfo.auto_sync) {
+            if (userInfo.synced_at){
+                const needSync = ((new Date().getTime() - userInfo.synced_at.getTime()) > (24 * 60 * 60 * 1000))
+                if (needSync) sync(t, toast)
+            }
+            else sync(t, toast)
+        }
+    }, [sync, t, toast, userInfo])
 
     return (
         <div id={"header"} className={cn("fixed top-0 flex flex-col w-full h-fit z-10 bg-background/50 backdrop-blur-xl", atTop && "bg-transparent backdrop-blur-none")}>

@@ -1,25 +1,34 @@
 'use server'
 
 import { UpdatePromiseCommonResult } from "@/types/ActionsResult";
-import { PartOfSpeechLocal, WordCardToRemote } from "@/types/WordIndexDB";
+import { WordCardToRemote } from "@/types/WordIndexDB";
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
-import { PartOfSpeech, Word } from "@prisma/client";
+import { Word } from "@prisma/client";
 import { auth } from "@/app/lib/auth";
+import { UserInfoToRemote } from "@/types/User";
+import { createId } from "@paralleldrive/cuid2";
+import { MaterialIndexDB } from "@/types/AIBooster";
 
 const prisma = new PrismaClient().$extends(withAccelerate())
 
-export async function upsertCardToRemote(flashcard: WordCardToRemote): Promise<UpdatePromiseCommonResult<Word | undefined>> {
-    // const session = await auth()
-    // if (!session?.user) throw new Error("権限がありません")
+export async function upsertCardToRemote(flashcard: WordCardToRemote) {
+    const session = await auth()
+    if (!session?.user) throw new Error("権限がありません")
+
+    console.log(flashcard.word)
 
     return await prisma.$transaction(async (trx) => {
         try {
             // 現在のレコードを検索する
             const existingCard = await trx.word.findUnique({
                 where: { id: flashcard.id },
-                select: { updated_at: true } // updated_at のみを取得する
-            });
+                include: {
+                    records: true
+                }
+            })
+
+            // console.log(existingCard)
 
             let result;
 
@@ -32,51 +41,26 @@ export async function upsertCardToRemote(flashcard: WordCardToRemote): Promise<U
                         data: {
                             word: flashcard.word,
                             phonetics: flashcard.phonetics,
-                            ...(flashcard.partOfSpeech?.id ? {
-                                part_of_speech: {
-                                    connectOrCreate: {
-                                        where: {
-                                            id: flashcard.partOfSpeech.id,
-                                        },
-                                        create: {
-                                            id: flashcard.partOfSpeech.id,
-                                            part_of_speech: flashcard.partOfSpeech?.partOfSpeech,
-                                            author: {
-                                                connect: {
-                                                    id: flashcard.author
-                                                }
-                                            },
-                                            created_at: flashcard.partOfSpeech.created_at,
-                                            updated_at: flashcard.partOfSpeech.updated_at,
-                                            synced_at: new Date()
-                                        }
-                                    }
-                                }
-                            } : {}),
+                            pos: flashcard.pos,
                             definition: flashcard.definition,
                             example: flashcard.example,
                             notes: flashcard.notes,
-                            is_learned: flashcard.is_learned,
                             updated_at: flashcard.updated_at,
                             synced_at: new Date(),
                             learned_at: flashcard.learned_at,
                             retention_rate: flashcard.retention_rate,
                             is_deleted: flashcard.is_deleted,
                             records: {
-                                create: flashcard.records.map((record) => ({
-                                    id: record.id,
-                                    // word: {
-                                    //     connect: {
-                                    //         id: record.word_id
-                                    //     }
-                                    // },
-                                    // word_id: record.word_id,
-                                    is_correct: record.is_correct,
-                                    reviewed_at: record.reviewed_at,
-                                    time: record.time,
+                                create: flashcard.records.map((val) => ({
+                                    id: createId(),
+                                    is_correct: val.is_correct,
+                                    reviewed_at: val.reviewed_at,
+                                    time: val.time,
                                     synced_at: new Date()
                                 }))
                             }
+                        }, include: {
+                            records: true
                         }
                     })
                 }
@@ -88,27 +72,7 @@ export async function upsertCardToRemote(flashcard: WordCardToRemote): Promise<U
                         id: flashcard.id,
                         word: flashcard.word,
                         phonetics: flashcard.phonetics,
-                        ...(flashcard.partOfSpeech?.id ? {
-                            part_of_speech: {
-                                connectOrCreate: {
-                                    where: {
-                                        id: flashcard.partOfSpeech.id,
-                                    },
-                                    create: {
-                                        id: flashcard.partOfSpeech.id,
-                                        part_of_speech: flashcard.partOfSpeech?.partOfSpeech,
-                                        author: {
-                                            connect: {
-                                                id: flashcard.author
-                                            }
-                                        },
-                                        created_at: flashcard.partOfSpeech.created_at,
-                                        updated_at: flashcard.partOfSpeech.updated_at,
-                                        synced_at: new Date()
-                                    }
-                                }
-                            }
-                        } : {}),
+                        pos: flashcard.pos,
                         definition: flashcard.definition,
                         example: flashcard.example,
                         notes: flashcard.notes,
@@ -118,24 +82,19 @@ export async function upsertCardToRemote(flashcard: WordCardToRemote): Promise<U
                         learned_at: flashcard.learned_at,
                         retention_rate: flashcard.retention_rate,
                         author: { connect: { id: flashcard.author } },
-                        is_deleted: flashcard.is_deleted,
                         ...(flashcard.records.length > 0 && {
                             records: {
-                                create: flashcard.records.map((record) => ({
-                                    id: record.id,
-                                    // word: {
-                                    //     connect: {
-                                    //         id: record.word_id
-                                    //     }
-                                    // },
-                                    // word_id: record.word_id,
-                                    is_correct: record.is_correct,
-                                    reviewed_at: record.reviewed_at,
-                                    time: record.time,
+                                create: flashcard.records.map((val) => ({
+                                    id: createId(),
+                                    is_correct: val.is_correct,
+                                    reviewed_at: val.reviewed_at,
+                                    time: val.time,
                                     synced_at: new Date()
                                 }))
                             }
                         })
+                    }, include: {
+                        records: true
                     }
                 })
             }
@@ -143,14 +102,22 @@ export async function upsertCardToRemote(flashcard: WordCardToRemote): Promise<U
             if (!result && flashcard.records.length > 0) {
                 await trx.record.createMany({
                     data: (flashcard.records.map(record => ({
-                        id: record.id,
-                        word_id: record.word_id,
+                        id: createId(),
+                        word_id: flashcard.id,
                         is_correct: record.is_correct,
                         reviewed_at: record.reviewed_at,
                         time: record.time,
                         synced_at: new Date()
                     })))
                 })
+            }
+
+            if (!result) {
+                if (existingCard) {
+                    return { isSuccess: true, data: existingCard }
+                } else {
+                    return { isSuccess: false, error: { message: "データを取得できませんでした。", detail: "" } };
+                }
             }
 
             console.log("Result: ")
@@ -161,83 +128,37 @@ export async function upsertCardToRemote(flashcard: WordCardToRemote): Promise<U
             console.error(e);
             return { isSuccess: false, error: { message: "トランザクション処理中にエラーが発生しました。", detail: e } };
         }
-    });
-}
-
-export async function upsertPartOfSpeechToRemote(partOfSpeech: PartOfSpeechLocal): Promise<UpdatePromiseCommonResult<PartOfSpeech | undefined>> {
-    // const session = await auth()
-    // if (!session) throw new Error("権限がありません")
-
-    return await prisma.$transaction(async (trx) => {
-        try {
-            const existingData = await trx.partOfSpeech.findUnique({
-                where: { id: partOfSpeech.id },
-                select: { updated_at: true }
-            })
-
-            let result;
-
-            if (existingData) {
-                if (existingData.updated_at < partOfSpeech.updated_at) {
-                    result = await trx.partOfSpeech.update({
-                        where: { id: partOfSpeech.id },
-                        data: {
-                            part_of_speech: partOfSpeech.partOfSpeech,
-                            is_deleted: partOfSpeech.is_deleted,
-                            updated_at: partOfSpeech.updated_at,
-                            synced_at: new Date()
-                        }
-                    })
-                }
-            } else {
-                result = await trx.partOfSpeech.create({
-                    data: {
-                        id: partOfSpeech.id,
-                        part_of_speech: partOfSpeech.partOfSpeech,
-                        author: { connect: { id: partOfSpeech.author } },
-                        is_deleted: partOfSpeech.is_deleted,
-                        created_at: partOfSpeech.created_at,
-                        updated_at: partOfSpeech.updated_at,
-                        synced_at: new Date()
-                    }
-                })
-            }
-
-            console.log(`${result && result.id}挿入したよん＝＝＝＝＝＝＝＝＝＝＝＝`)
-            return { isSuccess: true, data: result };
-
-        } catch (e) {
-            console.error(e)
-            return { isSuccess: false, error: { message: "トランザクション処理中にエラーが発生しました。", detail: e } }
-        }
     })
 }
 
-export async function updateUserInfoToRemote(userInfo: UserInfoToRemote): Promise<UpdatePromiseCommonResult<UserInfoFormRemote | undefined>> {
+export async function updateUserInfoToRemote(userInfo: UserInfoToRemote) {
     const session = await auth()
     if (!session) throw new Error("権限がありません")
+    if (userInfo.id !== session.user.id) throw new Error("不正なリクエストです")
+    if (userInfo.trans_lang === userInfo.learning_lang) throw new Error("")
 
     return await prisma.$transaction(async (trx) => {
         try {
             const existingData = await trx.user.findUnique({
                 where: { id: userInfo.id },
-                select: { updatedAt: true }
+                select: { updated_at: true }
             })
 
             let result
 
             if (existingData) {
-                if (existingData.updatedAt < userInfo.updatedAt) {
+                if (existingData.updated_at < userInfo.updated_at) {
                     result = await trx.user.update({
                         where: { id: userInfo.id },
                         data: {
                             image: userInfo.image,
                             name: userInfo.name,
-                            updatedAt: userInfo.updatedAt,
+                            updated_at: userInfo.updated_at,
                             synced_at: new Date(),
                             auto_sync: userInfo.auto_sync,
-                            use_when_loggedout: userInfo.use_when_loggedout,
-                            blind_mode: userInfo.blind_mode
+                            blind_mode: userInfo.blind_mode,
+                            learning_lang: userInfo?.learning_lang || null,
+                            trans_lang: userInfo?.trans_lang || null
                         }
                     })
                 }
@@ -256,18 +177,54 @@ export async function updateUserInfoToRemote(userInfo: UserInfoToRemote): Promis
     })
 }
 
-// export async function saveRecordToRemote(record: RecordIndexDB): Promise<UpdatePromiseCommonResult<RecordIndexDB | undefined>> {
-//     const session = await auth()
-//     if (!session) throw new Error("権限がありません")
-//
-//     return await prisma.$transaction(async (trx) => {
-//         try {
-//
-//
-//
-//             return { isSuccess: true, data: result }
-//         } catch (e) {
-//             return { isSuccess: false, error: { message: "トランザクション処理中にエラーが発生しました", detail: e } }
-//         }
-//     })
-// }
+export async function upsertMaterialToRemote(material: MaterialIndexDB) {
+    const session = await auth()
+    if (!session) throw new Error("権限がありません")
+    if (material.author !== session.user.id) throw new Error("不正なリクエストです")
+
+    return await prisma.$transaction(async (trx) =>{
+        try {
+            const existingMaterial = await trx.material.findUnique({
+                where: { id: material.id },
+                select: { updated_at: true }
+            })
+
+            if (existingMaterial) {
+                if (existingMaterial.updated_at < material.updated_at) {
+                    await trx.material.update({
+                        where: { id: material.id },
+                        data: {
+                            trans_lang: material.translation.lang,
+                            translation: material.translation.text.join("\n"),
+                            bookmarked_at: material.bookmarked_at,
+                            updated_at: material.updated_at,
+                            synced_at: new Date()
+                        }
+                    })
+                }
+            } else {
+                await trx.material.create({
+                    data: {
+                        id: material.id,
+                        title: material.title,
+                        content: material.content.join("\n"),
+                        trans_lang: material.translation.lang,
+                        translation: material.translation.text.join("\n"),
+                        generated_by: material.generated_by,
+                        author: { connect: { id: material.author } },
+                        created_at: material.created_at,
+                        bookmarked_at: material.bookmarked_at,
+                        updated_at: material.updated_at,
+                        deleted_at: material.deleted_at,
+                        synced_at: new Date()
+                    }
+                })
+            } 
+
+            return { isSuccess: true }
+        } catch (error) {
+            console.error(error)
+            return { isSuccess: false, error: { message: "トランザクション処理中にエラーが発生しました", detail: error } }
+        }
+    })
+}

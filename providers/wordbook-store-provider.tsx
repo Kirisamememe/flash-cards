@@ -36,6 +36,8 @@ export const WordbookStoreProvider = ({
         let cancelled = false; // This flag is to prevent state update after unmount
 
         const initialize = async (userId: string | undefined | null, url: string | undefined | null, userName: string | undefined | null) => {
+
+
             // ユーザーがログアウトしても、storeRef.currentは存在するので、
             // storeは更新されず、userInfoは引き続き保持されてしまう。
             // それを避けるために、userIdがundefinedになった場合も再度イニシャライズを行う

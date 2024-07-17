@@ -147,7 +147,7 @@ const FormMessage = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, children, ...props }, ref) => {
-  const t = useTranslations('WordSubmitForm')
+  const t = useTranslations('Error')
 
   const { error, formMessageId } = useFormField()
   const body = error ? t(String(error?.message)) : children

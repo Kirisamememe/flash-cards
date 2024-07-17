@@ -69,18 +69,8 @@
         "example_description": "例文を入力してください",
         "notes_description": "例文の翻訳や、単語の記憶法など",
         "no_part_of_speech": "品詞を追加しましょう",
-        "phonetics_valid_max": "「発音記号」は80文字以内で入力してください",
-        "word_valid_min": "「単語」は１文字以上で入力してください",
-        "word_valid_max": "「単語」は５０文字以内で入力してください」",
-        "definition_valid_min": "「定義」は１文字以上で入力してください",
-        "definition_valid_max": "「定義」は２００文字以内で入力してください",
-        "example_valid_max": "「例文」は２００文字以内で入力してください",
-        "notes_valid_max": "「メモ」は５００文字以内で入力してください",
-        "partOfSpeech_valid_min": "「品詞」は１文字以上で入力してください",
-        "partOfSpeech_valid_max": "「品詞」は２０文字以内で入力してください",
         "delete_confirm_title": "本当に削除しますか",
-        "delete_confirm_description": "削除すると復元できません",
-        "edit_permission_error": "他のユーザーが作成したカードは編集できません"
+        "delete_confirm_description": "削除すると復元できません"
     },
     "LocaleSwitcher": {
         "label": "Change language",
@@ -122,5 +112,32 @@
         "filter_words": "単語を検索",
         "no_word": "まだ単語を追加していません",
         "note_null": "学習に役立つ情報を記入しましょう"
+    },
+    "Error": {
+        "phonetics_valid_max": "「発音記号」は80文字以内で入力してください",
+        "word_valid_min": "「単語」は１文字以上で入力してください",
+        "word_valid_max": "「単語」は５０文字以内で入力してください」",
+        "definition_valid_min": "「定義」は１文字以上で入力してください",
+        "definition_valid_max": "「定義」は２００文字以内で入力してください",
+        "example_valid_max": "「例文」は２００文字以内で入力してください",
+        "notes_valid_max": "「メモ」は５００文字以内で入力してください",
+        "partOfSpeech_valid_min": "「品詞」は１文字以上で入力してください",
+        "partOfSpeech_valid_max": "「品詞」は２０文字以内で入力してください",
+        "prompt_valid_max": "The prompt should be within 200 characters.",
+        "edit_permission_error": "他のユーザーが作成したカードは編集できません"
+    },
+    "POS": {
+        "NOUN": "名詞",
+        "VERB": "動詞",
+        "TRANSITIVE_VERB": "他動詞",
+        "INTRANSITIVE_VERB": "自動詞",
+        "ADJECTIVE": "形容詞",
+        "ADVERB": "副詞",
+        "PREPOSITION": "前置詞",
+        "CONJUNCTION": "接続詞",
+        "PHRASE": "フレーズ",
+        "IDIOM": "俚語",
+        "OTHER": "その他",
+        "UNDEFINED": "未定義"
     }
 }

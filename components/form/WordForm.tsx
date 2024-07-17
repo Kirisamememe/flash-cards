@@ -9,7 +9,6 @@ import { FloatTextarea } from "@/components/ui/FloatTextarea";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { cn } from "@/app/lib/utils";
 import FormSelect from "@/components/ui/FormSelect";
-import PosForm from "@/components/form/PosForm";
 
 export default function WordForm({
     children, form, onSubmit, className = "columns-1 lg:columns-2 space-y-5"
@@ -19,32 +18,16 @@ export default function WordForm({
     onSubmit: (values: z.infer<typeof saveWordCardRequest>) => void
     className?: string
 }) {
-    const t = useTranslations('WordSubmitForm')
-
-    const [newPOS, setNewPOS] = useState("")
-
-    const POSValueOutside = form.watch("partOfSpeech")
-    console.log("今のPOSはなんだ：")
-    console.log(POSValueOutside ? POSValueOutside : "からっぽよ")
-
-    const isMediumDevice = useMediaQuery('(max-width:1023px)')
+    const t = useTranslations()
 
     console.log("WordFormがレンダリングされたようだ")
-
-    useEffect(() => {
-        // console.log("＝＝＝＝＝＝＝WordFormのuseEffectが実行されました＝＝＝＝＝＝")
-        if (newPOS !== "") {
-            form.setValue("partOfSpeech", newPOS)
-        }
-    }, [form, newPOS]);
-
-
-    // TODO 品詞を編集する機能
+    const isMediumDevice = useMediaQuery('(max-width:1023px)')
 
     return (
         <>
             <Form {...form}>
-                <form autoComplete={"off"}
+                <form id={"word-form"} 
+                      autoComplete={"off"}
                       onSubmit={form.handleSubmit(onSubmit)}
                       className={cn("w-full h-full px-4 pt-4 sm:px-6 sm:pt-2 pb-6 gap-x-12", className)}>
 
@@ -54,20 +37,19 @@ export default function WordForm({
                         render={({ field }) => (
                             <FloatInput
                                 className={"text-2xl font-semibold h-14 lg:h-16"}
-                                description={t('word_description')}
+                                description={t('WordSubmitForm.word_description')}
                                 labelClassName={"text-2xl"}
                                 limit={50}
-                                label={t('word')} {...field}
+                                label={t('WordSubmitForm.word')} {...field}
                             />
                         )}
                     />
 
                     <FormField
                         control={form.control}
-                        name="partOfSpeech"
+                        name="pos"
                         render={({ field }) => (
-                            <FormSelect fieldValue={field.value} onChange={field.onChange} newPOS={newPOS}
-                                        setNewPOS={setNewPOS}/>
+                            <FormSelect fieldValue={field.value} onChange={field.onChange}/>
                         )}
                     />
 
@@ -77,9 +59,9 @@ export default function WordForm({
                         render={({ field }) => (
                             <FloatInput
                                 className={"text-base h-12 lg:h-14"}
-                                description={t('phonetics_description')}
+                                description={t('WordSubmitForm.phonetics_description')}
                                 limit={80}
-                                label={t('phonetics')} {...field}
+                                label={t('WordSubmitForm.phonetics')} {...field}
                             />
                         )}
                     />
@@ -90,9 +72,9 @@ export default function WordForm({
                             <FloatInput
                                 className={"text-base h-12 lg:h-14"}
                                 // parentClass={"break-after-column"}
-                                description={t('definition_description')}
+                                description={t('WordSubmitForm.definition_description')}
                                 limit={200}
-                                label={t('definition')} {...field}
+                                label={t('WordSubmitForm.definition')} {...field}
                             />
                         )}
                     />
@@ -104,9 +86,9 @@ export default function WordForm({
                             <FloatTextarea
                                 className={"text-base "}
                                 parentClass={"break-before-auto"}
-                                description={t('example_description')}
+                                description={t('WordSubmitForm.example_description')}
                                 limit={200}
-                                label={t('example')} {...field}
+                                label={t('WordSubmitForm.example')} {...field}
                                 rows={isMediumDevice ? 2 : 3}
                             />
                         )}
@@ -118,9 +100,9 @@ export default function WordForm({
                         render={({ field }) => (
                             <FloatTextarea
                                 className={"text-base"}
-                                description={t('notes_description')}
+                                description={t('WordSubmitForm.notes_description')}
                                 limit={500}
-                                label={t('notes')} {...field}
+                                label={t('WordSubmitForm.notes')} {...field}
                                 rows={isMediumDevice ? 2 : 4}
                             />
                         )}
@@ -130,7 +112,6 @@ export default function WordForm({
                     {children}
                 </form>
             </Form>
-            <PosForm newPOS={newPOS} setNewPOS={setNewPOS}/>
         </>
     )
 }

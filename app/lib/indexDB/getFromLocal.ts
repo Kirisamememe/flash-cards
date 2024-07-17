@@ -1,7 +1,9 @@
 import { GetPromiseCommonResult, UpdatePromiseCommonResult } from "@/types/ActionsResult";
 import { openDB } from "@/app/lib/indexDB/indexDB";
-import { EN2ENItem, PartOfSpeechLocal, RecordIndexDB, TTSObj, WordDataMerged, WordIndexDB } from "@/types/WordIndexDB";
-import { MaterialIndexDB, sentenceEndingRegex } from "@/types/AIBooster";
+import { EN2ENItem, PartOfSpeechLocal, RecordIndexDB, TTSObj, WordData, WordIndexDB } from "@/types/WordIndexDB";
+import { AIDicData, MaterialIndexDB } from "@/types/AIBooster";
+import { sentenceEndingRegex } from "@/types/static";
+import { MasteredWords, UserInfo } from "@/types/User";
 
 export async function getUserInfoFromLocal(userId: string): Promise<UpdatePromiseCommonResult<UserInfo>> {
     return new Promise<UpdatePromiseCommonResult<UserInfo>>(async (resolve, reject) => {
@@ -35,8 +37,8 @@ export function getCardsFromLocal(
     userId: string | undefined | null,
     useWhenLoggedOut: boolean = true,
     containDeleted: boolean = false
-): Promise<GetPromiseCommonResult<WordDataMerged[]>>  {
-    return new Promise<GetPromiseCommonResult<WordDataMerged[]>>(async (resolve, reject) => {
+): Promise<GetPromiseCommonResult<WordData[]>>  {
+    return new Promise<GetPromiseCommonResult<WordData[]>>(async (resolve, reject) => {
         openDB().then(db => {
             const transaction = db.transaction(['words', 'partOfSpeech'], 'readonly')
             const wordsStore = transaction.objectStore('words')
@@ -267,7 +269,7 @@ export function getEN2ENItemFromLocal(word: string) {
     })
 }
 
-export function getTTSFromLocal(wordId: string, type: "word" | "example") {
+export function getTTSFromLocal(wordId: string, type: "word" | "example" | "material") {
     return new Promise<GetPromiseCommonResult<TTSObj>>( async (resolve, reject) => {
         const db = await openDB()
         const transaction = db.transaction(['TTSStore'], 'readwrite')
@@ -323,7 +325,7 @@ export function getPromptWords(limit: "random" | "recent" | "mostForgettable"): 
             }
 
             let wordlist: string[]
-            const fetchedWords = request.result.filter(word => !word.is_deleted && !word.is_learned)
+            const fetchedWords = request.result.filter(word => !word.learned_at && !word.is_deleted)
 
             switch (limit) {
                 case "random":
@@ -376,20 +378,32 @@ export function getPromptWords(limit: "random" | "recent" | "mostForgettable"): 
 export function getMaterialsFromLocal(userId: string, length?: number, offset?: number) {
     return new Promise<UpdatePromiseCommonResult<MaterialIndexDB[]>>(async (resolve, reject) => {
         const db = await openDB()
-        const transaction = db.transaction(['materials'], 'readonly')
+        const transaction = db.transaction(['materials'], 'readwrite')
         const store = transaction.objectStore('materials')
         const request = store.getAll()
 
         request.onsuccess = () => {
             if (!request.result.length) {
-                reject({
-                    isSuccess: false,
-                    error: {
-                        message: `データがありません`,
-                        detail: ""
-                    }
+                resolve({
+                    isSuccess: true,
+                    data: []
                 })
             }
+
+            // Promise.all(request.result.map((res) => {
+            //     if (res?.translation) return
+            //
+            //     store.put({
+            //         ...res,
+            //         translation: {
+            //             lang: "JA",
+            //             text: []
+            //         }
+            //     })
+            // })).then(() => {
+            //
+            //
+            // })
 
             const data = request.result.filter(val => val.author === userId).sort((a, b) => b.created_at - a.created_at).slice(length ? 0 : undefined, length ? length : undefined)
 
@@ -404,6 +418,79 @@ export function getMaterialsFromLocal(userId: string, length?: number, offset?: 
                 isSuccess: false,
                 error: {
                     message: `取得できませんでした`,
+                    detail: ""
+                }
+            })
+        }
+    })
+}
+
+
+export function getMasteredWordsFromLocal(userId: string) {
+    return new Promise<UpdatePromiseCommonResult<MasteredWords>>(async (resolve, reject) => {
+        const db = await openDB()
+        const transaction = db.transaction(['masteredWords'], 'readonly')
+        const store = transaction.objectStore('masteredWords')
+        const request = store.get(userId)
+
+        request.onsuccess = () => {
+            if (!request.result) {
+                reject({
+                    isSuccess: false,
+                    error: {
+                        message: "取得できませんでした",
+                        detail: ""
+                    }
+                })
+            }
+
+            resolve({
+                isSuccess: true,
+                data: request.result
+            })
+        }
+
+        request.onerror = () => {
+            reject({
+                isSuccess: false,
+                error: {
+                    message: "データベースエラー",
+                    detail: ""
+                }
+            })
+        }
+    })
+}
+
+export function getGeneratedDicDataFromLocal(word: string){
+    return new Promise<UpdatePromiseCommonResult<AIDicData>>(async (resolve, reject) => {
+        const db = await openDB()
+        const transaction = db.transaction(['generatedDicData'], 'readonly')
+        const store = transaction.objectStore('generatedDicData')
+        const request = store.get(word)
+
+        request.onsuccess = () => {
+            if (!request.result) {
+                resolve({
+                    isSuccess: false,
+                    error: {
+                        message: "取得できませんでした",
+                        detail: ""
+                    }
+                })
+            }
+
+            resolve({
+                isSuccess: true,
+                data: request.result
+            })
+        }
+
+        request.onerror = () => {
+            reject({
+                isSuccess: false,
+                error: {
+                    message: "データベースエラー",
                     detail: ""
                 }
             })

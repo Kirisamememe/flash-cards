@@ -21,12 +21,12 @@ export default function Banner() {
                 </div>
                 <Separator orientation={"vertical"} className={"h-12 bg-foreground/10"}/>
                 <div className={"flex flex-col w-full items-center gap-1"}>
-                    <h1 className={"text-2xl font-bold text-center"}>{words.filter(word => !word.is_learned).length}</h1>
+                    <h1 className={"text-2xl font-bold text-center"}>{words.filter(word => !word.learned_at).length}</h1>
                     <p className={"text-xs text-foreground/50 text-center"}>{t("word_learning")}</p>
                 </div>
                 <Separator orientation={"vertical"} className={"h-12 bg-foreground/10"}/>
                 <div className={"flex flex-col w-full items-center gap-1"}>
-                    <h1 className={"text-2xl font-bold text-center"}>{words.filter(word => word.is_learned).length}</h1>
+                    <h1 className={"text-2xl font-bold text-center"}>{words.filter(word => !!word.learned_at).length}</h1>
                     <p className={"text-xs text-foreground/50 text-center"}>{t("word_mastered")}</p>
                 </div>
             </div>

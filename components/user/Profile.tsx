@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import React, { useCallback, useEffect, useState, useTransition } from "react";
 import { useWordbookStore } from "@/providers/wordbook-store-provider";
 import { useLocale, useTranslations } from "next-intl";
-import { sync } from "@/app/lib/sync";
 import { useToast } from "@/components/ui/use-toast";
 import { SignOut } from "@/components/auth/signOut";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { LanguageCode, languageList } from "@/types/User";
 
 
 export default function Profile() {
@@ -22,14 +23,12 @@ export default function Profile() {
     const setUserInfo = useWordbookStore((state) => state.setUserInfo)
     const words = useWordbookStore((state) => state.words)
     const setWords = useWordbookStore((state) => state.setWords)
-    const setPos = useWordbookStore((state) => state.setPos)
     const blindMode = useWordbookStore((state) => state.blindMode)
     const playSE = useWordbookStore((state) => state.playSE)
     const setBlindMode = useWordbookStore((state) => state.setBlindMode)
     const setPlaySE = useWordbookStore((state) => state.setPlaySE)
-
-    const [progressVal, setProgressVal] = useState(0)
-    const [progressMessage, setProgressMessage] = useState("")
+    const sync = useWordbookStore((state) => state.sync)
+    const progress = useWordbookStore((state) => state.progress)
 
     const [isPending, startTransition] = useTransition()
     const { toast } = useToast()
@@ -39,29 +38,27 @@ export default function Profile() {
     const handleSync = useCallback( () => {
         if (userInfo) {
             startTransition(async () => {
-                await sync(words, setWords, setPos, userInfo, setUserInfo, setProgressMessage, setProgressVal, t, toast)
+                await sync(t, toast)
             })
         }
-    },[setPos, setUserInfo, setWords, t, toast, userInfo, words])
+    },[sync, t, toast, userInfo])
 
+    const handleLearningLanguageChange = (value: LanguageCode) => {
+        if (!userInfo) return
+        setUserInfo({ ...userInfo, learning_lang: value, updated_at: new Date() }).then()
+    }
 
-    useEffect(() => {
-        // 自動同期
-        if (userInfo && userInfo.auto_sync) {
-            if (!!userInfo.synced_at){
-                const needSync = ((new Date().getTime() - userInfo.synced_at.getTime()) > (24 * 60 * 60 * 1000))
-                if (needSync) handleSync()
-            }
-            else handleSync()
-        }
-    }, [handleSync, userInfo]);
+    const handleTranslationLanguageChange = (value: LanguageCode | "NONE") => {
+        if (!userInfo) return
+        setUserInfo({ ...userInfo, trans_lang: value === "NONE" ? undefined : value, updated_at: new Date() }).then()
+    }
 
     if (!userInfo) return null
 
     return (
-        <div className={"flex flex-col h-full justify-between max-w-[25rem] min-w-80"}>
-            <div className={"flex flex-col"}>
-                <Card className={"mt-8 mb-3"}>
+        <div className={"flex flex-col h-full justify-between min-w-80"}>
+            <div className={"flex flex-col gap-3"}>
+                <Card className={"mt-8"}>
                     <CardHeader className={"items-center gap-2"}>
                         <Avatar className={"w-20 h-20"}>
                             <AvatarImage src={userInfo.image || ""}/>
@@ -103,16 +100,64 @@ export default function Profile() {
                                 onCheckedChange={(value) => setPlaySE(value)}
                             />
                         </div>
+
                     </CardContent>
+                </Card>
+                <Card className={""}>
+                    <CardContent className={"flex flex-col gap-4 py-5"}>
+                        <div className={"space-y-2"}>
+                            <label
+                                className={"flex items-center ml-1.5 gap-2.5 text-sm text-muted-foreground font-semibold"}>
+                                <div className={"px-0.5 py-1 bg-muted-foreground/50"}/>
+                                {"Learning Language"}
+                            </label>
+                            <Select defaultValue={userInfo?.learning_lang} onValueChange={handleLearningLanguageChange}>
+                                <SelectTrigger className={"h-12 text-start"}>
+                                    <SelectValue placeholder={"The Language you're learning."}/>
+                                </SelectTrigger>
+                                <SelectContent sideOffset={4}>
+                                    {Object.entries(languageList).map(([key, value]) => (
+                                        <SelectItem key={key} value={key} disabled={key === userInfo?.trans_lang}>
+                                            {value}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className={"space-y-2"}>
+                            <label
+                                className={"flex items-center ml-1.5 gap-2.5 text-sm text-muted-foreground font-semibold"}>
+                                <div className={"px-0.5 py-1 bg-muted-foreground/50"}/>
+                                {"Translate Into"}
+                            </label>
+                            <Select defaultValue={userInfo?.trans_lang || "NONE"} onValueChange={handleTranslationLanguageChange}>
+                                <SelectTrigger className={"h-12 text-start"}>
+                                    <SelectValue placeholder={"The Language you want translate into."}/>
+                                </SelectTrigger>
+                                <SelectContent sideOffset={4}>
+                                    <SelectItem value={"NONE"}>
+                                        {"Do not translate."}
+                                    </SelectItem>
+                                    {Object.entries(languageList).map(([key, value]) => (
+                                        <SelectItem key={key} value={key} disabled={key === userInfo?.learning_lang}>
+                                            {value}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </CardContent>
+
                 </Card>
                 <div>
                     <Card>
                         {isPending && <CardHeader className={"gap-3"}>
                             <CardTitle className={"text-center"}>{t('syncing')}</CardTitle>
-                            <CardDescription className={"text-center"}>{progressMessage}</CardDescription>
+                            <CardDescription className={"text-center"}>{progress.message}</CardDescription>
                             <Progress
                                 className={"h-2 w-full"}
-                                value={progressVal}/>
+                                value={progress.progress}/>
                         </CardHeader>}
                         {!isPending && <CardContent className={"flex flex-col pt-6 gap-4 items-center"}>
                             <Button className={"w-full"} onClick={handleSync} type={"button"} disabled={isPending}>

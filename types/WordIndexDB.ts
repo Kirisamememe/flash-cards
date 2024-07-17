@@ -3,11 +3,10 @@ export interface WordIndexDB { //IndexDBでの状態
     id: string
     word: string
     phonetics: string
-    partOfSpeech: string | undefined
+    pos: POS
     definition: string
     example: string
     notes: string
-    is_learned: boolean
     created_at: Date
     updated_at: Date
     synced_at: Date | undefined
@@ -15,6 +14,19 @@ export interface WordIndexDB { //IndexDBでの状態
     retention_rate: number
     author: string | undefined
     is_deleted: boolean
+    deleted_at?: Date
+}
+
+export interface Record {
+    word_id: string
+    records: AnswerRecord[]
+}
+
+export interface AnswerRecord {
+    reviewed_at: Date
+    is_correct: boolean
+    time: number
+    synced_at: Date | undefined
 }
 
 export interface RecordIndexDB {
@@ -26,15 +38,14 @@ export interface RecordIndexDB {
     synced_at: Date | undefined
 }
 
-export interface WordDataMerged {
+export interface WordData {
     id: string
     word: string
     phonetics: string | undefined
-    partOfSpeech: PartOfSpeechLocal | undefined
+    pos: POS
     definition: string
     example: string | undefined
     notes: string | undefined
-    is_learned: boolean
     created_at: Date
     updated_at: Date
     synced_at: Date | undefined
@@ -42,10 +53,6 @@ export interface WordDataMerged {
     retention_rate: number
     author: string | undefined
     is_deleted: boolean
-    ttsUrl?: {
-        word?: string
-        example?: string
-    }
 }
 
 
@@ -53,11 +60,10 @@ export interface WordCardToRemote {
     id: string
     word: string
     phonetics: string | undefined
-    partOfSpeech: PartOfSpeechLocal | undefined
+    pos: POS
     definition: string
     example: string | undefined
     notes: string | undefined
-    is_learned: boolean
     created_at: Date
     updated_at: Date
     synced_at: Date | undefined
@@ -65,28 +71,26 @@ export interface WordCardToRemote {
     retention_rate: number
     author: string // DBと同期を取る時点でundefinedであってはならない
     is_deleted: boolean
-    records: RecordIndexDB[]
+    records: AnswerRecord[]
 }
 
-export interface PartOfSpeechLocal {
-    id: string
-    partOfSpeech: string
-    author: string | undefined
-    is_deleted: boolean
-    created_at: Date
-    updated_at: Date
-    synced_at: Date | undefined
-}
+export type POS = (typeof POSList)[number]
 
-export interface PartOfSpeechToRemote {
-    id: string
-    partOfSpeech: string
-    author: string
-    is_deleted: boolean
-    created_at: Date
-    updated_at: Date
-    synced_at: Date | null
-}
+export const POSList = [
+    "NOUN",
+    "VERB",
+    "TRANSITIVE_VERB",
+    "INTRANSITIVE_VERB",
+    "ADJECTIVE",
+    "ADVERB",
+    "PREPOSITION",
+    "CONJUNCTION",
+    "PHRASE",
+    "IDIOM",
+    "OTHER",
+    "UNDEFINED"
+] as const
+
 
 export interface EN2ENItem {
     word: string
@@ -119,7 +123,6 @@ export interface WordRemote {
     definition: string
     example: string | null
     notes: string | null
-    is_learned: boolean
     created_at: Date
     updated_at: Date
     learned_at: Date | null

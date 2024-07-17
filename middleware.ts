@@ -1,17 +1,17 @@
 import { auth } from "@/app/lib/auth";
 import pages from "@/app/lib/pages";
 import { NextRequest, NextResponse } from "next/server";
-import createIntlMiddleware from "next-intl/middleware";
+import createMiddleware from "next-intl/middleware";
 
 const locales = ['en', 'ja', 'zh-cn', 'zh-tw'];
 const protectedPages = ["/user/*"];
 const authPages = ["/auth/signin", "/auth/signup"];
 
-const intlMiddleware = createIntlMiddleware({
+const intlMiddleware = createMiddleware({
     locales,
     defaultLocale: "en",
     localePrefix: "as-needed",
-});
+})
 
 const testPagesRegex = (pages: string[], pathname: string) => {
     // ここで、渡されたパスがどういうパスかチェックする
@@ -19,7 +19,8 @@ const testPagesRegex = (pages: string[], pathname: string) => {
         .map((p) => p.replace("/*", ".*"))
         .join("|")})/?$`;
     return new RegExp(regex, "i").test(pathname);
-};
+}
+
 
 const handleAuth = async (
     req: NextRequest,

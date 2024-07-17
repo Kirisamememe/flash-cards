@@ -7,7 +7,6 @@ import { PlusIcon } from "@radix-ui/react-icons";
 import { useWordbookStore } from "@/providers/wordbook-store-provider";
 import Setting from "@/components/home/Setting";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { motion } from "framer-motion";
 import React from "react";
 
 
@@ -20,14 +19,7 @@ export default function CardContainer() {
 
 
     return (
-        <motion.div
-            id={"animation-container"}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -30 }}
-            transition={{ duration: 0.2 }}
-            className={"flex flex-col h-full min-h-[32rem] items-center"}
-        >
+        <div id={"animation-container"} className={"appear flex flex-col h-full min-h-[32rem] items-center"}>
             {!isSmallDevice &&
                 <AddWordBtn>
                     <Button
@@ -40,6 +32,6 @@ export default function CardContainer() {
             <FlashCard/>
 
             {words.length > 0 && <Setting/>}
-        </motion.div>
+        </div>
     )
 }

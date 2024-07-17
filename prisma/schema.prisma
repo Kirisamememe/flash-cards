@@ -25,17 +25,54 @@ model User {
   accounts           Account[]
   sessions           Session[]
   Authenticator      Authenticator[]
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
-  part_of_speeches   PartOfSpeech[]
+  created_at          DateTime        @default(now())
+  updated_at          DateTime        @updatedAt
   auto_sync          Boolean         @default(false)
-  use_when_loggedout Boolean         @default(true)
   blind_mode         Boolean         @default(false)
+  learning_lang      Language?       @default(EN)
+  trans_lang         Language?
+  mastered_words     MasteredWord[]
+  materials         Material[]
 }
 
 enum Role {
   ADMIN
   USER
+}
+
+enum Language {
+  EN
+  JA
+  ZH_CN
+  ZH_TW
+  KO
+  VI
+  FR
+  ES
+  PT
+  DE
+  RU
+  IT
+}
+
+enum POS {
+  NOUN
+  VERB
+  TRANSITIVE_VERB
+  INTRANSITIVE_VERB
+  ADJECTIVE
+  ADVERB
+  PREPOSITION
+  CONJUNCTION
+  PRONOUN
+  INTERJECTION
+  PHRASE
+  DETERMINER
+  SENTENCE
+  IDIOM
+  ORDINAL
+  OTHER
+  UNDEFINED
 }
 
 model Account {
@@ -98,11 +135,10 @@ model Word {
   id             String        @id
   word           String
   phonetics      String?
-  part_of_speech PartOfSpeech? @relation(fields: [partOfSpeechId], references: [id])
+  pos            POS           @default(UNDEFINED)
   definition     String
   example        String?
   notes          String?
-  is_learned     Boolean       @default(false)
   created_at     DateTime
   updated_at     DateTime
   learned_at     DateTime?
@@ -110,21 +146,8 @@ model Word {
   retention_rate Int           @default(0)
   author         User          @relation(fields: [authorId], references: [id])
   authorId       String
-  partOfSpeechId String?
   is_deleted     Boolean       @default(false)
   records        Record[]
-}
-
-model PartOfSpeech {
-  id             String   @id
-  part_of_speech String
-  Word           Word[]
-  author         User     @relation(fields: [authorId], references: [id])
-  authorId       String
-  created_at     DateTime
-  updated_at     DateTime
-  synced_at      DateTime
-  is_deleted     Boolean  @default(false)
 }
 
 model Record {
@@ -135,4 +158,28 @@ model Record {
   reviewed_at DateTime
   time        Float
   synced_at   DateTime
+}
+
+model MasteredWord {
+  user_id        String   @id
+  user           User     @relation(fields: [user_id], references: [id])
+  word           String
+  updated_at     DateTime
+  synced_at      DateTime
+}
+
+model Material {
+  id             String   @id
+  title          String
+  content        String
+  trans_lang     Language?
+  translation   String?
+  created_at     DateTime
+  updated_at     DateTime
+  synced_at      DateTime @default(now())
+  bookmarked_at  DateTime?
+  deleted_at     DateTime?
+  author         User     @relation(fields: [authorId], references: [id])
+  authorId       String
+  generated_by   String?
 }

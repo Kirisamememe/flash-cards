@@ -1,13 +1,11 @@
 'use server'
 
-import { GetPromiseCommonResult, } from "@/types/ActionsResult";
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
-import { PartOfSpeech, Word } from "@prisma/client";
 
 const prisma = new PrismaClient().$extends(withAccelerate())
 
-export async function getUserInfoFromRemote(userId: string): Promise<GetPromiseCommonResult<UserInfoFormRemote | null>> {
+export async function getUserInfoFromRemote(userId: string) {
     try {
         const result = await prisma.user.findUnique({
             where: {
@@ -19,9 +17,10 @@ export async function getUserInfoFromRemote(userId: string): Promise<GetPromiseC
                 image: true,
                 synced_at: true,
                 auto_sync: true,
-                updatedAt: true,
-                use_when_loggedout: true,
-                blind_mode: true
+                updated_at: true,
+                blind_mode: true,
+                learning_lang: true,
+                trans_lang: true
             }
         })
 
@@ -34,23 +33,8 @@ export async function getUserInfoFromRemote(userId: string): Promise<GetPromiseC
     }
 }
 
-// 品詞を取得
-export async function getPartOfSpeechesFromRemote(userId: string): Promise<GetPromiseCommonResult<PartOfSpeech[]>> {
-    try {
-        const data = await prisma.partOfSpeech.findMany({
-            where: {
-                authorId: userId
-            }
-        })
-        return { isSuccess: true, data: data }
-    } catch (e) {
-        console.error(e)
-        return { isSuccess: false, error: { message: "データベースとの同期中にエラーが発生しました。", detail: e } }
-    }
-}
-
 // 単語を取得
-export async function getCardsFromRemote(userId: string): Promise<GetPromiseCommonResult<Word[]>> {
+export async function getCardsFromRemote(userId: string) {
     try {
         const data = await prisma.word.findMany({
             where: {
@@ -64,5 +48,23 @@ export async function getCardsFromRemote(userId: string): Promise<GetPromiseComm
     } catch (e) {
         console.error(e)
         return { isSuccess: false, error: { message: "データベースとの同期中にエラーが発生しました。", detail: e } }
+    } finally {
+        prisma.$disconnect
+    }
+}
+
+export async function getMaterialsFromRemote(userId: string) {
+    try {
+        const data = await prisma.material.findMany({
+            where: {
+                authorId: userId
+            }
+        })
+        return { isSuccess: true, data: data }
+    } catch (error) {
+        console.error(error)
+        return { isSuccess: false, error: { message: "データベースとの同期中にエラーが発生しました。", detail: error } }
+    } finally {
+        prisma.$disconnect
     }
 }
