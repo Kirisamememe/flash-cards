@@ -1,5 +1,5 @@
 import { Form, FormField } from "@/components/ui/form";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { UseFormReturn } from "react-hook-form";
 import { z } from "zod"
 import { saveWordCardRequest } from "@/types";

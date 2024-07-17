@@ -6,7 +6,6 @@ import { animateElement, sortWords, syncFailed } from "@/app/lib/utils";
 import { MaterialIndexDB, ModelList } from "@/types/AIBooster";
 import { IndexDB } from "@/app/lib/indexDB/indexDB";
 import { LanguageCode, UserInfo } from "@/types/User";
-import { initMasteredWords } from '@/types/static';
 import { Toast, ToasterToast } from '@/components/ui/use-toast';
 import { updateUserInfoToRemote, upsertCardToRemote, upsertMaterialToRemote } from '@/app/lib/remoteDB/saveToRemote';
 

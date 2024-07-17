@@ -10,7 +10,6 @@ import { useWordbookStore } from "@/providers/wordbook-store-provider";
 import WordDisplay from "@/components/wordbook/WordDisplay";
 import { WordFormContainer } from "@/components/form/WordFormContainer";
 import { useEffect, useRef, useState } from "react";
-import { getEN2ENItemFromLocal, getRecordsFromLocal } from "@/app/lib/indexDB/getFromLocal";
 import { cn, isEnglish } from "@/app/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast"
@@ -55,9 +54,9 @@ export default function WordDetail({ wordData }: { wordData: WordData }) {
             }
         })
 
-        getEN2ENItemFromLocal(wordData.word).then((res) => {
+        indexDB.getEN2ENItem(wordData.word).then((res) => {
             if (res.isSuccess && res.data) {
-                setDicData(res.data)
+                setDicData(res.data[0])
             }
             else {
                 setDicData(null)

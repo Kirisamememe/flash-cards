@@ -1,13 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { MessageSquareCode, X } from "lucide-react";
+import { X } from "lucide-react";
 import React, { useState, useTransition } from "react";
 import { useWordbookStore } from "@/providers/wordbook-store-provider";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/components/ui/use-toast";
 import { generateMaterial } from "@/app/lib/GenerativeAI";
-import { Material, MaterialIndexDB, ModelList } from "@/types/AIBooster";
+import { MaterialIndexDB, ModelList } from "@/types/AIBooster";
 import { readStreamableValue } from "ai/rsc";
-import { getPromptWords } from "@/app/lib/indexDB/getFromLocal";
 import { modelListTuple, onlyProUserModelListTuple, prompts, selectWords } from "@/types/static";
 import { cn } from "@/app/lib/utils";
 import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
