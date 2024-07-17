@@ -52,7 +52,7 @@ export default function Header({ className, open, setOpen, atTop }: { className?
                             <BookA size={20}/>
                             <p className={"text-sm hidden lg:block"}>{t("Index.wordbook")}</p>
                         </NavItem>
-                        <NavItem href={"/ai-booster"}>
+                        <NavItem href={"/ai-booster"} setOpen={setOpen}>
                             <Cpu size={20}/>
                             <p className={"text-sm hidden lg:block"}>{t("Index.ai_booster")}</p>
                         </NavItem>

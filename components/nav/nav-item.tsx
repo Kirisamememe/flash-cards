@@ -100,7 +100,7 @@ export function NavItemMobile<
 
 export function NavItem<
     Pathname extends keyof typeof pathnames
->({ href, className, disabled, children, }: ComponentProps<typeof Link<Pathname>> & { disabled?: boolean }) {
+>({ href, className, disabled, children, setOpen }: ComponentProps<typeof Link<Pathname>> & { disabled?: boolean, setOpen?: (value: boolean) => void }) {
     const selectedLayoutSegment = useSelectedLayoutSegment();
     const pathname = selectedLayoutSegment ? `/${selectedLayoutSegment}` : '/';
 
@@ -133,6 +133,11 @@ export function NavItem<
                 className)}
                     variant={"ghost"}
                     onClick={() => {
+                        if (setOpen && href === "/ai-booster") {
+                            setOpen(true)
+                            return
+                        }
+
                         if (!isComing && !isActive && linkRef.current) {
                             handlePageSwitchAnimation(setIsComing, setIsTransitionDebounced, linkRef.current)
                         }

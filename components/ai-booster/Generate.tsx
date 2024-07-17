@@ -120,7 +120,7 @@ export function Generate() {
                     </div>
                     {isSmallDevice ? <PromptPopover handleSend={handleSend} handleSuspend={handleSuspend}/> : <SendPrompt handleSend={handleSend} handleSuspend={handleSuspend}/>}
                 </> :
-                <div className={"pb-32 sm:pb-6 flex flex-col gap-7 w-full"}>
+                <div className={"pb-32 sm:pb-6 px-4 flex flex-col gap-7 w-full"}>
                     <Skeleton className={"w-full h-16 mb-3"}/>
                     <div className={"flex flex-col gap-6"}>
                         {Array.from({ length: 10 }).map((_, key) => (

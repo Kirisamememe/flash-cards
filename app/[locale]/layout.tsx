@@ -73,7 +73,6 @@ export default async function LocaleLayout({ children, params: { locale } }: Rea
             </SessionProvider>
             <Toaster/>
         </ThemeProvider>
-        <SpeedInsights />
         <Analytics/>
         <audio id={"sound-effect"} preload={"auto"}/>
         </body>

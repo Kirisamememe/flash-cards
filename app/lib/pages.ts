@@ -12,8 +12,8 @@ interface UserPages {
 }
 
 const authPages: AuthPages = {
-    signin: () => '/auth/signin',
-    signup: () => '/auth/signup'
+    signin: () => '/signin',
+    signup: () => '/signin'
 };
 
 const rootPage: RootPage = {

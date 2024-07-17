@@ -4,8 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import createMiddleware from "next-intl/middleware";
 
 const locales = ['en', 'ja', 'zh-cn', 'zh-tw'];
-const protectedPages = ["/user/*"];
-const authPages = ["/auth/signin", "/auth/signup"];
+const protectedPages = ["/user/*", "/ai-booster/*"];
+const authPages = ["/signin"];
 
 const intlMiddleware = createMiddleware({
     locales,
